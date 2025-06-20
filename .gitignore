@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
@@ -36,10 +35,7 @@ yarn-error.log*
 
 # vercel
 .vercel
-
+.vscode
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-=======
-node_modules
->>>>>>> origin/trad
