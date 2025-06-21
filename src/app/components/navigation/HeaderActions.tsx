@@ -1,9 +1,9 @@
 "use client";
 
 import { Search, Eye, EyeOff } from "lucide-react";
-import { BurgerMenu } from "./BurgerMenu";
+import { BurgerMenu } from "@/app/components/ui/BurgerMenu";
 import { useState } from "react";
-import { SearchBar } from "./SearchBar";
+import { SearchBar } from "@/app/components/ui/SearchBar";
 
 // TYEs
 
