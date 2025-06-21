@@ -2,6 +2,8 @@ import { Search, Eye, EyeOff } from "lucide-react";
 import { BurgerMenu } from "./BurgerMenu";
 import { useState } from "react";
 
+// TYEs
+
 export const HeaderActions = () => {
   const [isVisible, setIsVisible] = useState(false);
 
