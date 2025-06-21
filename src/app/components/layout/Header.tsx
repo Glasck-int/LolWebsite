@@ -1,19 +1,22 @@
-import { getTranslations } from "next-intl/server";
-import Image from "next/image";
+"use client";
 
-export const Header = async () => {
-  const t = await getTranslations("Homepage" as const);
+import Image from "next/image";
+import { HeaderActions } from "../navigation/HeaderActions";
+
+export const Header = () => {
   return (
-    <div className="w-full h-[100px]">
-      <div className="flex flex-row justify-between items-center h-full max-w-[1440px] mx-auto px-24 py-4">
+    <div className="w-full h-[80px]">
+      <div className="flex flex-row justify-between items-center h-full max-w-[1440px] mx-auto px-4 md:px-24 py-4">
         <Image
           src="/assets/SVG/logotypo/glasckWhite.svg"
           alt="logoglasck"
-          width={200}
-          height={32}
+          width={170}
+          height={28}
         />
-        <h3>{t("Title")}</h3>
+        <HeaderActions />
       </div>
     </div>
   );
 };
+
+

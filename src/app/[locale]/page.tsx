@@ -6,10 +6,6 @@ export default async function Home() {
   return (
     <div className="flex flex-col min-h-screen w-full">
       <Header />
-      <h1>Hello</h1>
-
-      <p>{t("Subtitle5")}</p>
-
     </div>
   );
 }
