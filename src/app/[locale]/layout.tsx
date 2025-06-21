@@ -6,28 +6,26 @@ import { routing } from "@/i18n/routing";
 import { Inter } from "next/font/google";
 
 const inter = Inter({
-  subsets: ["latin"],
+	subsets: ["latin"],
 });
 
-
-
 export default async function LocaleLayout({
-  children,
-  params,
+	children,
+	params,
 }: {
-  children: React.ReactNode;
-  params: Promise<{ locale: string }>;
+	children: React.ReactNode;
+	params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params;
-  if (!hasLocale(routing.locales, locale)) {
-    notFound();
-  }
+	const { locale } = await params;
+	if (!hasLocale(routing.locales, locale)) {
+		notFound();
+	}
 
-  return (
-    <html lang={locale}>
-      <body className={inter.className}>
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
-      </body>
-    </html>
-  );
+	return (
+		<html lang={locale}>
+			<body className={inter.className}>
+				<NextIntlClientProvider>{children}</NextIntlClientProvider>
+			</body>
+		</html>
+	);
 }

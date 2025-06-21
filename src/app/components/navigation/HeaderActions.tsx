@@ -8,28 +8,28 @@ import { SearchBar } from "@/app/components/ui/SearchBar";
 // TYEs
 
 export const HeaderActions = () => {
-  const [isVisible, setIsVisible] = useState(false);
+	const [isVisible, setIsVisible] = useState(false);
 
-  return (
-    <div className="flex flex-row gap-6 items-center">
-      <SearchBar />
+	return (
+		<div className="flex flex-row gap-6 items-center">
+			<SearchBar />
 
-      {isVisible ? (
-        <EyeOff
-          className="w-6 h-6 text-white transition-all duration-200 cursor-pointer"
-          onClick={() => {
-            setIsVisible(!isVisible);
-          }}
-        />
-      ) : (
-        <Eye
-          className="w-6 h-6 text-white transition-all duration-200 cursor-pointer"
-          onClick={() => {
-            setIsVisible(!isVisible);
-          }}
-        />
-      )}
-      <BurgerMenu />
-    </div>
-  );
+			{isVisible ? (
+				<EyeOff
+					className="w-6 h-6 text-white transition-all duration-200 cursor-pointer"
+					onClick={() => {
+						setIsVisible(!isVisible);
+					}}
+				/>
+			) : (
+				<Eye
+					className="w-6 h-6 text-white transition-all duration-200 cursor-pointer"
+					onClick={() => {
+						setIsVisible(!isVisible);
+					}}
+				/>
+			)}
+			<BurgerMenu />
+		</div>
+	);
 };
