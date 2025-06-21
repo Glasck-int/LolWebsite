@@ -6,7 +6,7 @@ export const BurgerMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="flex justify-center items-center md:hidden">
+    <div className="flex justify-center items-center">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="transition-all duration-200"
