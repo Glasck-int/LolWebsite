@@ -18,13 +18,13 @@ export const Button: React.FC<ButtonProps> = ({
   type = "button",
 }) => {
   const baseClasses = `
-    h-[44px] 
-    px-[10px] 
+    h-10
+    px-2
     rounded-2xl 
     border 
     border-solid
     font-inter 
-    font-semibold 
+    font-semlibod 
     text-xl 
     md:text-2xl 
     tracking-normal
@@ -37,14 +37,14 @@ export const Button: React.FC<ButtonProps> = ({
 
   const variantClasses = {
     base: `
-      bg-white/[0.06] 
-      border-[#262626] 
+      bg-white-06 
+      border-dark-grey 
       text-clear-grey
-      hover:bg-white/[0.1]
+      hover:bg-white-10
     `,
     selected: `
       bg-white 
-      border-[#262626] 
+      border-dark-grey 
       text-black
       hover:bg-white/90
     `,

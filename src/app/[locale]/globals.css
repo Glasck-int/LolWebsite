@@ -23,7 +23,12 @@
   --color-dark-violet: #6022cd;
   --color-grey: #8c8c8c;
   --color-clear-grey: #bab9b9;
+  --color-dark-grey: #262626; 
   --color-black: #141414;
+  --color-yellow: #f6de52;
+
+  /* Borders */
+  --border-dark-grey: #262626;
 }
 
 @font-face {
@@ -43,6 +48,24 @@
 @layer components {
   .subtilte {
     @apply font-inter text-white tracking-normal text-sm md:text-base;
+  }
+}
+
+@layer utilities {
+  .bg-white-06 {
+    background-color: rgba(255, 255, 255, 0.06);
+  }
+  .bg-white-04 {
+    background-color: rgba(255, 255, 255, 0.04);
+  }
+  .bg-white-10 {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  .bg-white-20 {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  .bg-white-30 {
+    background-color: rgba(255, 255, 255, 0.3);
   }
 }
 

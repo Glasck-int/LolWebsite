@@ -3,7 +3,7 @@
 import { Button } from "@/app/components/ui/Button";
 import { useState } from "react";
 
-export const ButtonsHook = (props: {
+export const ButtonBar = (props: {
   options: string[];
   onButtonChange: (option: string | null) => void;
 }) => {
@@ -25,7 +25,7 @@ export const ButtonsHook = (props: {
         <Button
           key={option}
           variant={activeButton === option ? "selected" : "base"}
-          onClick={() => handleButtonClick(option)}
+          onClick={() => setActiveButton(option)}
         >
           {option}
         </Button>
