@@ -1,17 +1,22 @@
-"use client";
+'use client'
 
-import { Header } from "@/app/components/layout/Header";
-import { OneHeaderCard } from "../components/ui/card/OneHeaderCard";
+import { Header } from '@/app/components/layout/Header'
+import { OneHeaderCard } from '../components/ui/card/OneHeaderCard'
+import { TestHeader } from '../components/ui/card/header/TestHeader'
 
 export default function Home() {
-	return (
-		<div className="flex flex-col min-h-screen w-full">
-			<Header />
-			<div className="h-[1000px] w-full pt-[80px]">
-				<div className="mt-4 h-72">
-					<OneHeaderCard />
-				</div>
-			</div>
-		</div>
-	);
+    return (
+        <div className="flex flex-col min-h-screen w-full">
+            <Header />
+            <div className="h-[1000px] w-full pt-[80px]">
+                <div className="mt-4 h-72">
+                    {/* <OneHeaderCard title='super'> */}
+                    <OneHeaderCard Header={() => (<TestHeader test="wtf"/>)}>
+						<h3>trop de la balle</h3>
+						<p>le body</p>
+					</OneHeaderCard>
+                </div>
+            </div>
+        </div>
+    )
 }
