@@ -1,6 +1,5 @@
 "use client";
 
-import { Header } from "@/app/components/layout/Header";
 import { ButtonBar } from "@/app/components/ui/ButtonBar";
 import { useState } from "react";
 
@@ -9,10 +8,11 @@ export default function Home() {
 
 	return (
 		<div className="flex flex-col min-h-screen w-full">
-			<Header />
-			<div className="h-[1000px] w-full pt-[80px]">
+			{/* <Header /> */}
+			<div className=" w-full pt-[80px]">
+
 				<ButtonBar
-					options={["bonjour", "base", "selected"]}
+					options={["Bonjour", "Base", "Kkk", "Bonjour"]}
 					onButtonChange={setSelectedButton}
 				/>
 

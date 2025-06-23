@@ -2,5 +2,13 @@
     "Homepage": {
         "Title": "Hello English World",
         "Description": "We are the best"
+    },
+    "SearchBar": {
+        "Title": "Search"
+    },
+    "DropdownMenu": {
+        "Roadmap": "Roadmap",
+        "Description": "Support Us",
+        "Language": "Language"
     }
 }

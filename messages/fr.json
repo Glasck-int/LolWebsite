@@ -1,6 +1,14 @@
 {
-  "Homepage": {
-    "Title": "Bonjour la France",
-    "Description": "Nous sommes les meilleurs"
-  }
+	"Homepage": {
+		"Title": "Bonjour la France",
+		"Description": "Nous sommes les meilleurs"
+	},
+	"SearchBar": {
+		"Title": "Rechercher"
+	},
+	"DropdownMenu": {
+		"Roadmap": "Roadmap",
+		"Description": "Nous Soutenir",
+		"Language": "Langue"
+	}
 }
