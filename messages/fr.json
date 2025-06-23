@@ -10,5 +10,9 @@
 		"Roadmap": "Roadmap",
 		"Description": "Nous Soutenir",
 		"Language": "Langue"
+	},
+	"LocaleSwitcher": {
+		"label": "Changer de langue",
+		"locale": "{locale, select, en {🇺🇸 En} fr {🇫🇷 Fr} other {🌐 Unknown}}"
 	}
 }

@@ -83,6 +83,7 @@ export const Button = ({
       border-dark-grey 
       text-clear-grey
       hover:bg-white-10
+	  backdrop-blur-md
     `,
 		selected: `
       bg-white 

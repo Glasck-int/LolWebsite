@@ -4,6 +4,7 @@ import { Search, Eye, EyeOff } from "lucide-react";
 import { BurgerMenu } from "@/app/components/ui/BurgerMenu";
 import { useState } from "react";
 import { SearchBar } from "@/app/components/ui/SearchBar";
+import LocaleSwitcher from "../layout/LocaleSwitcher";
 
 interface HeaderActionsProps {
 	isMenuOpen: boolean;
@@ -53,6 +54,8 @@ export const HeaderActions = ({
 					onClick={() => setIsVisible(!isVisible)}
 				/>
 			)}
+			<LocaleSwitcher />
+
 			<BurgerMenu isOpen={isMenuOpen} setIsOpen={onMenuToggle} />
 		</div>
 	);

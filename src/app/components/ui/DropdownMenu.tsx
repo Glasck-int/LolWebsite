@@ -11,7 +11,8 @@ import {
 	DropdownMenuLabel,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
-} from "./DropdownMenuDesktop copy";
+} from "./DropdownMenuDesktop";
+import LocaleSwitcher from "../layout/LocaleSwitcher";
 
 interface DropdownMenuProps {
 	isMenuOpen: boolean;
@@ -169,25 +170,10 @@ export const DropdownMenu = ({
 										</div>
 									</Link>
 								</DropdownMenuItem>
-								<DropdownMenuItem
-									asChild
-									className="text-right hover:bg-transparent"
-								>
-									<Link
-										href="/services"
-										className="dropdown-menu-item"
-									>
-										<div className="flex items-center justify-end rounded-md hover:bg-white/20 p-2">
-											<ul>
-												<li>
-													<Link href="/en">English</Link>
-												</li>
-												<li>
-													<Link href="/fr">French</Link>
-												</li>
-											</ul>
-										</div>
-									</Link>
+								<DropdownMenuItem className="text-right hover:bg-transparent cursor-default">
+									<div className="flex items-center justify-end w-full">
+										<LocaleSwitcher />
+									</div>
 								</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenuDesktop>
