@@ -10,11 +10,6 @@ export default function Home() {
             <Header />
             <div className="h-[1000px] w-full pt-[80px]">
                 <div className="mt-4 h-72">
-                    {/* <OneHeaderCard title='super'> */}
-                    <OneHeaderCard Header={() => (<TestHeader test="wtf"/>)}>
-						<h3>trop de la balle</h3>
-						<p>le body</p>
-					</OneHeaderCard>
                 </div>
             </div>
         </div>
