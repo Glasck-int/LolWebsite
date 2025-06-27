@@ -1,6 +1,18 @@
 {
-  "Homepage": {
-    "Title": "Bonjour la France",
-    "Description": "Nous sommes les meilleurs"
-  }
+	"Homepage": {
+		"Title": "Bonjour la France",
+		"Description": "Nous sommes les meilleurs"
+	},
+	"SearchBar": {
+		"Title": "Rechercher"
+	},
+	"DropdownMenu": {
+		"Roadmap": "Roadmap",
+		"Description": "Nous Soutenir",
+		"Language": "Langue"
+	},
+	"LocaleSwitcher": {
+		"label": "Changer de langue",
+		"locale": "{locale, select, en {🇺🇸 En} fr {🇫🇷 Fr} other {🌐 Unknown}}"
+	}
 }
