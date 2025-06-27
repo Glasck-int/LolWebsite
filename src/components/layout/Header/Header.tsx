@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { HeaderActions } from "../navigation/HeaderActions";
-import { DropdownMenu } from "../ui/DropdownMenu";
-import LocaleSwitcher from "./LocaleSwitcher";
+import { HeaderActions } from "../../navigation/HeaderActions";
+import { DropdownMenu } from "../../ui/DropdownMenu";
+import LocaleSwitcher from "../LocaleSwitcher/LocaleSwitcher";
 
 /**
  * Application header with scroll-responsive styling and expandable menu

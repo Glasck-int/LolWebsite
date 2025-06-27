@@ -1,10 +1,10 @@
 "use client";
 
 import { Search, Eye, EyeOff } from "lucide-react";
-import { BurgerMenu } from "@/app/components/ui/BurgerMenu";
+import { BurgerMenu } from "@/components/ui/BurgerMenu";
 import { useState } from "react";
-import { SearchBar } from "@/app/components/ui/SearchBar";
-import LocaleSwitcher from "../layout/LocaleSwitcher";
+import { SearchBar } from "@/components/ui/SearchBar";
+import LocaleSwitcher from "../layout/LocaleSwitcher/LocaleSwitcher";
 
 interface HeaderActionsProps {
 	isMenuOpen: boolean;

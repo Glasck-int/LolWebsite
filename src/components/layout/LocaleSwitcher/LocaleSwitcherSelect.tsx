@@ -8,6 +8,7 @@ interface LocaleSwitcherSelectProps {
 	children: ReactNode;
 	defaultValue: string;
 	label: string;
+	showOnMobile?: boolean;
 }
 
 /**
@@ -19,6 +20,7 @@ interface LocaleSwitcherSelectProps {
  * @param children - ReactNode elements to render inside the select
  * @param defaultValue - The currently selected locale value
  * @param label - Accessibility label for the select element
+ * @param showOnMobile - Whether to show the select on mobile
  * @returns A JSX element representing the locale switcher
  *
  * @example
@@ -37,6 +39,7 @@ export default function LocaleSwitcherSelect({
 	children,
 	defaultValue,
 	label,
+	showOnMobile = false,
 }: LocaleSwitcherSelectProps) {
 	const router = useRouter();
 	const pathname = usePathname();
@@ -54,7 +57,9 @@ export default function LocaleSwitcherSelect({
 	}
 
 	return (
-		<label className="relative">
+		<label
+			className={`relative ${showOnMobile ? "hidden" : "block"} md:block`}
+		>
 			<p className="sr-only">{label}</p>
 			<select
 				className="

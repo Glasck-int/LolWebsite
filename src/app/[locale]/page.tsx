@@ -1,35 +1,9 @@
-"use client";
-
-import { ButtonBar } from "@/app/components/ui/ButtonBar";
-import { useState } from "react";
+import Footer from "@/components/layout/Footer/Footer";
 
 export default function Home() {
-	const [selectedButton, setSelectedButton] = useState<string | null>(null);
-
 	return (
 		<div className="flex flex-col min-h-screen w-full">
-			{/* <Header /> */}
-			<div className=" w-full pt-[80px]">
-
-				<ButtonBar
-					options={["Bonjour", "Base", "Kkk", "Bonjour"]}
-					onButtonChange={setSelectedButton}
-				/>
-
-				<div className="mt-4">
-					{selectedButton === "bonjour" && (
-						<p>Vous avez sélectionné Bonjour!</p>
-					)}
-					{selectedButton === "base" && <p>Mode base activé</p>}
-					{selectedButton === "selected" && (
-						<p>Option selected choisie</p>
-					)}
-					{selectedButton === "disabled" && (
-						<p>Vous avez cliqué sur disabled</p>
-					)}
-					{!selectedButton && <p>Aucun bouton sélectionné</p>}
-				</div>
-			</div>
+			<Footer />
 		</div>
 	);
 }

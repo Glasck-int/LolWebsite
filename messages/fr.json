@@ -6,7 +6,7 @@
 	"SearchBar": {
 		"Title": "Rechercher"
 	},
-	"DropdownMenu": {
+	"DropdownMenu": { 
 		"Roadmap": "Roadmap",
 		"Description": "Nous Soutenir",
 		"Language": "Langue"

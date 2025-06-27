@@ -4,7 +4,7 @@ import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { Inter } from "next/font/google";
-import { Header } from "@/app/components/layout/Header";
+import { Header } from "@/components/layout/Header/Header";
 
 const inter = Inter({
 	subsets: ["latin"],

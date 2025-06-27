@@ -27,7 +27,11 @@ export default function LocaleSwitcher() {
 	const locale = useLocale();
 
 	return (
-		<LocaleSwitcherSelect defaultValue={locale} label={t("label")}>
+		<LocaleSwitcherSelect
+			defaultValue={locale}
+			label={t("label")}
+			showOnMobile
+		>
 			{locales.map((currentLocale) => (
 				<option key={currentLocale} value={currentLocale}>
 					{t("locale", { params: { locale: currentLocale } })}
