@@ -1,35 +1,28 @@
 'use client'
 
-import { ButtonBar } from "@/app/components/ui/ButtonBar";
-import { useState } from "react";
+import { ButtonBar } from '@/app/components/ui/ButtonBar'
+import { useState } from 'react'
+import { TestHeader } from '@/app/components/ui/card/header/TestHeader'
+import { Card, CardHeader, CardBody } from '@/app/components/ui/card/Card'
 
 export default function Home() {
-	const [selectedButton, setSelectedButton] = useState<string | null>(null);
+    const [selectedButton, setSelectedButton] = useState<string | null>(null)
 
-	return (
-		<div className="flex flex-col min-h-screen w-full">
-			{/* <Header /> */}
-			<div className=" w-full pt-[80px]">
-
-				<ButtonBar
-					options={["Bonjour", "Base", "Kkk", "Bonjour"]}
-					onButtonChange={setSelectedButton}
-				/>
-
-				<div className="mt-4">
-					{selectedButton === "bonjour" && (
-						<p>Vous avez sélectionné Bonjour!</p>
-					)}
-					{selectedButton === "base" && <p>Mode base activé</p>}
-					{selectedButton === "selected" && (
-						<p>Option selected choisie</p>
-					)}
-					{selectedButton === "disabled" && (
-						<p>Vous avez cliqué sur disabled</p>
-					)}
-					{!selectedButton && <p>Aucun bouton sélectionné</p>}
-				</div>
-			</div>
-		</div>
-	);
+    return (
+        <div className="h-[1000px] w-full pt-[80px]">
+            <div className="mt-4 h-72 p-5">
+                <Card>
+                    <CardHeader>
+                        <div>
+                            {/* <TestHeader test="super test"></TestHeader> */}
+							<p>header</p>
+                        </div>
+                    </CardHeader>
+                    <CardBody>
+                        <p>body</p>
+                    </CardBody>
+                </Card>
+            </div>
+        </div>
+    )
 }
