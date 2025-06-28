@@ -2,6 +2,7 @@
 import React from "react";
 import { useLocale } from "next-intl";
 import { usePathname } from "next/navigation";
+import { useTranslate  } from "../../../lib/hooks/useTranslate";
 import {
 	FooterMobile,
 	FooterItem,
@@ -11,6 +12,7 @@ import { Swords } from "lucide-react";
 import Link from "next/link";
 
 function Footer() {
+    const  t = useTranslate( "Footer" );
 	const locale = useLocale();
 	const pathname = usePathname();
 	const isMatchs = pathname === `/${locale}`;
@@ -33,7 +35,7 @@ function Footer() {
 							isMatchs ? "text-clear-violet" : "text-clear-grey"
 						}`}
 					>
-						Matchs
+						{t("Matchs")}
 					</p>
 				</Link>
 			</FooterItem>
@@ -52,7 +54,7 @@ function Footer() {
 							isLeagues ? "text-clear-violet" : "text-clear-grey"
 						}`}
 					>
-						Ligues
+						{t("Leagues")}
 					</p>
 				</Link>
 			</FooterItem>

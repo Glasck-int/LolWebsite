@@ -1,19 +1,22 @@
-import Fastify from "fastify";
+import fastify from "fastify";
+import fastifyStatic from "@fastify/static";
+import path from "path";
 
-const fastify = Fastify({ logger: true });
+const app = fastify();
 
-fastify.get("/ping", async (request, reply) => {
-	return { pong: "it works!" };
+// Serve static files
+app.register(fastifyStatic, {
+	root: path.join(__dirname, "../../public"),
+	prefix: "/static/",
 });
 
-const start = async () => {
-	try {
-		await fastify.listen({ port: 3001, host: "0.0.0.0" });
-		console.log("Fastify server running!");
-	} catch (err) {
-		fastify.log.error(err);
-		process.exit(1);
-	}
-};
+// CORS pour toute l'équipe
+app.register(require("@fastify/cors"), {
+	origin: ["http://localhost:3000"],
+	credentials: true,
+});
 
-start();
+const PORT = parseInt(process.env.PORT || "3001", 10);
+const HOST = "0.0.0.0"; // Important : écoute sur toutes les interfaces
+
+app.listen({ port: PORT, host: HOST });

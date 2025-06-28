@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { HeaderActions } from "../../navigation/HeaderActions";
 import { DropdownMenu } from "../../ui/DropdownMenu";
-import LocaleSwitcher from "../LocaleSwitcher/LocaleSwitcher";
+import { useClickOutside } from "@/lib/hooks/handleClickoutside";
 
 /**
  * Application header with scroll-responsive styling and expandable menu
