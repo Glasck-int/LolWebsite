@@ -11,7 +11,7 @@ import config from '../config/environment'
  */
 export async function registerRedis(fastify: FastifyInstance) {
     // Only try to register Redis in production
-    if (!config.isProduction) {
+    if (config.isProduction) {
         await fastify.register(fastifyRedis, {
             host: process.env.REDIS_HOST || 'localhost',
             port: parseInt(process.env.REDIS_PORT || '6379'),
@@ -19,5 +19,14 @@ export async function registerRedis(fastify: FastifyInstance) {
             db: parseInt(process.env.REDIS_DB || '0'),
             family: 4,
         })
+    } else {
+        // Mock Redis for development
+        fastify.decorate('redis', {
+            get: async () => null,
+            setex: async () => 'OK',
+            set: async () => 'OK',
+            del: async () => 1,
+            ping: async () => 'PONG',
+        } as any)
     }
 }
