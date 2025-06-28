@@ -1,4 +1,7 @@
-import { Tooltip } from '@/app/components/ui/Tooltip'
+'use client'
+
+import { Tooltip, ToolTipBody, ToolTipMessage } from '@/app/components/ui/Tooltip'
+import React, { useRef, useLayoutEffect, useState, useEffect } from 'react'
 
 interface CardProps {
     children: React.ReactNode
@@ -30,10 +33,22 @@ interface CardToolTip {
 }
 
 export const CardToolTip = ({ children, className, info }: CardToolTip) => {
+    const [self, setSelf] = useState<HTMLElement | null>(null)
+    const selfRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() =>{
+        setSelf(selfRef.current)
+    }, [selfRef])
+
     return (
-        <div className={'w-full flex justify-between ' + className}>
+        <div ref={selfRef} className={'w-full flex justify-between ' + className}>
             {children}
-            <Tooltip content={info} />
+            <Tooltip>
+                <ToolTipMessage align='end' containerRef={self}>
+                    <p>{info}</p>
+                </ToolTipMessage>
+                <ToolTipBody/>
+            </Tooltip>
         </div>
     )
 }

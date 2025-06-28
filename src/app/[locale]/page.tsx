@@ -9,7 +9,7 @@ import {
     CardBody,
     CardToolTip,
 } from '@/app/components/ui/card/Card'
-import { Tooltip } from '../components/ui/Tooltip'
+import { Tooltip, ToolTipBody, ToolTipMessage } from '../components/ui/Tooltip'
 
 export default function Home() {
     const [selectedButton, setSelectedButton] = useState<string | null>(null)
@@ -20,15 +20,20 @@ export default function Home() {
                 <Card>
                     <CardHeader>
                         <CardToolTip info="tooltip info bad long ca mere wtf ca va faire quoi ? ">
-                            <div>
-                                <p>header</p>
-                            </div>
+                            <p>header</p>
                         </CardToolTip>
                     </CardHeader>
                     <CardBody>
-							<Tooltip content="j'adore rire" align='start'>
-								<p>body</p>
-							</Tooltip>
+                        <div className="text-clear-violet inline-block">
+                            <Tooltip>
+                                <ToolTipMessage>
+                                    <p>simple message</p>
+                                </ToolTipMessage>
+                                <ToolTipBody>
+                                    <p>simploe body</p>
+                                </ToolTipBody>
+                            </Tooltip>
+                        </div>
                     </CardBody>
                 </Card>
             </div>
