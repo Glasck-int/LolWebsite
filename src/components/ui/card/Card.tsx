@@ -1,6 +1,6 @@
 'use client'
 
-import { Tooltip, ToolTipBody, ToolTipMessage } from '@/app/components/ui/Tooltip'
+import { Tooltip, ToolTipBody, ToolTipMessage } from '@/components/ui/Tooltip'
 import React, { useRef, useLayoutEffect, useState, useEffect } from 'react'
 
 interface CardProps {
