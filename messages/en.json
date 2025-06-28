@@ -13,6 +13,10 @@
 	},
 	"LocaleSwitcher": {
 		"label": "Change language",
-		"locale": "{locale, select, en {🇺🇸 En} fr {🇫🇷 Fr} other {🌐 Unknown}}"
+		"locale": "{locale, select, en {En} fr {Fr} other {Unknown}}"
+	},
+	"Footer": {
+		"Matchs": "Matchs",
+		"Leagues": "Leagues"
 	}
 }

@@ -6,13 +6,17 @@
 	"SearchBar": {
 		"Title": "Rechercher"
 	},
-	"DropdownMenu": {
+	"DropdownMenu": { 
 		"Roadmap": "Roadmap",
 		"Description": "Nous Soutenir",
 		"Language": "Langue"
 	},
 	"LocaleSwitcher": {
 		"label": "Changer de langue",
-		"locale": "{locale, select, en {🇺🇸 En} fr {🇫🇷 Fr} other {🌐 Unknown}}"
+		"locale": "{locale, select, en {En} fr {Fr} other {Unknown}}"
+	},
+	"Footer": {
+		"Matchs": "Matchs",
+		"Leagues": "Ligues"
 	}
 }

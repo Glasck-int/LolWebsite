@@ -12,7 +12,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "./DropdownMenuDesktop";
-import LocaleSwitcher from "../layout/LocaleSwitcher";
+import LocaleSwitcher from "../layout/LocaleSwitcher/LocaleSwitcher";
 
 interface DropdownMenuProps {
 	isMenuOpen: boolean;
@@ -109,21 +109,11 @@ export const DropdownMenu = ({
 								<PiggyBank className="w-4 h-4 ml-3 text-yellow" />
 							</div>
 						</Link>
-						<Link
-							href="/services"
-							className="text-white hover:text-gray-300 transition-colors duration-200 text-lg font-medium text-right w-full"
-							onClick={() => setIsMenuOpen(false)}
-						>
-							{translate("Language")}
-						</Link>
-						<Link
-							href="/contact"
-							className="text-white hover:text-gray-300 transition-colors duration-200 text-lg font-medium text-right w-full"
-							onClick={() => setIsMenuOpen(false)}
-						>
-							Contact
-						</Link>
 					</nav>
+					{/* Locale switcher for mobile */}
+					<div className="mt-6 flex justify-end">
+						<LocaleSwitcher />
+					</div>
 				</div>
 			</div>
 
@@ -169,11 +159,6 @@ export const DropdownMenu = ({
 											<PiggyBank className="w-4 h-4 ml-3 text-yellow" />
 										</div>
 									</Link>
-								</DropdownMenuItem>
-								<DropdownMenuItem className="text-right hover:bg-transparent cursor-default">
-									<div className="flex items-center justify-end w-full">
-										<LocaleSwitcher />
-									</div>
 								</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenuDesktop>
