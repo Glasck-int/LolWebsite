@@ -1,7 +1,7 @@
 'use client'
 
 import { Tooltip, ToolTipBody, ToolTipMessage } from '@/components/ui/Tooltip'
-import React, { useRef, useLayoutEffect, useState, useEffect } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 
 interface CardProps {
     children: React.ReactNode
@@ -12,7 +12,7 @@ export const Card = ({ children, className }: CardProps) => {
     return (
         <div
             className={
-                'bg-white-06 default-border-radius h-full w-full flex flex-col justify-between ' +
+                'bg-white-06 default-border-radius h-full w-full flex flex-col justify-evenly backdrop-blur ' +
                 className
             }
         >
@@ -36,27 +36,72 @@ export const CardToolTip = ({ children, className, info }: CardToolTip) => {
     const [self, setSelf] = useState<HTMLElement | null>(null)
     const selfRef = useRef<HTMLDivElement>(null)
 
-    useEffect(() =>{
+    useEffect(() => {
         setSelf(selfRef.current)
     }, [selfRef])
 
     return (
-        <div ref={selfRef} className={'w-full flex justify-between ' + className}>
+        <div
+            ref={selfRef}
+            className={
+                'w-full flex justify-between items-center px-[14px] bg-white-04 h-full min-h-[35px] md:min-h-[40px]' +
+                ' ' +
+                className
+            }
+        >
             {children}
             <Tooltip>
-                <ToolTipMessage align='end' containerRef={self}>
+                <ToolTipMessage align="end" containerRef={self}>
                     <p>{info}</p>
                 </ToolTipMessage>
-                <ToolTipBody/>
+                <ToolTipBody />
             </Tooltip>
         </div>
+    )
+}
+
+export const CardOneHeader = ({ children, className }: CardSectionProps) => {
+    return (
+        <div
+            className={
+                'w-full flex justify-start content-center items-center px-[14px] bg-white-04 h-full min-h-[35px] md:min-h-[40px]' +
+                ' ' +
+                className
+            }
+        >
+            {children}
+        </div>
+    )
+}
+
+export const CardDoubleHeader = ({ children, className }: CardSectionProps) => {
+    return (
+        <div className={'flex flex-col w-full' + ' ' + className}>
+            {children}
+        </div>
+    )
+}
+
+export const CardDoubleHeaderTop = () => {
+    return (
+        <div>
+
+        </div>
+    )
+}
+
+export const CardDoubleHeaderBot = ({children, className}: CardSectionProps) => {
+    return (
+        <CardOneHeader className={className}>
+            {children}
+        </CardOneHeader>
     )
 }
 
 export const CardHeader = ({ children, className }: CardSectionProps) => {
     return (
         <div
-            className={`bg-white-04 px-[15px] flex items-center min-h-[35px] default-top-border-radius ${
+            className={`w-full default-top-border-radius text-sm color-grey  flex items-center ${
                 className ?? ''
             }`}
         >
@@ -67,6 +112,8 @@ export const CardHeader = ({ children, className }: CardSectionProps) => {
 
 export const CardBody = ({ children, className }: CardSectionProps) => {
     return (
-        <div className={`h-full px-[15px] ${className ?? ''}`}>{children}</div>
+        <div className={`flex grow-1 px-[15px] ${className ?? ''}`}>
+            {children}
+        </div>
     )
 }
