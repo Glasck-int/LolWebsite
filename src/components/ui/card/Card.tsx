@@ -1,8 +1,18 @@
 import React from 'react'
 
-export const Card = ({ children }: { children: React.ReactNode }) => {
+interface CardProps {
+    children: React.ReactNode
+    className?: string
+}
+
+export const Card = ({ children, className }: CardProps) => {
     return (
-        <div className="bg-white-06 default-border-radius h-full w-full flex flex-col justify-between overflow-hidden">
+        <div
+            className={
+                'bg-white-06 default-border-radius h-full w-full flex flex-col justify-between backdrop-blur ' +
+                className
+            }
+        >
             {children}
         </div>
     )

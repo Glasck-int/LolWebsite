@@ -15,7 +15,7 @@ export const Tooltip = ({ content, children }: TooltipProps) => {
             onMouseEnter={() => setVisible(true)}
             onMouseLeave={() => setVisible(false)}
         >
-            {children ? children : <Info/>}
+            {children ? children : <Info />}
             {visible && (
                 <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-black text-white text-sm px-2 py-1 rounded z-50 whitespace-nowrap">
                     {content}

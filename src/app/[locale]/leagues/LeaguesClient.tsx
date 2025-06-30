@@ -1,0 +1,116 @@
+'use client'
+
+import React from 'react'
+import Footer from '@/components/layout/Footer/Footer'
+import { LeagueSection } from '@/components/leagues'
+import { FunctionalSearchBar } from '@/components/ui/FunctionalSearchBar'
+import { OfficialToggle } from '@/components/ui/OfficialToggle'
+import { useLeagueSearch } from '@/lib/hooks/useLeagueSearch'
+import { League as LeagueType } from '../../../../backend/src/generated/prisma'
+
+interface LeaguesClientProps {
+    allLeagues: LeagueType[]
+    majorLeagues: LeagueType[]
+    internationalLeagues: LeagueType[]
+    majorImages: string[]
+    internationalImages: string[]
+}
+
+/**
+ * Client-side leagues component with search functionality
+ *
+ * Handles the interactive search and filtering of leagues
+ *
+ * @param allLeagues - All available leagues
+ * @param majorLeagues - Major leagues (non-international)
+ * @param internationalLeagues - International leagues
+ * @param majorImages - Image URLs for major leagues
+ * @param internationalImages - Image URLs for international leagues
+ * @returns Interactive leagues page with search functionality
+ */
+export const LeaguesClient: React.FC<LeaguesClientProps> = ({
+    allLeagues,
+    majorLeagues,
+    internationalLeagues,
+    majorImages,
+    internationalImages,
+}) => {
+    const {
+        searchTerm,
+        setSearchTerm,
+        filteredLeagues,
+        totalResults,
+        onlyOfficial,
+        setOnlyOfficial,
+    } = useLeagueSearch({
+        leagues: allLeagues,
+        maxResults: 30,
+    })
+
+    const handleSearch = (term: string) => {
+        setSearchTerm(term)
+    }
+
+    return (
+        <div className="w-full px-4 py-8 pt-24 block md:hidden">
+            <LeagueSection
+                title={['LIGUES', 'MAJEURES']}
+                leagues={majorLeagues}
+                images={majorImages}
+                square={true}
+            />
+
+            <LeagueSection
+                title={['LIGUES', 'INTERNATIONALES']}
+                leagues={internationalLeagues}
+                images={internationalImages}
+                square={true}
+            />
+
+            <div className="mb-8">
+                <div className="flex flex-col mb-4">
+                    <h1 className="text-7xl mb-4">TOUTES LES LIGUES</h1>
+                </div>
+
+                <div className="w-full mb-4">
+                    <FunctionalSearchBar
+                        onSearch={handleSearch}
+                        placeholder="Rechercher une ligue..."
+                        className="w-full"
+                    />
+                </div>
+
+                {/* Official leagues toggle */}
+                <div className="mb-4">
+                    <OfficialToggle
+                        onlyOfficial={onlyOfficial}
+                        onToggle={setOnlyOfficial}
+                    />
+                </div>
+
+                {searchTerm ? (
+                    <>
+                        <LeagueSection
+                            leagues={filteredLeagues}
+                            square={false}
+                        />
+                        {totalResults > 30 && (
+                            <div className="text-center text-gray-400 mt-4 text-sm">
+                                Affichage de {filteredLeagues.length} résultats
+                                sur {totalResults} trouvés
+                            </div>
+                        )}
+                    </>
+                ) : (
+                    <LeagueSection
+                        title={[]}
+                        leagues={allLeagues}
+                        square={false}
+                    />
+                )}
+            </div>
+
+            <Footer />
+        </div>
+    )
+}
