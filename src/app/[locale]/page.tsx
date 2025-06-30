@@ -7,13 +7,14 @@ import {
     CardOneHeader,
     CardDoubleHeader,
     CardDoubleHeaderBot,
+    CardDoubleHeaderTop,
 } from '@/components/ui/card/Card'
 import { SubTitle } from '@/components/ui/text/SubTitle'
 
 export default function Home() {
     return (
         <div className="flex flex-col min-h-screen w-full">
-            <div className="mt-40 h-100 p-5 flex flex-col gap-1.5">
+            <div className="mt-40 h-[500px] p-5 flex flex-col gap-1.5">
                 <Card>
                     <CardHeader>
                         <CardToolTip info="tooltip info bad long ca mere wtf ca va faire quoi ? ">
@@ -24,7 +25,7 @@ export default function Home() {
                         <p>simple message</p>
                     </CardBody>
                 </Card>
-
+                ---
                 <Card>
                     <CardHeader>
                         <CardOneHeader>
@@ -35,9 +36,14 @@ export default function Home() {
                         <p>simple message</p>
                     </CardBody>
                 </Card>
+                ---
                 <Card>
                     <CardHeader>
                         <CardDoubleHeader>
+                            <CardDoubleHeaderTop>
+                                <p>stp</p>
+                                <p>fonctionne</p>
+                            </CardDoubleHeaderTop>
                             <CardDoubleHeaderBot>
                                 <SubTitle>header</SubTitle>
                             </CardDoubleHeaderBot>
@@ -47,6 +53,7 @@ export default function Home() {
                         <p>simple message</p>
                     </CardBody>
                 </Card>
+
             </div>
             <Footer />
         </div>
