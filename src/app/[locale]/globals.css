@@ -70,12 +70,15 @@
 }
 
 @layer components {
-    .subtilte {
-        @apply font-inter text-white tracking-normal text-sm md:text-base;
-    }
-    .dropdown-menu-item {
-        @apply text-white hover:text-gray-300 transition-colors duration-200 block w-full text-right px-4;
-    }
+	.subtilte {
+		@apply font-inter text-white tracking-normal text-sm md:text-base;
+	}
+	.dropdown-menu-item {
+		@apply text-white hover:text-gray-300 transition-colors duration-200 block w-full text-right px-4;
+	}
+	.body-container {
+		@apply max-w-[1440px] mx-auto md:px-24 px-4;
+	}
 }
 
 @layer utilities {

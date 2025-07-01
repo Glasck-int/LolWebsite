@@ -1,12 +1,11 @@
 'use client'
 
 import React from 'react'
-import { Tooltip } from '../../Tooltip'
+import { Tooltip } from '../../../utils/Tooltip'
 
-
-export const TestHeader = ({test}: {test: string}) => {
+export const TestHeader = ({ test }: { test: string }) => {
     return (
-        <div className='flex gap-2'>
+        <div className="flex gap-2">
             <p>mon titre</p>
             <p>{test}</p>
             <Tooltip content="explication">

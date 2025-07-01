@@ -3,7 +3,7 @@
 import { Search, Eye, EyeOff } from "lucide-react";
 import { BurgerMenu } from "@/components/ui/BurgerMenu";
 import { useState } from "react";
-import { SearchBar } from "@/components/ui/SearchBar";
+import { SearchBar } from "@/components/ui/search/SearchBar";
 import LocaleSwitcher from "../layout/LocaleSwitcher/LocaleSwitcher";
 
 interface HeaderActionsProps {

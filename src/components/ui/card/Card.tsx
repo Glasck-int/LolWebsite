@@ -1,9 +1,29 @@
-'use client'
-
-import { Tooltip, ToolTipBody, ToolTipMessage } from '@/app/components/ui/Tooltip'
-import React, { useRef, useLayoutEffect, useState, useEffect } from 'react'
+import React from 'react'
 
 interface CardProps {
+    children: React.ReactNode
+    className?: string
+}
+
+export const Card = ({ children, className }: CardProps) => {
+    return (
+        <div
+            className={
+                'bg-white-06 default-border-radius h-full w-full flex flex-col justify-between backdrop-blur ' +
+                className
+            }
+        >
+            {children}
+        </div>
+    )
+}
+
+// pas mettre une min height mais juste mettre un padding top sur la carte masi trql on voit ca juste apres
+// implement le toll tip dans le header je pense
+export const CardHeader = ({
+    children,
+    className,
+}: {
     children: React.ReactNode
     className?: string
 }
