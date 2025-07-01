@@ -4,11 +4,14 @@ import { Type } from '@sinclair/typebox'
  * Base league schema with all properties
  */
 export const LeagueSchema = Type.Object({
-    id: Type.String({ description: 'Unique identifier for the league' }),
+    id: Type.Number({ description: 'Unique identifier for the league' }),
     name: Type.String({
         minLength: 1,
         description: 'Name of the league',
     }),
+    slug: Type.Optional(Type.String({
+        description: 'Slug of the league',
+    })),
     short: Type.String({
         minLength: 1,
         description: 'Short name of the league',

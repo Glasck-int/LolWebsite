@@ -1,54 +1,12 @@
 import { League as LeagueType } from '../../../backend/src/generated/prisma'
-import { getApiBaseUrl } from './image'
+import { getApiBaseUrl, apiRequest, ApiResponse } from './utils'
 
 /**
- * API response wrapper for error handling
- */
-export interface ApiResponse<T> {
-    data?: T
-    error?: string
-}
-
-/**
- * Make HTTP request with proper error handling
+ * Get league image URL and verify if it exists
  *
- * @param endpoint - API endpoint path (without base URL)
- * @param options - Fetch options
- * @returns Promise with typed response data
+ * @param leagueName - The name of the league to get the image for
+ * @returns Promise with image URL if it exists, null otherwise
  */
-async function apiRequest<T>(
-    endpoint: string,
-    options: RequestInit = {}
-): Promise<ApiResponse<T>> {
-    try {
-        const API_BASE_URL = getApiBaseUrl()
-
-        console.log(`Making request to: ${API_BASE_URL}${endpoint}`)
-
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers,
-            },
-            // Important: disable cache for server-side requests
-            cache: 'no-store',
-            ...options,
-        })
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
-        }
-
-        const data = await response.json()
-        return { data  }
-    } catch (error) {
-        console.error('API request failed:', error)
-        return {
-            error: error instanceof Error ? error.message : 'Unknown error',
-        }
-    }
-}
-
 async function getLeagueImage(
     leagueName: string
 ): Promise<ApiResponse<string | null>> {
@@ -56,13 +14,38 @@ async function getLeagueImage(
         const API_BASE_URL = getApiBaseUrl()
         const imageUrl = `${API_BASE_URL}/static/leagues/${leagueName}.webp`
 
-        // For client-side requests, let the browser handle caching
-        // The server should set appropriate cache headers
-        return { data: imageUrl || null }
+        // Check if image exists by making a HEAD request
+        const response = await fetch(imageUrl, { method: 'HEAD' })
+
+        if (response.ok) {
+            return { data: imageUrl }
+        } else {
+            return { data: null }
+        }
     } catch (error) {
-        console.error('Image URL generation failed:', error)
+        console.error('Image URL generation or verification failed:', error)
         return { data: null }
     }
+}
+
+/**
+ * Get a league by its ID
+ *
+ * @param id - The ID of the league to fetch
+ * @returns Promise with league data or error
+ */
+async function getLeagueById(id: number): Promise<ApiResponse<LeagueType>> {
+    return apiRequest<LeagueType>(`/api/leagues/id/${id}`)
+}
+
+/**
+ * Get a league by its slug
+ *
+ * @param slug - The slug of the league to fetch
+ * @returns Promise with league data or error
+ */
+async function getLeagueBySlug(slug: string): Promise<ApiResponse<LeagueType>> {
+    return apiRequest<LeagueType>(`/api/leagues/slug/${slug}`)
 }
 
 /**
@@ -80,7 +63,13 @@ async function getAllLeagues(): Promise<ApiResponse<LeagueType[]>> {
  * @returns Promise with array of major leagues or error
  */
 async function getMajorLeagues(): Promise<ApiResponse<LeagueType[]>> {
-    return apiRequest<LeagueType[]>('/api/leagues/major') // Ajout du préfixe /api
+    return apiRequest<LeagueType[]>('/api/leagues/major')
 }
 
-export { getAllLeagues, getMajorLeagues, getLeagueImage }
+export {
+    getAllLeagues,
+    getMajorLeagues,
+    getLeagueImage,
+    getLeagueById,
+    getLeagueBySlug,
+}

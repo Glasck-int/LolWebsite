@@ -7,6 +7,7 @@ import { FunctionalSearchBar } from '@/components/ui/FunctionalSearchBar'
 import { OfficialToggle } from '@/components/ui/OfficialToggle'
 import { useLeagueSearch } from '@/lib/hooks/useLeagueSearch'
 import { League as LeagueType } from '../../../../backend/src/generated/prisma'
+import { getLeagueImage } from '@/lib/api/league'
 
 interface LeaguesClientProps {
     allLeagues: LeagueType[]
@@ -53,6 +54,9 @@ export const LeaguesClient: React.FC<LeaguesClientProps> = ({
 
     return (
         <div className="w-full px-4 py-8 pt-24 block md:hidden">
+            <div className="flex flex-col mb-4">
+                <h1 className="text-7xl mb-4">LIGUES MAJEURES</h1>
+            </div>
             <LeagueSection
                 title={['LIGUES', 'MAJEURES']}
                 leagues={majorLeagues}

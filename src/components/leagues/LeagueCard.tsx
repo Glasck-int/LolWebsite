@@ -83,6 +83,7 @@ export const LeagueCard: React.FC<LeagueCardProps> = ({
 
     const slug = createLeagueSlug(league.name)
 
+
     if (square) {
         return (
             <Link href={`/leagues/${slug}`}>
@@ -106,6 +107,7 @@ export const LeagueCard: React.FC<LeagueCardProps> = ({
         <Link href={`/leagues/${slug}`}>
             <div className={`w-full h-10 cursor-pointer ${className}`}>
                 <Card className=" backdrop-blur p-5 shadow-md h-full flex flex-row items-center justify-start cursor-pointer hover:bg-white/10 active:bg-white/5 transition-all duration-200">
+                    
                     <h3 className="text-sm md:text-base font-medium text-left text-white">
                         {league.name}
                     </h3>

@@ -28,3 +28,32 @@ export function createLeagueSlug(name: string): string {
         .replace(/-+/g, '-') // Remove multiple dashes
         .trim()
 }
+
+/**
+ * Truncate text with ellipsis
+ *
+ * Truncates a string to a specified maximum length and adds ellipsis if needed.
+ * Similar to the truncation logic used in the useTranslate hook.
+ *
+ * @param text - The text to truncate
+ * @param maxLength - The maximum length before truncation
+ * @returns The truncated text with ellipsis if needed
+ *
+ * @example
+ * ```ts
+ * truncateText("Hello World", 8) // "Hello..."
+ * truncateText("Short", 10) // "Short"
+ * truncateText("Very long text that needs truncation", 15) // "Very long text..."
+ * ```
+ *
+ * @remarks
+ * This function preserves the original text if it's shorter than or equal to maxLength.
+ * When truncation is needed, it reserves 3 characters for the ellipsis ("...")
+ * and truncates the text accordingly.
+ */
+export function truncateText(text: string, maxLength: number): string {
+    if (text.length <= maxLength) {
+        return text;
+    }
+    return text.substring(0, maxLength - 3) + "...";
+}

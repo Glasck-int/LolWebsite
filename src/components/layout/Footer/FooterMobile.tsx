@@ -27,7 +27,7 @@ interface FooterItemProps {
  */
 const FooterMobile = ({ children }: FooterItemProps) => (
 	<footer className="fixed bottom-0 left-0 w-full h-[70px] bg-white/10 backdrop-blur-3xl block md:hidden">
-		<div className="flex items-center justify-between h-full w-full max-w-[1440px] mx-auto px-4 md:px-24">
+		<div className="flex items-center justify-between h-full w-full body-container">
 			{children}
 		</div>
 	</footer>

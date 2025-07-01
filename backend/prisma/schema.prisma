@@ -17,11 +17,12 @@ model Game {
 }
 
 model GameTimeline {
-  id                 Int      @id @default(autoincrement())
-  riotPlatformGameId String   @unique
+  id                 Int            @id @default(autoincrement())
+  riotPlatformGameId String         @unique
   timeline           Json
-  createdAt          DateTime @default(now())
+  createdAt          DateTime       @default(now())
   updatedAt          DateTime
+  ScoreboardGame     ScoreboardGame @relation(fields: [riotPlatformGameId], references: [riotPlatformGameId])
 }
 
 model Item {
@@ -72,6 +73,7 @@ model League {
   id         Int          @id @default(autoincrement())
   name       String       @unique
   short      String
+  slug       String?
   region     String
   level      String
   isOfficial Boolean      @default(false)
@@ -347,13 +349,14 @@ model ScoreboardGame {
   uniqueLine         String?            @unique
   gameId             String?
   matchId            String?
-  riotPlatformGameId String?
+  riotPlatformGameId String?            @unique
   riotPlatformId     String?
   riotGameId         String?
   riotHash           String?
   riotVersion        Int?
   createdAt          DateTime           @default(now())
   updatedAt          DateTime
+  GameTimeline       GameTimeline?
   MatchScheduleGame  MatchScheduleGame? @relation(fields: [gameId], references: [gameId])
 }
 

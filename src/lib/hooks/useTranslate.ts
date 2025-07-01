@@ -30,6 +30,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { truncateText } from "../utils";
 
 export const useTranslate = (namespace: string) => {
 	const t = useTranslations(namespace);
@@ -45,7 +46,7 @@ export const useTranslate = (namespace: string) => {
 
 			// Apply truncation if maxLength is specified
 			if (options?.maxLength && translation.length > options.maxLength) {
-				return translation.substring(0, options.maxLength - 3) + "...";
+				return truncateText(translation, options.maxLength);
 			}
 
 			return translation;
