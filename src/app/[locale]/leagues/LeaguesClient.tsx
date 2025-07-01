@@ -3,11 +3,13 @@
 import React from 'react'
 import Footer from '@/components/layout/Footer/Footer'
 import { LeagueSection } from '@/components/leagues'
-import { FunctionalSearchBar } from '@/components/ui/FunctionalSearchBar'
-import { OfficialToggle } from '@/components/ui/OfficialToggle'
+import { FunctionalSearchBar } from '@/components/ui/search/FunctionalSearchBar'
+import { OfficialToggle } from '@/components/utils/OfficialToggle'
 import { useLeagueSearch } from '@/lib/hooks/useLeagueSearch'
 import { League as LeagueType } from '../../../../backend/src/generated/prisma'
-import { getLeagueImage } from '@/lib/api/league'
+import { getLeagueImage } from '@/lib/api/image'
+import Image from 'next/image'
+import { getApiBaseUrl } from '@/lib/api/utils'
 
 interface LeaguesClientProps {
     allLeagues: LeagueType[]
@@ -52,10 +54,19 @@ export const LeaguesClient: React.FC<LeaguesClientProps> = ({
         setSearchTerm(term)
     }
 
+    const baseUrl = getApiBaseUrl()
+    const glasckIconWhite = `${baseUrl}/static/assets/svg/favicon/Fichier 8.svg`
+
     return (
-        <div className="w-full px-4 py-8 pt-24 block md:hidden">
-            <div className="flex flex-col mb-4">
-                <h1 className="text-7xl mb-4">LIGUES MAJEURES</h1>
+        <div className="w-full px-4 py-8 pt-24 block md:hidden relative">
+            <div className="absolute top-25 left-50 z-[-1]">
+                <Image
+                    src={glasckIconWhite}
+                    alt="logo"
+                    width={70}
+                    height={70}
+                    className="opacity-25"
+                />
             </div>
             <LeagueSection
                 title={['LIGUES', 'MAJEURES']}

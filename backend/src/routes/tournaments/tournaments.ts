@@ -36,14 +36,14 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
                     return JSON.parse(cached)
                 }
 
-                console.log(leagueName)
+                // console.log(leagueName)
                 const tournaments = await prisma.tournament.findMany({
                     where: {
                         league: leagueName,
                     },
                     orderBy: { dateStart: 'desc' },
                 })
-                console.log(tournaments)
+                // console.log(tournaments)
                 if (tournaments.length === 0) {
                     return { error: 'No tournaments found' }
                 }

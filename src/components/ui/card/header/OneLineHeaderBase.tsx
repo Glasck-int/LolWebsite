@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Tooltip } from '../../Tooltip'
+import { Tooltip } from '../../../utils/Tooltip'
 
 interface OneLineHeaderBaseProps {
     className: string
@@ -19,7 +19,7 @@ export const OneLineHeaderBase = ({
     return (
         <div className={'h-[35px] w-full flex justify-between ' + className}>
             {title ? <p>{title}</p> : Body && <Body />}
-			<Tooltip content="help me"/>
+            <Tooltip content="help me" />
         </div>
     )
 }

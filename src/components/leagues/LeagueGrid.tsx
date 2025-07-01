@@ -27,7 +27,7 @@ export const LeagueGrid: React.FC<LeagueGridProps> = ({
     className = '',
 }) => {
     const gridCols = square
-        ? 'grid-cols-3 md:grid-cols-4 lg:grid-cols-6'
+        ? 'grid-cols-3 sm:grid-cols-4'
         : 'grid-cols-1'
     const gap = square ? 'gap-4' : 'gap-2'
 

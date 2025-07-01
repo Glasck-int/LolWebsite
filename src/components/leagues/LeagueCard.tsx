@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Card } from '@/components/ui/card/Card'
 import { League as LeagueType } from '../../../backend/src/generated/prisma'
 import { createLeagueSlug } from '@/lib/utils'
+import { getLeagueImage } from '@/lib/api/image'
 
 interface LeagueCardProps {
     league: LeagueType
@@ -31,13 +32,21 @@ export const LeagueCard: React.FC<LeagueCardProps> = ({
     className = '',
 }) => {
     const [imageError, setImageError] = useState(false)
+    const [leagueImageUrl, setLeagueImageUrl] = useState<string | null>(null)
 
-    // Debug: Display image URL
+    // Load league image asynchronously
     useEffect(() => {
-        if (imageUrl) {
-            console.log(`Loading image for ${league.name}:`, imageUrl)
-        }
-    }, [imageUrl, league.name])
+        getLeagueImage(league.name).then((response) => {
+            setLeagueImageUrl(response.data || null)
+        })
+    }, [league.name])
+
+    // // Debug: Display image URL
+    // useEffect(() => {
+    //     if (imageUrl) {
+    //         console.log(`Loading image for ${league.name}:`, imageUrl)
+    //     }
+    // }, [imageUrl, league.name])
 
     // Check if image URL is valid
     const isValidImageUrl = imageUrl && imageUrl.trim() !== ''
@@ -48,8 +57,9 @@ export const LeagueCard: React.FC<LeagueCardProps> = ({
                 <Image
                     src={imageUrl}
                     alt={league.name}
-                    fill
-                    className="object-contain"
+                    width={120}
+                    height={120}
+                    className="w-full h-full object-contain"
                     onError={(e) => {
                         console.error(
                             `Image failed to load for ${league.name}:`,
@@ -57,11 +67,11 @@ export const LeagueCard: React.FC<LeagueCardProps> = ({
                         )
                         setImageError(true)
                     }}
-                    onLoad={() => {
-                        console.log(
-                            `Image loaded successfully for ${league.name}`
-                        )
-                    }}
+                    // onLoad={() => {
+                    //     console.log(
+                    //         `Image loaded successfully for ${league.name}`
+                    //     )
+                    // }}
                     priority={false}
                 />
             )
@@ -82,7 +92,6 @@ export const LeagueCard: React.FC<LeagueCardProps> = ({
     }
 
     const slug = createLeagueSlug(league.name)
-
 
     if (square) {
         return (
@@ -107,9 +116,20 @@ export const LeagueCard: React.FC<LeagueCardProps> = ({
         <Link href={`/leagues/${slug}`}>
             <div className={`w-full h-10 cursor-pointer ${className}`}>
                 <Card className=" backdrop-blur p-5 shadow-md h-full flex flex-row items-center justify-start cursor-pointer hover:bg-white/10 active:bg-white/5 transition-all duration-200">
-                    
+                    {leagueImageUrl && (
+                        <Image
+                            src={leagueImageUrl}
+                            alt={league.name}
+                            width={20}
+                            height={20}
+                            className="mr-2"
+                        />
+                    )}
                     <h3 className="text-sm md:text-base font-medium text-left text-white">
-                        {league.name}
+                        {league.name}{' '}
+                        <span className="text-clear-grey text-xs">
+                            {league.short}
+                        </span>
                     </h3>
                 </Card>
             </div>

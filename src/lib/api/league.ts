@@ -1,32 +1,7 @@
 import { League as LeagueType } from '../../../backend/src/generated/prisma'
 import { getApiBaseUrl, apiRequest, ApiResponse } from './utils'
 
-/**
- * Get league image URL and verify if it exists
- *
- * @param leagueName - The name of the league to get the image for
- * @returns Promise with image URL if it exists, null otherwise
- */
-async function getLeagueImage(
-    leagueName: string
-): Promise<ApiResponse<string | null>> {
-    try {
-        const API_BASE_URL = getApiBaseUrl()
-        const imageUrl = `${API_BASE_URL}/static/leagues/${leagueName}.webp`
 
-        // Check if image exists by making a HEAD request
-        const response = await fetch(imageUrl, { method: 'HEAD' })
-
-        if (response.ok) {
-            return { data: imageUrl }
-        } else {
-            return { data: null }
-        }
-    } catch (error) {
-        console.error('Image URL generation or verification failed:', error)
-        return { data: null }
-    }
-}
 
 /**
  * Get a league by its ID
@@ -69,7 +44,6 @@ async function getMajorLeagues(): Promise<ApiResponse<LeagueType[]>> {
 export {
     getAllLeagues,
     getMajorLeagues,
-    getLeagueImage,
     getLeagueById,
     getLeagueBySlug,
 }

@@ -8,11 +8,17 @@ interface UseLeagueSearchProps {
     maxResults?: number
 }
 
+interface SearchResult {
+    league: LeagueType
+    score: number
+    matchType: 'short' | 'name' | 'region'
+}
+
 /**
  * Custom hook for league search and filtering
  *
- * Provides search functionality with result caching to avoid redundant searches
- * and limits the number of displayed results to prevent performance issues
+ * Provides strict search functionality with priority scoring and sequential character matching.
+ * Prioritizes short name matches and requires characters to be sequential with max 2 character gap.
  *
  * @param leagues - Array of all leagues to search through
  * @param maxResults - Maximum number of results to display (default: 50)
@@ -30,6 +36,129 @@ export const useLeagueSearch = ({
     const [searchTerm, setSearchTerm] = useState('')
     const [onlyOfficial, setOnlyOfficial] = useState(true) // Default to only official leagues
 
+    /**
+     * Checks if search term characters appear sequentially in target string
+     * with maximum 2 character gap between consecutive matches
+     */
+    const isSequentialMatch = useCallback(
+        (searchTerm: string, target: string): boolean => {
+            if (!searchTerm || !target) return false
+
+            const searchChars = searchTerm.toLowerCase().split('')
+            const targetChars = target.toLowerCase().split('')
+
+            let searchIndex = 0
+            let lastMatchIndex = -1
+
+            for (
+                let i = 0;
+                i < targetChars.length && searchIndex < searchChars.length;
+                i++
+            ) {
+                if (targetChars[i] === searchChars[searchIndex]) {
+                    // Check if gap is too large (more than 2 characters)
+                    if (lastMatchIndex !== -1 && i - lastMatchIndex > 4) {
+                        return false
+                    }
+                    lastMatchIndex = i
+                    searchIndex++
+                }
+            }
+
+            return searchIndex === searchChars.length
+        },
+        []
+    )
+
+    /**
+     * Calculates search score based on match type and quality
+     */
+    const calculateScore = useCallback(
+        (league: LeagueType, searchTerm: string): SearchResult | null => {
+            const normalizedSearch = searchTerm.toLowerCase().trim()
+
+            if (!normalizedSearch) return null
+
+            // Check for exact word boundaries (spaces before/after)
+            const hasWordBoundaries = searchTerm !== normalizedSearch
+
+            // Check short name first (highest priority)
+            if (isSequentialMatch(normalizedSearch, league.short)) {
+                let score = 100
+
+                // Highest priority: exact match on short name
+                if (league.short.toLowerCase() === normalizedSearch) {
+                    score = 200
+                }
+                // Second priority: starts with
+                else if (
+                    league.short.toLowerCase().startsWith(normalizedSearch)
+                ) {
+                    score += 50
+                }
+
+                // Add bonus for word boundaries (but not for exact matches)
+                if (
+                    hasWordBoundaries &&
+                    league.short.toLowerCase() !== normalizedSearch
+                ) {
+                    score += 75
+                }
+
+                return {
+                    league,
+                    score,
+                    matchType: 'short',
+                }
+            }
+
+            // Check name
+            if (isSequentialMatch(normalizedSearch, league.name)) {
+                let score = 50
+
+                // Add bonus for word boundaries
+                if (hasWordBoundaries) {
+                    score += 75
+                }
+
+                // Add bonus for starts with
+                if (league.name.toLowerCase().startsWith(normalizedSearch)) {
+                    score += 25
+                }
+
+                return {
+                    league,
+                    score,
+                    matchType: 'name',
+                }
+            }
+
+            // Check region
+            if (isSequentialMatch(normalizedSearch, league.region)) {
+                let score = 25
+
+                // Add bonus for word boundaries
+                if (hasWordBoundaries) {
+                    score += 75
+                }
+
+                // Add bonus for starts with
+                if (league.region.toLowerCase().startsWith(normalizedSearch)) {
+                    score += 10
+                }
+
+                return {
+                    league,
+                    score,
+                    matchType: 'region',
+                }
+            }
+
+            return null
+        },
+        [isSequentialMatch]
+    )
+
     // Search function with useCallback optimization
     const searchLeagues = useCallback(
         (leaguesToSearch: LeagueType[], term: string) => {
@@ -37,21 +166,21 @@ export const useLeagueSearch = ({
 
             if (!normalizedSearch) return leaguesToSearch
 
-            return leaguesToSearch.filter((league) => {
-                const nameMatch = league.name
-                    .toLowerCase()
-                    .includes(normalizedSearch)
-                const shortMatch = league.short
-                    .toLowerCase()
-                    .includes(normalizedSearch)
-                const regionMatch = league.region
-                    .toLowerCase()
-                    .includes(normalizedSearch)
+            const results: SearchResult[] = []
 
-                return nameMatch || shortMatch || regionMatch
+            leaguesToSearch.forEach((league) => {
+                const result = calculateScore(league, normalizedSearch)
+                if (result) {
+                    results.push(result)
+                }
             })
+
+            // Sort by score (highest first) and return leagues
+            return results
+                .sort((a, b) => b.score - a.score)
+                .map((result) => result.league)
         },
-        []
+        [calculateScore]
     )
 
     // Filter official leagues function

@@ -3,9 +3,9 @@ import Footer from '@/components/layout/Footer/Footer'
 import {
     getAllLeagues,
     getMajorLeagues,
-    getLeagueImage,
 } from '../../../lib/api/league'
 import { LeaguesClient } from './LeaguesClient'
+import { getLeagueImage } from '@/lib/api/image'
 
 /**
  * Leagues page component
