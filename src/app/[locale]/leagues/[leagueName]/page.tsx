@@ -4,7 +4,7 @@ import { getTournamentsByLeagueName } from '@/lib/api/tournaments'
 import { getLeagueImage } from '@/lib/api/image'
 import Image from 'next/image'
 import { truncateText } from '@/lib/utils'
-import { Tooltip } from '@/components/utils/Tooltip'
+import { Tooltip } from '@/components/ui/Tooltip'
 
 interface LeaguePageProps {
     params: Promise<{ leagueName: string }>
@@ -23,7 +23,7 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
         return <div>Error: {league.error}</div>
     }
 
-    // console.log('Ligue cliquée:', league.data?.name)
+    console.log('Ligue cliquée:', league.data?.name)
 
     return (
         <div className="pt-24 body-container">
@@ -38,11 +38,7 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
                     />
                 )}
                 <div className="flex flex-col justify-end items-start gap-0">
-                    <Tooltip
-                        content={
-                            'sqdqsdqsdqsdsqsqdqsdqsdqsdsqsqdqsdqsdqsdsqsqdqsdqsdqsdsqsqdqsdqsdqsdsqsqdqsdqsdqsdsqsqdqsdqsdqsdsqsqdqsdqsdqsdsq'
-                        }
-                    >
+                    <Tooltip content={league.data?.name || ''}>
                         <h1 className="font-medium tracking-wider m-0 leading-none">
                             {truncateText(
                                 league.data?.short || league.data?.name || '',
@@ -50,7 +46,6 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
                             )}
                         </h1>
                     </Tooltip>
-
                     <p className="text-clear-grey font-semibold m-0 leading-none">
                         {league.data?.region}
                     </p>
