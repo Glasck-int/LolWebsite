@@ -10,6 +10,7 @@ import React, {
     useContext,
 } from 'react'
 import { createContext } from 'react'
+import { motion } from 'framer-motion'
 
 interface CardTabProps {
     onClick: () => void
@@ -130,6 +131,8 @@ export const CardDoubleHeaderTop = ({
     className,
 }: CardSectionProps) => {
     const { activeIndex, setActiveIndex } = useCard()
+    const tabCount = React.Children.count(children)
+    const tabWidth = 100 / tabCount
     return (
         <div
             className={
@@ -151,6 +154,7 @@ export const CardDoubleHeaderTop = ({
                 }
                 return <div>ERROR IN CardDoubleHeaderTop</div>
             })}
+
         </div>
     )
 }
@@ -229,3 +233,17 @@ const CardBodyMultipleDiv = ({children}: CardSectionProps)=> {
         </div>
     )
 }
+
+// super css pour faire des slide undertab (regarder sur gpt)
+// <motion.div
+//     className="absolute bottom-0 h-[2px] bg-blue-500"
+//     animate={{
+//         width: `${tabWidth}%`,
+//         left: `${tabWidth * activeIndex}%`,
+//     }}
+//     transition={{
+//         type: "spring",
+//         stiffness: 300,
+//         damping: 30,
+//     }}
+// />
