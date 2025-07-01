@@ -8,6 +8,7 @@ import {
     CardDoubleHeader,
     CardDoubleHeaderBot,
     CardDoubleHeaderTop,
+    CardBodyMultiple,
 } from '@/components/ui/card/Card'
 import { SubTitle } from '@/components/ui/text/SubTitle'
 
@@ -50,10 +51,14 @@ export default function Home() {
                         </CardDoubleHeader>
                     </CardHeader>
                     <CardBody>
-                        <p>simple message</p>
+                        <CardBodyMultiple>
+                            <div className="flex justify-center items-center h-full">
+                                <p>body 1</p>
+                            </div>
+                            <p>body 2</p>
+                        </CardBodyMultiple>
                     </CardBody>
                 </Card>
-
             </div>
             <Footer />
         </div>

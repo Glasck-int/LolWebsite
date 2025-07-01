@@ -1,61 +1,30 @@
 'use client'
 
 import { Tooltip, ToolTipBody, ToolTipMessage } from '@/components/ui/Tooltip'
-import React, { useRef, useState, useEffect, ReactNode, useLayoutEffect } from 'react'
+import React, {
+    useRef,
+    useState,
+    useEffect,
+    ReactNode,
+    useLayoutEffect,
+    useContext,
+} from 'react'
+import { createContext } from 'react'
+
+interface CardTabProps {
+    onClick: () => void
+    isActive: boolean
+    children: ReactNode
+}
 
 interface CardProps {
     children: React.ReactNode
     className?: string
 }
 
-interface CardTabProps {
-    children: ReactNode
-    onClick: () => void
-    isActive: boolean
-}
-
 interface CardHeaderProps extends CardSectionProps {
     activeIndex?: number
     setActiveIndex?: (index: number) => void
-    index?: number
-}
-
-function getHeaderTw(bg = true) {
-    let str = 'w-full flex items-center px-[14px] h-full '
-    return bg ? str + 'bg-white-04 ' : str
-}
-
-export const Card = ({ children, className }: CardProps) => {
-    const [activeIndex, setActiveIndex] = useState(0)
-    const headerProps = React.Children.map(children, (child, index) => {
-        if (React.isValidElement(child)){
-            console.log(child.type.toString)
-            if (child.type === CardBody)
-                return child
-            else{
-                console.log(child)
-                return React.cloneElement(
-                    child as React.ReactElement<CardHeaderProps>,
-                    {
-                        activeIndex : activeIndex,
-                        setActiveIndex : setActiveIndex,
-                    }
-                )
-            }
-        }
-        return child
-    })
-
-    return (
-        <div
-            className={
-                'bg-white-06 default-border-radius h-full w-full flex flex-col justify-evenly backdrop-blur ' +
-                className
-            }
-        >
-            {children}
-        </div>
-    )
 }
 
 interface CardSectionProps {
@@ -67,6 +36,41 @@ interface CardToolTip {
     children: React.ReactNode
     info: string
     className?: string
+}
+
+const CardContext = createContext<{
+    activeIndex: number
+    setActiveIndex: (index: number) => void
+} | null>(null)
+
+const useCard = () => {
+    const context = useContext(CardContext)
+    if (!context) {
+        throw new Error('useCard doit être utilisé dans un composant Card')
+    }
+    return context
+}
+
+function getHeaderTw(bg = true) {
+    let str = 'w-full flex items-center px-[14px] h-full '
+    return bg ? str + 'bg-white-04 ' : str
+}
+
+export const Card = ({ children, className }: CardProps) => {
+    const [activeIndex, setActiveIndex] = useState(0)
+
+    return (
+        <CardContext.Provider value={{ activeIndex, setActiveIndex }}>
+            <div
+                className={
+                    'bg-white-06 default-border-radius h-full w-full flex flex-col justify-evenly backdrop-blur ' +
+                    className
+                }
+            >
+                {children}
+            </div>
+        </CardContext.Provider>
+    )
 }
 
 export const CardToolTip = ({ children, className, info }: CardToolTip) => {
@@ -125,6 +129,7 @@ export const CardDoubleHeaderTop = ({
     children,
     className,
 }: CardSectionProps) => {
+    const { activeIndex, setActiveIndex } = useCard()
     return (
         <div
             className={
@@ -136,7 +141,12 @@ export const CardDoubleHeaderTop = ({
             {React.Children.map(children, (child, index) => {
                 if (React.isValidElement(child)) {
                     return (
-                        <CardDOubleHeaderTopDiv>{child}</CardDOubleHeaderTopDiv>
+                        <CardDOubleHeaderTopDiv
+                            onClick={() => setActiveIndex(index)}
+                            isActive={activeIndex == index}
+                        >
+                            {child}
+                        </CardDOubleHeaderTopDiv>
                     )
                 }
                 return <div>ERROR IN CardDoubleHeaderTop</div>
@@ -169,12 +179,7 @@ export const CardDoubleHeaderBot = ({
     return <CardOneHeader className={className}>{children}</CardOneHeader>
 }
 
-export const CardHeader = ({ children, className, activeIndex, setActiveIndex }: CardHeaderProps) => {
-
-    useLayoutEffect(() => {
-        console.log(activeIndex)
-    }, [activeIndex])
-
+export const CardHeader = ({ children, className }: CardSectionProps) => {
     return (
         <div
             className={`w-full default-top-border-radius text-sm color-grey  flex items-center ${
@@ -190,6 +195,37 @@ export const CardBody = ({ children, className }: CardSectionProps) => {
     return (
         <div className={`flex grow-1 px-[15px] ${className ?? ''}`}>
             {children}
+        </div>
+    )
+}
+
+export const CardBodyMultiple = ({ children }: CardSectionProps) => {
+    const { activeIndex} = useCard()
+    return (
+        <div className='h-full w-full'>
+            {React.Children.map(children, (child, index) => {
+                if (React.isValidElement(child)) {
+                    if (index == activeIndex){
+                        return (
+                            <CardBodyMultipleDiv>
+                                {child}
+                            </CardBodyMultipleDiv>
+                        )
+                    }
+                    else{
+                        return 
+                    }
+                }
+                return <div>ERROR IN CardBodyMultiple</div>
+            })}
+        </div>
+    )
+}
+
+const CardBodyMultipleDiv = ({children}: CardSectionProps)=> {
+    return (
+        <div className='h-full w-full'>
+           {children}
         </div>
     )
 }
