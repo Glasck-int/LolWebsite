@@ -4,7 +4,7 @@ import { getTournamentsByLeagueName } from '@/lib/api/tournaments'
 import { getLeagueImage } from '@/lib/api/image'
 import Image from 'next/image'
 import { truncateText } from '@/lib/utils'
-import { Tooltip } from '@/components/ui/Tooltip'
+import { Tooltip } from '@/components/utils/Tooltip'
 
 interface LeaguePageProps {
     params: Promise<{ leagueName: string }>

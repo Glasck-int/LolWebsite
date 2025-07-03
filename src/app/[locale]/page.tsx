@@ -14,7 +14,7 @@ import { SubTitle } from '@/components/ui/text/SubTitle'
 
 export default function Home() {
     return (
-        <div className="flex flex-col min-h-screen w-full">
+        <div className="body-container">
             <div className="mt-40 h-[500px] p-5 flex flex-col gap-1.5">
                 <Card>
                     <CardHeader>
