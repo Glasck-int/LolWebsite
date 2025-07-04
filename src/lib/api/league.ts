@@ -1,7 +1,6 @@
 import { League as LeagueType } from '../../../backend/src/generated/prisma'
+import { MatchSchedule as MatchScheduleType } from '../../../backend/src/generated/prisma'
 import { getApiBaseUrl, apiRequest, ApiResponse } from './utils'
-
-
 
 /**
  * Get a league by its ID
@@ -41,9 +40,24 @@ async function getMajorLeagues(): Promise<ApiResponse<LeagueType[]>> {
     return apiRequest<LeagueType[]>('/api/leagues/major')
 }
 
+/**
+ * Get the next three matches for a league by ID
+ *
+ * @param leagueId - The ID of the league to fetch next matches for
+ * @returns Promise with array of next matches or error
+ */
+async function getNextThreeMatchesForLeague(
+    leagueId: number
+): Promise<ApiResponse<MatchScheduleType[]>> {
+    return apiRequest<MatchScheduleType[]>(
+        `/api/leagues/id/${leagueId}/next-matches`
+    )
+}
+
 export {
     getAllLeagues,
     getMajorLeagues,
     getLeagueById,
     getLeagueBySlug,
+    getNextThreeMatchesForLeague,
 }

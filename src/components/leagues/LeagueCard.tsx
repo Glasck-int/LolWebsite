@@ -114,7 +114,6 @@ export const LeagueCard: React.FC<LeagueCardProps> = ({
     }
 
     return (
-        <Tooltip content={league.name}>
         <Link href={`/leagues/${slug}`}>
             <div className={`w-full h-10 cursor-pointer ${className}`}>
                 <Card className=" backdrop-blur p-5 shadow-md h-full flex flex-row items-center justify-start cursor-pointer hover:bg-white/10 active:bg-white/5 transition-all duration-200">
@@ -134,8 +133,7 @@ export const LeagueCard: React.FC<LeagueCardProps> = ({
                         </span>
                     </h3>
                 </Card>
-                </div>
-            </Link>
-        </Tooltip>
+            </div>
+        </Link>
     )
 }

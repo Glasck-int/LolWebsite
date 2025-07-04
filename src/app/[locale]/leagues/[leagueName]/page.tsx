@@ -5,6 +5,7 @@ import { getLeagueImage } from '@/lib/api/image'
 import Image from 'next/image'
 import { truncateText } from '@/lib/utils'
 import { Tooltip } from '@/components/utils/Tooltip'
+import { getNextThreeMatchesForLeague } from '@/lib/api/league'
 
 interface LeaguePageProps {
     params: Promise<{ leagueName: string }>
@@ -22,6 +23,8 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
     if (league.error) {
         return <div>Error: {league.error}</div>
     }
+
+    const nextMatches = await getNextThreeMatchesForLeague(Number(league.data?.id))
 
     console.log('Ligue cliquée:', league.data?.name)
 
@@ -51,6 +54,16 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
                     </p>
                 </div>
             </div>
+                        {nextMatches.data && nextMatches.data.length > 0 && (
+                            <>
+                                <h2>Next Matches</h2>
+                                <ul className="list-disc text-red-500">
+                                    {nextMatches.data.map((match) => (
+                                        <li key={match.id}>{match.team1} vs {match.team2} {match.dateTime_UTC?.toLocaleString()}</li>
+                                    ))}
+                                </ul>
+                            </>
+                        )}
             <h1>Page de la ligue: {league.data?.name}</h1>
             <p>Slug: {league.data?.slug}</p>
             <p>ID: {league.data?.id}</p>

@@ -1,8 +1,6 @@
 import { FastifyInstance } from 'fastify'
-import {
-    LeagueSchema,
-    LeagueListResponse,
-} from '../../schemas/league'
+import { LeagueSchema, LeagueListResponse } from '../../schemas/league'
+import { MatchScheduleListResponse } from '../../schemas/matchShedule'
 import { ErrorResponseSchema } from '../../schemas/common'
 import prisma from '../../services/prisma'
 
@@ -116,6 +114,84 @@ export default async function leaguesRoutes(fastify: FastifyInstance) {
             }
 
             return league
+        }
+    )
+
+    fastify.get<{ Params: { id: string } }>(
+        '/leagues/id/:id/next-matches',
+        {
+            schema: {
+                description: 'Get the next three matches for a league by ID',
+                tags: ['leagues'],
+                response: {
+                    200: MatchScheduleListResponse,
+                    500: ErrorResponseSchema,
+                },
+            },
+        },
+        async (request, reply) => {
+            const cacheKey = `league:next-matches:${request.params.id}`
+            customMetric.inc({ operation: 'get_league_next_matches' })
+            const cached = await redis.get(cacheKey)
+            if (cached) {
+                return JSON.parse(cached)
+            }
+
+            const { id } = request.params
+            const leagueId = Number(id)
+
+            if (isNaN(leagueId)) {
+                return reply.status(400).send({ error: 'Invalid league ID' })
+            }
+
+            // Get the league to verify it exists
+            const league = await prisma.league.findUnique({
+                where: { id: leagueId },
+            })
+
+            if (!league) {
+                return reply.status(404).send({ error: 'League not found' })
+            }
+
+            // Get tournaments for this league
+            const tournaments = await prisma.tournament.findMany({
+                where: { league: league.name },
+                select: { overviewPage: true },
+            })
+
+            if (tournaments.length === 0) {
+                return []
+            }
+
+            const tournamentPages = tournaments.map((t) => t.overviewPage)
+
+            // Get next matches from all tournaments of this league
+            const nextMatches = await prisma.matchSchedule.findMany({
+                where: {
+                    overviewPage: { in: tournamentPages },
+                    dateTime_UTC: {
+                        gte: new Date(), // Only future matches
+                    },
+                },
+                select: {
+                    id: true,
+                    team1: true,
+                    team2: true,
+                    dateTime_UTC: true,
+                    overviewPage: true,
+                    round: true,
+                    bestOf: true,
+                },
+                orderBy: {
+                    dateTime_UTC: 'asc',
+                },
+                take: 3, // Limit to 3 matches
+            })
+
+            // Cache for 1 hour (3600 seconds) since match schedules change frequently
+            await redis.setex(cacheKey, 3600, JSON.stringify(nextMatches))
+
+            return nextMatches
         }
     )
 
