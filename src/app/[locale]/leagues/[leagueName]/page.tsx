@@ -1,11 +1,16 @@
 import React from 'react'
 import { getLeagueBySlug } from '@/lib/api/league'
 import { getTournamentsByLeagueName } from '@/lib/api/tournaments'
-import { getLeagueImage } from '@/lib/api/image'
-import Image from 'next/image'
-import { truncateText } from '@/lib/utils'
-import { Tooltip } from '@/components/utils/Tooltip'
 import { getNextThreeMatchesForLeague } from '@/lib/api/league'
+import { LeagueDescription } from '@/components/leagues/leagueDescription'
+import {
+    Card,
+    CardBody,
+    CardHeader,
+    CardOneHeader,
+} from '@/components/ui/card/Card'
+import { getTeamsByNames } from '@/lib/api/teams'
+import { NextMatches } from '@/components/leagues/nextMatches'
 
 interface LeaguePageProps {
     params: Promise<{ leagueName: string }>
@@ -15,8 +20,6 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
     const { leagueName } = await params
     const league = await getLeagueBySlug(leagueName)
 
-    const image = await getLeagueImage(league.data?.name || '')
-
     const tournaments = await getTournamentsByLeagueName(
         league.data?.name || ''
     )
@@ -24,46 +27,23 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
         return <div>Error: {league.error}</div>
     }
 
-    const nextMatches = await getNextThreeMatchesForLeague(Number(league.data?.id))
+    // Fetch team information for all unique team names
+
+    // // Create a map for quick team lookup
+    // const teamsMap = new Map<string, any>()
+    // teamsData.data?.forEach((team) => {
+    //     if (team.overviewPage) {
+    //         teamsMap.set(team.overviewPage, team)
+    //     }
+    // })
 
     console.log('Ligue cliquée:', league.data?.name)
+    // console.log('Teams found:', teamsData.data?.length || 0)
 
     return (
         <div className="pt-24 body-container">
-            <div className="flex flex-row z-50 mb-4 gap-4 md:hidden">
-                {image.data && (
-                    <Image
-                        src={image.data}
-                        alt={league.data?.name || ''}
-                        className="object-contain"
-                        width={75}
-                        height={75}
-                    />
-                )}
-                <div className="flex flex-col justify-end items-start gap-0">
-                    <Tooltip content={league.data?.name || ''}>
-                        <h1 className="font-medium tracking-wider m-0 leading-none">
-                            {truncateText(
-                                league.data?.short || league.data?.name || '',
-                                20
-                            )}
-                        </h1>
-                    </Tooltip>
-                    <p className="text-clear-grey font-semibold m-0 leading-none">
-                        {league.data?.region}
-                    </p>
-                </div>
-            </div>
-                        {nextMatches.data && nextMatches.data.length > 0 && (
-                            <>
-                                <h2>Next Matches</h2>
-                                <ul className="list-disc text-red-500">
-                                    {nextMatches.data.map((match) => (
-                                        <li key={match.id}>{match.team1} vs {match.team2} {match.dateTime_UTC?.toLocaleString()}</li>
-                                    ))}
-                                </ul>
-                            </>
-                        )}
+            {league.data && <LeagueDescription league={league.data} />}
+            {league.data && <NextMatches league={league.data} />}
             <h1>Page de la ligue: {league.data?.name}</h1>
             <p>Slug: {league.data?.slug}</p>
             <p>ID: {league.data?.id}</p>
