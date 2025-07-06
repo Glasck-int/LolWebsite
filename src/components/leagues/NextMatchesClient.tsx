@@ -1,61 +1,40 @@
+'use client'
+
 import React from 'react'
-import { Card, CardBody, CardHeader, CardOneHeader } from '../ui/card/Card'
-import { getNextThreeMatchesForLeague } from '@/lib/api/league'
-import { League as LeagueType } from '../../../backend/src/generated/prisma'
 import { MatchSchedule as MatchScheduleType } from '../../../backend/src/generated/prisma'
-import { getTeamsByNames } from '@/lib/api/teams'
 import { getTeamImage } from '@/lib/api/image'
 import { TimeDisplay } from '@/lib/hooks/timeDisplay'
 import { useVisibleMatches } from '@/lib/hooks/useVisibleMatches'
-import { NextMatchesClient } from './NextMatchesClient'
+
+interface NextMatchesClientProps {
+    matches: MatchScheduleType[]
+    teamsData: Array<{
+        short?: string | null
+        image?: string | null
+        overviewPage?: string | null
+    }>
+    teamImages: Array<{
+        team1Image?: string | null
+        team2Image?: string | null
+    }>
+    showSingleMatchOnDesktop: boolean
+}
 
 /**
- * NextMatches component displays upcoming matches for a league
- * The number of matches adapts responsively to the available space
- *
- * @param league - The league object containing match data
- * @param showSingleMatchOnDesktop - Optional parameter to show only one match on desktop instead of three
- * @returns JSX element displaying the next matches
+ * Client component that handles the responsive display of matches
  */
-export const NextMatches = async ({
-    league,
-    showSingleMatchOnDesktop = false,
-}: {
-    league: LeagueType
-    showSingleMatchOnDesktop?: boolean
-}) => {
-    const nextMatches = await getNextThreeMatchesForLeague(Number(league.id))
-
-    // Extract unique team names from matches
-    const teamNames = new Set<string>()
-    nextMatches.data?.forEach((match) => {
-        if (match.team1) teamNames.add(match.team1)
-        if (match.team2) teamNames.add(match.team2)
-    })
-
-    const teamsData = await getTeamsByNames(Array.from(teamNames))
-
-    // Get team images for all possible matches
-    const teamImages = await Promise.all(
-        (nextMatches.data || []).map(async (match) => {
-            const team1 = teamsData.data?.find(
-                (team) => team.overviewPage === match.team1
-            )
-            const team2 = teamsData.data?.find(
-                (team) => team.overviewPage === match.team2
-            )
-            const team1Image = await getTeamImage(
-                team1?.image?.replace('.png', '') || ''
-            )
-            const team2Image = await getTeamImage(
-                team2?.image?.replace('.png', '') || ''
-            )
-            return {
-                team1Image: team1Image.data,
-                team2Image: team2Image.data,
-            }
-        })
+export const NextMatchesClient = ({
+    matches,
+    teamsData,
+    teamImages,
+    showSingleMatchOnDesktop,
+}: NextMatchesClientProps) => {
+    const { containerRef, testRef, visibleCount } = useVisibleMatches(
+        matches.length,
+        showSingleMatchOnDesktop
     )
+
+    const matchesToShow = matches.slice(0, visibleCount)
 
     const hover =
         'hover:opacity-70 transition-opacity duration-200 cursor-pointer'
@@ -132,32 +111,33 @@ export const NextMatches = async ({
     }
 
     return (
-        <Card>
-            <CardHeader>
-                <CardOneHeader>
-                    <div className="flex flex-row justify-between items-center w-full">
-                        <p className="text-clear-grey font-semibold">
-                            {showSingleMatchOnDesktop
-                                ? 'Next Match'
-                                : 'Next Matches'}
-                        </p>
-                        <div className="flex flex-row items-center gap-2">
-                            <p>
-                                {nextMatches.data?.[0]?.bestOf &&
-                                    `Bo${nextMatches.data[0].bestOf}`}
-                            </p>
-                        </div>
-                    </div>
-                </CardOneHeader>
-            </CardHeader>
-            <CardBody>
-                <NextMatchesClient
-                    matches={nextMatches.data || []}
-                    teamsData={teamsData.data || []}
-                    teamImages={teamImages || []}
-                    showSingleMatchOnDesktop={showSingleMatchOnDesktop}
-                />
-            </CardBody>
-        </Card>
+        <div ref={containerRef} className="w-full">
+            {/* Hidden test element to measure match width */}
+            <div
+                ref={testRef}
+                className="absolute invisible"
+                style={{ width: '280px' }}
+            />
+
+            {/* Visible matches container */}
+            <div className="flex flex-row w-full">
+                {matchesToShow.map((match, idx) => {
+                    const team1 = teamsData.find(
+                        (team) => team.overviewPage === match.team1
+                    )
+                    const team2 = teamsData.find(
+                        (team) => team.overviewPage === match.team2
+                    )
+                    return renderMatch(
+                        match,
+                        team1,
+                        team2,
+                        teamImages[idx],
+                        idx,
+                        matchesToShow.length
+                    )
+                })}
+            </div>
+        </div>
     )
 }
