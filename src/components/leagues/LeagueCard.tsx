@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card/Card'
 import { League as LeagueType } from '../../../backend/src/generated/prisma'
 import { createLeagueSlug } from '@/lib/utils'
 import { getLeagueImage } from '@/lib/api/image'
+import { Tooltip } from '../utils/Tooltip'
 
 interface LeagueCardProps {
     league: LeagueType
@@ -41,13 +42,6 @@ export const LeagueCard: React.FC<LeagueCardProps> = ({
         })
     }, [league.name])
 
-    // // Debug: Display image URL
-    // useEffect(() => {
-    //     if (imageUrl) {
-    //         console.log(`Loading image for ${league.name}:`, imageUrl)
-    //     }
-    // }, [imageUrl, league.name])
-
     // Check if image URL is valid
     const isValidImageUrl = imageUrl && imageUrl.trim() !== ''
 
@@ -67,11 +61,6 @@ export const LeagueCard: React.FC<LeagueCardProps> = ({
                         )
                         setImageError(true)
                     }}
-                    // onLoad={() => {
-                    //     console.log(
-                    //         `Image loaded successfully for ${league.name}`
-                    //     )
-                    // }}
                     priority={false}
                 />
             )

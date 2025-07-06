@@ -6,7 +6,6 @@ import {
     CardToolTip,
     CardHeaderBase,
     CardHeaderColumn,
-    CardHeaderColumnBot,
     CardHeaderTab,
     CardBodyMultiple,
     CardHeaderSelector,
