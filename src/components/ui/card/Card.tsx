@@ -10,7 +10,7 @@ import React, {
     useContext,
 } from 'react'
 import { createContext } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface CardTabProps {
     onClick: () => void
@@ -100,11 +100,11 @@ export const CardToolTip = ({ children, className, info }: CardToolTip) => {
     )
 }
 
-export const CardOneHeader = ({ children, className }: CardSectionProps) => {
+export const CardHeaderBase = ({ children, className }: CardSectionProps) => {
     return (
         <div
             className={
-                'justify-start content-center min-h-[35px] md:min-h-[40px]' +
+                'content-center min-h-[35px] md:min-h-[40px]' +
                 ' ' +
                 getHeaderTw() +
                 className
@@ -115,7 +115,36 @@ export const CardOneHeader = ({ children, className }: CardSectionProps) => {
     )
 }
 
-export const CardDoubleHeader = ({ children, className }: CardSectionProps) => {
+export const CardHeaderSelector = ({
+    children,
+    className,
+}: CardSectionProps) => {
+    const { activeIndex, setActiveIndex } = useCard()
+
+    return (
+        <div className="flex">
+            {React.Children.map(children, (child, index) => {
+                if (React.isValidElement(child)) {
+                    return (
+                        <div
+                            className={` cursor-pointer ${
+                                activeIndex === index
+                                    ? 'text-white'
+                                    : 'text-grey'
+                            }`}
+                            onClick={() => setActiveIndex(index)}
+                        >
+                            {child}
+                        </div>
+                    )
+                }
+                return <div>ERROR IN CardHeaderTab</div>
+            })}
+        </div>
+    )
+}
+
+export const CardHeaderColumn = ({ children, className }: CardSectionProps) => {
     return (
         <div className={'flex flex-col w-full' + ' ' + className}>
             {children}
@@ -123,61 +152,54 @@ export const CardDoubleHeader = ({ children, className }: CardSectionProps) => {
     )
 }
 
-export const CardDoubleHeaderTop = ({
-    children,
-    className,
-}: CardSectionProps) => {
+export const CardHeaderTab = ({ children, className }: CardSectionProps) => {
     const { activeIndex, setActiveIndex } = useCard()
     const tabCount = React.Children.count(children)
     const tabWidth = 100 / tabCount
+    const [isAnimating, setIsAnimating] = useState(false)
+
     return (
         <div
             className={
-                'w-full flex items-stretch justify-evenly content-center min-h-[42px] md:min-h-[45px]' +
+                'relative w-full flex items-stretch justify-evenly content-center min-h-[42px] md:min-h-[45px]' +
                 ' ' +
                 className
             }
         >
+            {/* Slider anim */}
+            <motion.div
+                className="absolute bottom-0 top-0 left-0 bg-white-04 default-top-border-radius z-0"
+                layout
+                initial={false}
+                animate={{
+                    transform: `translateX(${100 * activeIndex}%)`,
+                    width: `${tabWidth}%`,
+                }}
+                transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                onAnimationStart={() => setIsAnimating(true)}
+                onAnimationComplete={() => setIsAnimating(false)}
+            />
+
+            {/* Tabs */}
             {React.Children.map(children, (child, index) => {
                 if (React.isValidElement(child)) {
                     return (
-                        <CardDOubleHeaderTopDiv
+                        <div
+                            className={`z-10 flex-1 text-center cursor-pointer px-2 py-2 transition-colors duration-300 ${
+                                activeIndex === index
+                                    ? 'text-white'
+                                    : 'text-grey'
+                            } ${className ?? ''}`}
                             onClick={() => setActiveIndex(index)}
-                            isActive={activeIndex == index}
                         >
                             {child}
-                        </CardDOubleHeaderTopDiv>
+                        </div>
                     )
                 }
-                return <div>ERROR IN CardDoubleHeaderTop</div>
+                return <div>ERROR IN CardHeaderTab</div>
             })}
-
         </div>
     )
-}
-
-const CardDOubleHeaderTopDiv = ({
-    children,
-    isActive,
-    onClick,
-}: CardTabProps) => {
-    return (
-        <div
-            className={`flex grow-1 justify-center items-center default-top-border-radius ${
-                isActive ? 'bg-white-04' : ''
-            }`}
-            onClick={onClick}
-        >
-            {children}
-        </div>
-    )
-}
-
-export const CardDoubleHeaderBot = ({
-    children,
-    className,
-}: CardSectionProps) => {
-    return <CardOneHeader className={className}>{children}</CardOneHeader>
 }
 
 export const CardHeader = ({ children, className }: CardSectionProps) => {
@@ -201,20 +223,17 @@ export const CardBody = ({ children, className }: CardSectionProps) => {
 }
 
 export const CardBodyMultiple = ({ children }: CardSectionProps) => {
-    const { activeIndex} = useCard()
+    const { activeIndex } = useCard()
     return (
-        <div className='h-full w-full'>
+        <div className="h-full w-full">
             {React.Children.map(children, (child, index) => {
                 if (React.isValidElement(child)) {
-                    if (index == activeIndex){
+                    if (index == activeIndex) {
                         return (
-                            <CardBodyMultipleDiv>
-                                {child}
-                            </CardBodyMultipleDiv>
+                            <CardBodyMultipleDiv>{child}</CardBodyMultipleDiv>
                         )
-                    }
-                    else{
-                        return 
+                    } else {
+                        return
                     }
                 }
                 return <div>ERROR IN CardBodyMultiple</div>
@@ -223,12 +242,8 @@ export const CardBodyMultiple = ({ children }: CardSectionProps) => {
     )
 }
 
-const CardBodyMultipleDiv = ({children}: CardSectionProps)=> {
-    return (
-        <div className='h-full w-full'>
-           {children}
-        </div>
-    )
+const CardBodyMultipleDiv = ({ children }: CardSectionProps) => {
+    return <div className="h-full w-full">{children}</div>
 }
 
 // super css pour faire des slide undertab (regarder sur gpt)

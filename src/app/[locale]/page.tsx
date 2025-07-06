@@ -4,18 +4,20 @@ import {
     CardBody,
     CardHeader,
     CardToolTip,
-    CardOneHeader,
-    CardDoubleHeader,
-    CardDoubleHeaderBot,
-    CardDoubleHeaderTop,
+    CardHeaderBase,
+    CardHeaderColumn,
+    CardHeaderColumnBot,
+    CardHeaderTab,
     CardBodyMultiple,
+    CardHeaderSelector,
 } from '@/components/ui/card/Card'
+import { Annoyed } from 'lucide-react'
 import { SubTitle } from '@/components/ui/text/SubTitle'
 
 export default function Home() {
     return (
-        <div className="flex flex-col min-h-screen w-full">
-            <div className="mt-40 h-[500px] p-5 flex flex-col gap-1.5">
+        <div className="body-container mb-5">
+            <div className=" h-[200px]">
                 <Card>
                     <CardHeader>
                         <CardToolTip info="tooltip info bad long ca mere wtf ca va faire quoi ? ">
@@ -26,29 +28,34 @@ export default function Home() {
                         <p>simple message</p>
                     </CardBody>
                 </Card>
-                ---
+            </div>
+            ---
+            <div className=" h-[200px]">
                 <Card>
                     <CardHeader>
-                        <CardOneHeader>
+                        <CardHeaderBase>
                             <SubTitle>header</SubTitle>
-                        </CardOneHeader>
+                        </CardHeaderBase>
                     </CardHeader>
                     <CardBody>
                         <p>simple message</p>
                     </CardBody>
                 </Card>
-                ---
+            </div>
+            ---
+            <div className=" h-[200px]">
                 <Card>
                     <CardHeader>
-                        <CardDoubleHeader>
-                            <CardDoubleHeaderTop>
-                                <p>stp</p>
-                                <p>fonctionne</p>
-                            </CardDoubleHeaderTop>
-                            <CardDoubleHeaderBot>
+                        <CardHeaderColumn>
+                            <CardHeaderTab>
+                                <p className="text-inherit">stp</p>
+                                <p className="text-inherit">fonctionne</p>
+                                <p className="text-inherit">fonctionne</p>
+                            </CardHeaderTab>
+                            <CardHeaderBase>
                                 <SubTitle>header</SubTitle>
-                            </CardDoubleHeaderBot>
-                        </CardDoubleHeader>
+                            </CardHeaderBase>
+                        </CardHeaderColumn>
                     </CardHeader>
                     <CardBody>
                         <CardBodyMultiple>
@@ -56,6 +63,33 @@ export default function Home() {
                                 <p>body 1</p>
                             </div>
                             <p>body 2</p>
+                            <p>body 3</p>
+                            <p>test</p>
+                        </CardBodyMultiple>
+                    </CardBody>
+                </Card>
+            </div>
+            ---
+            <div className="h-[200px]">
+                <Card>
+                    <CardHeader>
+                        <CardHeaderBase className="justify-between">
+                            <SubTitle>header</SubTitle>
+                            <CardHeaderSelector>
+                                <Annoyed></Annoyed>
+                                <Annoyed></Annoyed>
+                                <Annoyed></Annoyed>
+                            </CardHeaderSelector>
+                        </CardHeaderBase>
+                    </CardHeader>
+                    <CardBody>
+                        <CardBodyMultiple>
+                            <div className="flex justify-center items-center h-full">
+                                <p>body 1</p>
+                            </div>
+                            <p>body 2</p>
+                            <p>body 3</p>
+                            <p>test</p>
                         </CardBodyMultiple>
                     </CardBody>
                 </Card>
