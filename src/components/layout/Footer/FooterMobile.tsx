@@ -1,9 +1,9 @@
-import React from "react";
-import Link from "next/link";
+import React from 'react'
+import Link from 'next/link'
 
 interface FooterItemProps {
-	children: React.ReactNode;
-	href?: string;
+    children: React.ReactNode
+    href?: string
 }
 
 /**
@@ -26,12 +26,12 @@ interface FooterItemProps {
  * Uses absolute positioning and translation to center each icon in its respective half.
  */
 const FooterMobile = ({ children }: FooterItemProps) => (
-	<footer className="fixed bottom-0 left-0 w-full h-[70px] bg-white/10 backdrop-blur-3xl block md:hidden">
-		<div className="flex items-center justify-between h-full w-full body-container">
-			{children}
-		</div>
-	</footer>
-);
+    <footer className="fixed bottom-0 left-0 w-full h-[70px] bg-white/10 backdrop-blur-3xl block md:hidden">
+        <div className="flex items-center justify-between h-full w-full px-4 max-w-[1440px] mx-auto">
+            {children}
+        </div>
+    </footer>
+)
 
 /**
  * Footer item component
@@ -43,28 +43,28 @@ const FooterMobile = ({ children }: FooterItemProps) => (
  * @returns The footer item JSX element
  */
 const FooterItem = ({ children, href }: FooterItemProps) => {
-	const content = (
-		<div className="flex flex-col items-center justify-center w-full h-full">
-			{children}
-		</div>
-	);
+    const content = (
+        <div className="flex flex-col items-center justify-center w-full h-full">
+            {children}
+        </div>
+    )
 
-	if (href) {
-		return (
-			<Link
-				href={href}
-				className="flex-1 flex justify-center items-center h-full"
-			>
-				{content}
-			</Link>
-		);
-	}
+    if (href) {
+        return (
+            <Link
+                href={href}
+                className="flex-1 flex justify-center items-center h-full"
+            >
+                {content}
+            </Link>
+        )
+    }
 
-	return (
-		<div className="flex-1 flex justify-center items-center h-full">
-			{content}
-		</div>
-	);
-};
+    return (
+        <div className="flex-1 flex justify-center items-center h-full">
+            {content}
+        </div>
+    )
+}
 
-export { FooterMobile, FooterItem };
+export { FooterMobile, FooterItem }
