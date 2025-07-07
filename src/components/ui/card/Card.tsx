@@ -12,20 +12,15 @@ import React, {
 import { createContext } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-interface CardTabProps {
-    onClick: () => void
-    isActive: boolean
-    children: ReactNode
-}
-
 interface CardProps {
     children: React.ReactNode
     className?: string
 }
 
-interface CardHeaderProps extends CardSectionProps {
-    activeIndex?: number
-    setActiveIndex?: (index: number) => void
+interface CardTabProps{
+    children: ReactNode
+    className?: string
+    index?: number
 }
 
 interface CardSectionProps {
@@ -74,7 +69,7 @@ export const Card = ({ children, className }: CardProps) => {
     )
 }
 
-export const CardToolTip = ({ children, className, info }: CardToolTip) => {
+export const CardToolTip = ({ children, className = "", info }: CardToolTip) => {
     const [self, setSelf] = useState<HTMLElement | null>(null)
     const selfRef = useRef<HTMLDivElement>(null)
 
@@ -100,7 +95,7 @@ export const CardToolTip = ({ children, className, info }: CardToolTip) => {
     )
 }
 
-export const CardHeaderBase = ({ children, className }: CardSectionProps) => {
+export const CardHeaderBase = ({ children, className = "" }: CardSectionProps) => {
     return (
         <div
             className={
@@ -144,7 +139,7 @@ export const CardHeaderSelector = ({
     )
 }
 
-export const CardHeaderColumn = ({ children, className }: CardSectionProps) => {
+export const CardHeaderColumn = ({ children, className="" }: CardSectionProps) => {
     return (
         <div className={'flex flex-col w-full' + ' ' + className}>
             {children}
@@ -152,11 +147,10 @@ export const CardHeaderColumn = ({ children, className }: CardSectionProps) => {
     )
 }
 
-export const CardHeaderTab = ({ children, className }: CardSectionProps) => {
+export const CardHeaderTab = ({ children, className = "" }: CardSectionProps) => {
     const { activeIndex, setActiveIndex } = useCard()
     const tabCount = React.Children.count(children)
     const tabWidth = 100 / tabCount
-    const [isAnimating, setIsAnimating] = useState(false)
 
     return (
         <div
@@ -176,8 +170,6 @@ export const CardHeaderTab = ({ children, className }: CardSectionProps) => {
                     width: `${tabWidth}%`,
                 }}
                 transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                onAnimationStart={() => setIsAnimating(true)}
-                onAnimationComplete={() => setIsAnimating(false)}
             />
 
             {/* Tabs */}
@@ -185,7 +177,7 @@ export const CardHeaderTab = ({ children, className }: CardSectionProps) => {
                 if (React.isValidElement(child)) {
                     return (
                         <div
-                            className={`z-10 flex-1 text-center cursor-pointer px-2 py-2 transition-colors duration-300 ${
+                            className={`z-10 flex-1 text-center cursor-pointer px-2 py-2 transition-colors duration-100 ${
                                 activeIndex === index
                                     ? 'text-white'
                                     : 'text-grey'
@@ -202,7 +194,15 @@ export const CardHeaderTab = ({ children, className }: CardSectionProps) => {
     )
 }
 
-export const CardHeader = ({ children, className }: CardSectionProps) => {
+export const CardHeaderTabContent = ({children, className = ""}: CardSectionProps) => {
+    return (
+        <div className={'w-full h-full' + " " + className}>
+            {children}
+        </div>
+    )
+}
+
+export const CardHeader = ({ children, className = "" }: CardSectionProps) => {
     return (
         <div
             className={`w-full default-top-border-radius text-sm color-grey  flex items-center ${
@@ -214,9 +214,9 @@ export const CardHeader = ({ children, className }: CardSectionProps) => {
     )
 }
 
-export const CardBody = ({ children, className }: CardSectionProps) => {
+export const CardBody = ({ children, className = "" }: CardSectionProps) => {
     return (
-        <div className={`flex grow-1 px-[15px] ${className ?? ''}`}>
+        <div className={`flex grow-1 ${className ?? ''}`}>
             {children}
         </div>
     )
@@ -238,6 +238,14 @@ export const CardBodyMultiple = ({ children }: CardSectionProps) => {
                 }
                 return <div>ERROR IN CardBodyMultiple</div>
             })}
+        </div>
+    )
+}
+
+export const CardBodyMultipleContent = ({children, className=""}:CardSectionProps)=> {
+    return (
+        <div className={'w-full h-full' + ' ' + className}>
+            {children}
         </div>
     )
 }

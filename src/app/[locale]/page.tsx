@@ -6,9 +6,10 @@ import {
     CardToolTip,
     CardHeaderBase,
     CardHeaderColumn,
-    CardHeaderColumnBot,
     CardHeaderTab,
+    CardHeaderTabContent,
     CardBodyMultiple,
+    CardBodyMultipleContent,
     CardHeaderSelector,
 } from '@/components/ui/card/Card'
 import { Annoyed } from 'lucide-react'
@@ -48,9 +49,15 @@ export default function Home() {
                     <CardHeader>
                         <CardHeaderColumn>
                             <CardHeaderTab>
-                                <p className="text-inherit">stp</p>
-                                <p className="text-inherit">fonctionne</p>
-                                <p className="text-inherit">fonctionne</p>
+                                <CardHeaderTabContent>
+                                    <p className="text-inherit">stp</p>
+                                </CardHeaderTabContent>
+                                <CardHeaderTabContent>
+                                    <p className="text-inherit">fonctionne</p>
+                                </CardHeaderTabContent>
+                                <CardHeaderTabContent>
+                                    <p className="text-inherit">fonctionne</p>
+                                </CardHeaderTabContent>
                             </CardHeaderTab>
                             <CardHeaderBase>
                                 <SubTitle>header</SubTitle>
@@ -59,12 +66,17 @@ export default function Home() {
                     </CardHeader>
                     <CardBody>
                         <CardBodyMultiple>
-                            <div className="flex justify-center items-center h-full">
-                                <p>body 1</p>
-                            </div>
-                            <p>body 2</p>
-                            <p>body 3</p>
-                            <p>test</p>
+                            <CardBodyMultipleContent>
+                                <div className="flex justify-center items-center h-full">
+                                    <p>body 1</p>
+                                </div>
+                            </CardBodyMultipleContent>
+                            <CardBodyMultipleContent>
+                                <p>body 2</p>
+                            </CardBodyMultipleContent>
+                            <CardBodyMultipleContent>
+                                <p>body 3</p>
+                            </CardBodyMultipleContent>
                         </CardBodyMultiple>
                     </CardBody>
                 </Card>
@@ -76,20 +88,31 @@ export default function Home() {
                         <CardHeaderBase className="justify-between">
                             <SubTitle>header</SubTitle>
                             <CardHeaderSelector>
-                                <Annoyed></Annoyed>
-                                <Annoyed></Annoyed>
-                                <Annoyed></Annoyed>
+                                <CardHeaderTabContent>
+                                    <Annoyed></Annoyed>
+                                </CardHeaderTabContent>
+                                <CardHeaderTabContent>
+                                    <Annoyed></Annoyed>
+                                </CardHeaderTabContent>
+                                <CardHeaderTabContent>
+                                    <Annoyed></Annoyed>
+                                </CardHeaderTabContent>
                             </CardHeaderSelector>
                         </CardHeaderBase>
                     </CardHeader>
                     <CardBody>
                         <CardBodyMultiple>
-                            <div className="flex justify-center items-center h-full">
-                                <p>body 1</p>
-                            </div>
-                            <p>body 2</p>
-                            <p>body 3</p>
-                            <p>test</p>
+                            <CardBodyMultipleContent>
+                                <div className="flex justify-center items-center h-full">
+                                    <p>body 1</p>
+                                </div>
+                            </CardBodyMultipleContent>
+                            <CardBodyMultipleContent>
+                                <p>body 2</p>
+                            </CardBodyMultipleContent>
+                            <CardBodyMultipleContent>
+                                <p>body 3</p>
+                            </CardBodyMultipleContent>
                         </CardBodyMultiple>
                     </CardBody>
                 </Card>
