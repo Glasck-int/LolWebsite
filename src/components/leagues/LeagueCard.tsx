@@ -35,7 +35,6 @@ export const LeagueCard: React.FC<LeagueCardProps> = ({
     const [imageError, setImageError] = useState(false)
     const [leagueImageUrl, setLeagueImageUrl] = useState<string | null>(null)
 
-    // Load league image asynchronously
     useEffect(() => {
         getLeagueImage(league.name).then((response) => {
             setLeagueImageUrl(response.data || null)
@@ -54,6 +53,7 @@ export const LeagueCard: React.FC<LeagueCardProps> = ({
                     width={120}
                     height={120}
                     className="w-full h-full object-contain"
+                    style={{ width: 'auto', height: 'auto' }}
                     onError={(e) => {
                         console.error(
                             `Image failed to load for ${league.name}:`,
@@ -112,6 +112,7 @@ export const LeagueCard: React.FC<LeagueCardProps> = ({
                             width={20}
                             height={20}
                             className="mr-2"
+                            style={{ width: 'auto', height: 'auto' }}
                         />
                     )}
                     <h3 className="text-sm md:text-base font-medium text-left text-white">

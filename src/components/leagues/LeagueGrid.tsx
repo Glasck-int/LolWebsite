@@ -31,7 +31,6 @@ export const LeagueGrid: React.FC<LeagueGridProps> = ({
         : 'grid-cols-1'
     const gap = square ? 'gap-4' : 'gap-2'
 
-    // For non-square grids, add empty cards to maintain minimum height
     const maxResults = 20
     const emptyCardsNeeded = Math.max(0, maxResults - leagues.length)
 

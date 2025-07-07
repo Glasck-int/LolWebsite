@@ -53,7 +53,7 @@ const useCard = () => {
 }
 
 function getHeaderTw(bg = true) {
-    let str = 'w-full flex items-center px-[14px] h-full '
+    let str = 'w-full flex items-center h-full '
     return bg ? str + 'bg-white-04 ' : str
 }
 
@@ -216,7 +216,7 @@ export const CardHeader = ({ children, className }: CardSectionProps) => {
 
 export const CardBody = ({ children, className }: CardSectionProps) => {
     return (
-        <div className={`flex grow-1 px-[15px] ${className ?? ''}`}>
+        <div className={`flex grow-1 ${className ?? ''}`}>
             {children}
         </div>
     )

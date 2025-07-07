@@ -6,6 +6,6 @@ interface SubTitleProps {
 
 export const SubTitle = ({children} : SubTitleProps) => {
   return (
-    <p className='text-grey text-sm md:text-base'>{children}</p>
+    <p className='text-clear-grey font-semibold text-sm md:text-base'>{children}</p>
   )
 }
