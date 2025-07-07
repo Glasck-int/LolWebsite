@@ -24,7 +24,7 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
                 },
             },
         },
-        async (request) => {
+        async (request, reply) => {
             try {
                 const { leagueName } = request.params
                 const cacheKey = `tournaments:league:${leagueName}`
@@ -45,7 +45,7 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
                 })
                 // console.log(tournaments)
                 if (tournaments.length === 0) {
-                    return { error: 'No tournaments found' }
+                    return reply.status(404).send({ error: 'No tournaments found' })
                 }
 
 
@@ -54,7 +54,7 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
                 return tournaments
             } catch (error) {
                 console.error(error)
-                return { error: 'Internal server error' }
+                return reply.status(500).send({ error: 'Internal server error' })
             }
         }
     )

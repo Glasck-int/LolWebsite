@@ -13,7 +13,7 @@ export async function registerRedis(fastify: FastifyInstance) {
     // Only try to register Redis in production
     if (config.isProduction) {
         await fastify.register(fastifyRedis, {
-            host: process.env.REDIS_HOST || 'localhost',
+            host: process.env.REDIS_HOST || '127.0.0.1',
             port: parseInt(process.env.REDIS_PORT || '6379'),
             password: process.env.REDIS_PASSWORD,
             db: parseInt(process.env.REDIS_DB || '0'),

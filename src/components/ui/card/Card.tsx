@@ -233,7 +233,7 @@ export const CardBodyMultiple = ({ children }: CardSectionProps) => {
                             <CardBodyMultipleDiv>{child}</CardBodyMultipleDiv>
                         )
                     } else {
-                        return
+                        return null
                     }
                 }
                 return <div>ERROR IN CardBodyMultiple</div>

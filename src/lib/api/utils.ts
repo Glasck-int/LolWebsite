@@ -59,10 +59,10 @@ async function apiRequest<T>(
 const getApiBaseUrl = () => {
     // Server-side: use internal URL or localhost
     if (typeof window === 'undefined') {
-        return process.env.API_URL || 'http://localhost:3001'
+        return process.env.API_URL || 'http://127.0.0.1:3001'
     }
     // Client-side: use public URL
-    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+    return process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001'
 }
 
 export { getApiBaseUrl, apiRequest }
