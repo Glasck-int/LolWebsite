@@ -64,7 +64,7 @@ export const Card = ({ children, className }: CardProps) => {
         <CardContext.Provider value={{ activeIndex, setActiveIndex }}>
             <div
                 className={
-                    'bg-white-06 default-border-radius h-full w-full flex flex-col justify-evenly backdrop-blur ' +
+                    'bg-white-06 default-border-radius h-full w-full flex flex-col justify-evenly backdrop-blur overflow-hidden ' +
                     className
                 }
             >
@@ -104,7 +104,7 @@ export const CardHeaderBase = ({ children, className }: CardSectionProps) => {
     return (
         <div
             className={
-                'content-center min-h-[35px] md:min-h-[40px]' +
+                'content-center min-h-[35px] md:min-h-[40px] px-[15px]' +
                 ' ' +
                 getHeaderTw() +
                 className
@@ -122,7 +122,7 @@ export const CardHeaderSelector = ({
     const { activeIndex, setActiveIndex } = useCard()
 
     return (
-        <div className="flex">
+        <div className="flex ">
             {React.Children.map(children, (child, index) => {
                 if (React.isValidElement(child)) {
                     return (
@@ -146,7 +146,7 @@ export const CardHeaderSelector = ({
 
 export const CardHeaderColumn = ({ children, className }: CardSectionProps) => {
     return (
-        <div className={'flex flex-col w-full' + ' ' + className}>
+        <div className={'flex flex-col w-full ' + ' ' + className}>
             {children}
         </div>
     )
@@ -185,7 +185,7 @@ export const CardHeaderTab = ({ children, className }: CardSectionProps) => {
                 if (React.isValidElement(child)) {
                     return (
                         <div
-                            className={`z-10 flex-1 text-center cursor-pointer px-2 py-2 transition-colors duration-300 ${
+                            className={`z-10 flex-1 text-center cursor-pointer px-[15px] py-2 transition-colors duration-300 ${
                                 activeIndex === index
                                     ? 'text-white'
                                     : 'text-grey'
@@ -215,11 +215,7 @@ export const CardHeader = ({ children, className }: CardSectionProps) => {
 }
 
 export const CardBody = ({ children, className }: CardSectionProps) => {
-    return (
-        <div className={`flex grow-1 ${className ?? ''}`}>
-            {children}
-        </div>
-    )
+    return <div className={`flex grow-1 ${className ?? ''}`}>{children}</div>
 }
 
 export const CardBodyMultiple = ({ children }: CardSectionProps) => {

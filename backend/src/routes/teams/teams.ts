@@ -167,10 +167,10 @@ export default async function teamsRoutes(fastify: FastifyInstance) {
             const result = {
                 team: name,
                 tournament: tournament,
-                matches: recentMatches,
+                recentMatches: processedMatches, // ← Changer "matches" en "recentMatches"
                 form,
             }
-            console.log(result.matches)
+            // console.log(result.matches[0].team1 + 'yes')
             // Cache for 1 hour (3600 seconds) since match results change frequently
             await redis.setex(cacheKey, 3600, JSON.stringify(result))
             return result

@@ -52,7 +52,7 @@ export const LeagueCard: React.FC<LeagueCardProps> = ({
                     alt={league.name}
                     width={120}
                     height={120}
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-contain justify-center items-center"
                     style={{ width: 'auto', height: 'auto' }}
                     onError={(e) => {
                         console.error(
@@ -89,7 +89,7 @@ export const LeagueCard: React.FC<LeagueCardProps> = ({
                     className={`w-full aspect-square cursor-pointer ${className}`}
                 >
                     <Card className="backdrop-blur p-2 md:p-4 shadow-md h-full items-center justify-center gap-y-3 cursor-pointer hover:bg-white/10 hover:scale-102 active:scale-95 active:bg-white/5 transition-all duration-200">
-                        <div className="w-[50%] h-[50%] relative">
+                        <div className="w-[50%] h-[50%] relative flex items-center justify-center">
                             {renderImageOrFallback()}
                         </div>
                         <h3 className="text-[clamp(0.7rem,3vw,1.2rem)] font-medium text-center text-clear-grey">

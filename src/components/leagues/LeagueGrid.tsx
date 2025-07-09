@@ -35,7 +35,7 @@ export const LeagueGrid: React.FC<LeagueGridProps> = ({
     const emptyCardsNeeded = Math.max(0, maxResults - leagues.length)
 
     return (
-        <div className={`grid ${gridCols} ${gap} ${className}`}>
+        <div className={`grid ${gridCols} ${gap} ${className} `}>
             {leagues.map((league, index) => (
                 <LeagueCard
                     key={league.id}
@@ -49,7 +49,7 @@ export const LeagueGrid: React.FC<LeagueGridProps> = ({
                 Array.from({ length: emptyCardsNeeded }, (_, index) => (
                     <div
                         key={`empty-${index}`}
-                        className="h-10 opacity-0 pointer-events-none"
+                        className="h-10 opacity-0 pointer-events-none "
                     >
                         {/* Invisible placeholder card */}
                     </div>

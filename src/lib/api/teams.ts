@@ -91,6 +91,7 @@ async function getTeamsRecentMatches(
 
     results.forEach((result, index) => {
         if (result.status === 'fulfilled' && result.value.data) {
+            // console.log(result.value.data.recentMatches[0].team1 + 'yes')
             matches.push(result.value.data)
         } else {
             errors.push(
@@ -102,7 +103,6 @@ async function getTeamsRecentMatches(
     if (matches.length === 0 && errors.length > 0) {
         return { error: errors.join(', ') }
     }
-
     return { data: matches }
 }
 

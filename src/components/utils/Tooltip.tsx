@@ -35,8 +35,10 @@ export const Tooltip = ({
     }
 
     const handleMouseEnter = () => {
-        setVisible(true)
-        setTimeout(() => setShowTooltip(true), 10)
+        if (content) {
+            setVisible(true)
+            setTimeout(() => setShowTooltip(true), 10)
+        }
     }
 
     const handleMouseLeave = () => {
@@ -98,23 +100,24 @@ export const Tooltip = ({
 
     const position = getTooltipPosition()
 
-    const tooltipElement = visible ? (
-        <div
-            ref={tooltipRef}
-            className={`fixed bg-dark-grey border border-clear-grey text-white text-xs px-2 py-1 z-[9999] shadow-lg pointer-events-none default-border-radius transition-all duration-100 ease-out ${
-                showTooltip ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-            }`}
-            style={{
-                left: position.left,
-                top: position.top,
-                maxWidth: `${maxWidth}px`,
-                whiteSpace: 'normal',
-                wordWrap: 'break-word',
-            }}
-        >
-            {content}
-        </div>
-    ) : null
+    const tooltipElement =
+        visible && content ? (
+            <div
+                ref={tooltipRef}
+                className={`fixed bg-dark-grey border border-clear-grey text-white text-xs px-2 py-1 z-[9999] shadow-lg pointer-events-none default-border-radius transition-all duration-100 ease-out ${
+                    showTooltip ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+                }`}
+                style={{
+                    left: position.left,
+                    top: position.top,
+                    maxWidth: `${maxWidth}px`,
+                    whiteSpace: 'normal',
+                    wordWrap: 'break-word',
+                }}
+            >
+                {content}
+            </div>
+        ) : null
 
     return (
         <div

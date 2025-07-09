@@ -18,5 +18,19 @@
 	"Footer": {
 		"Matchs": "Matchs",
 		"Leagues": "Ligues"
+	},
+	"NextMatches": {
+		"Title": "Prochain Match",
+		"BestOf": "Bo"
+	},
+	"Standings": {
+		"Team": "Equipes",
+		"#": "Position",
+		"Form": "Forme",
+		"MatchesPlayedTooltip": "Nombre de matchs joués",
+		"WinsTooltip": "Matchs gagnés",
+		"LossesTooltip": "Matchs perdus",
+		"WRTooltip": "Ratio victoires/matchs",
+		"FormTooltip": "Forme de L'équipe sur les 5 derniers matchs"
 	}
 }

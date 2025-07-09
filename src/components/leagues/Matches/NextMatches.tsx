@@ -142,17 +142,14 @@ export const NextMatches = async ({
             <CardHeader>
                 <CardHeaderBase>
                     <div className="flex flex-row justify-between items-center w-full">
-                        <SubTitle>
-                            {showSingleMatchOnDesktop
-                                ? 'Next Match'
-                                : 'Next Matches'}
-                        </SubTitle>
-                        <div className="flex flex-row items-center gap-2">
-                            <p>
-                                {nextMatches.data?.[0]?.bestOf &&
-                                    `Bo${nextMatches.data[0].bestOf}`}
-                            </p>
-                        </div>
+                        <SubTitle text="Next Match" />
+                        <SubTitle
+                            text={
+                                nextMatches.data?.[0]?.bestOf
+                                    ? `Bo${nextMatches.data[0].bestOf}`
+                                    : ''
+                            }
+                        />
                     </div>
                 </CardHeaderBase>
             </CardHeader>

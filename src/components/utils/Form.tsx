@@ -25,8 +25,8 @@ export const Form = ({
                 const teamMatches = teamsRecentMatches?.find(
                     (teamMatches) => teamMatches.team === standing.team
                 )
-                const matchData = teamMatches?.matches?.[index]
-                console.log(teamMatches)
+                const matchData = teamMatches?.recentMatches?.[index]
+                console.log(matchData)
                 return (
                     <Tooltip
                         content={
@@ -36,26 +36,24 @@ export const Form = ({
                                         {matchData.team1} vs {matchData.team2}
                                     </div>
                                     <div className="text-sm text-grey">
-                                        {new Date(
-                                            matchData.dateTime_UTC
-                                        ).toLocaleDateString()}
+                                        {matchData.dateTime_UTC
+                                            ? new Date(
+                                                  matchData.dateTime_UTC
+                                              ).toLocaleDateString()
+                                            : ''}
                                     </div>
                                 </div>
-                            ) : (
-                                <div>
-                                    {matchData?.team1} vs {matchData?.team2}
-                                </div>
-                            )
+                            ) : null
                         }
                         key={index}
                     >
                         <div
-                            className={`w-6 h-6 flex items-center justify-center text-sm font-semibold rounded ${
+                            className={`w-6 h-6 flex items-center justify-center text-sm font-semibold rounded cursor-pointer transition-all duration-200 ${
                                 letter === 'W'
-                                    ? 'bg-[#1E895E]/25 text-[#1E895E] rounded-md'
+                                    ? 'bg-[#1E895E]/25 text-[#1E895E] rounded-md hover:bg-[#1E895E]/40'
                                     : letter === 'L'
-                                    ? 'bg-[#C01D56]/25 text-[#C01D56] rounded-md'
-                                    : 'bg-[#1E895E]/25 text-[#1E895E] rounded-md'
+                                    ? 'bg-[#C01D56]/25 text-[#C01D56] rounded-md hover:bg-[#C01D56]/40'
+                                    : 'bg-[#1E895E]/25 text-[#1E895E] rounded-md hover:bg-[#1E895E]/40'
                             }`}
                         >
                             {letter}
