@@ -1,21 +1,19 @@
 import Footer from '@/components/layout/Footer/Footer'
+import { Card } from '@/components/ui/card/Card'
+import { CardSort, CardHeaderSortContent } from '@/components/ui/card/CardSort'
 import {
-    Card,
     CardBody,
-    CardHeader,
-    CardToolTip,
-    CardHeaderBase,
-    CardHeaderColumn,
-    CardHeaderTab,
-    CardHeaderTabContent,
     CardBodyMultiple,
     CardBodyMultipleContent,
-    CardHeaderSelector,
-} from '@/components/ui/card/Card'
+} from '@/components/ui/card/CardBody'
 import {
-    CardHeaderSort,
-    CardHeaderSortContent,
-} from '@/components/ui/card/CardSort'
+    CardHeader,
+    CardHeaderBase,
+    CardHeaderColumn,
+    CardHeaderContent,
+    CardHeaderSelector,
+    CardHeaderTab,
+} from '@/components/ui/card/CardHeader'
 
 import { Annoyed } from 'lucide-react'
 import { SubTitle } from '@/components/ui/text/SubTitle'
@@ -27,43 +25,17 @@ export default function Home() {
             <div className=" h-[200px]">
                 <Card>
                     <CardHeader>
-                        <CardToolTip info="tooltip info bad long ca mere wtf ca va faire quoi ? ">
-                            <SubTitle>Header</SubTitle>
-                        </CardToolTip>
-                    </CardHeader>
-                    <CardBody>
-                        <p>simple message</p>
-                    </CardBody>
-                </Card>
-            </div>
-            ---
-            <div className=" h-[200px]">
-                <Card>
-                    <CardHeader>
-                        <CardHeaderBase>
-                            <SubTitle>header</SubTitle>
-                        </CardHeaderBase>
-                    </CardHeader>
-                    <CardBody>
-                        <p>simple message</p>
-                    </CardBody>
-                </Card>
-            </div>
-            ---
-            {/* <div className=" h-[200px]">
-                <Card>
-                    <CardHeader>
                         <CardHeaderColumn>
                             <CardHeaderTab>
-                                <CardHeaderTabContent>
+                                <CardHeaderContent>
                                     <p className="text-inherit">stp</p>
-                                </CardHeaderTabContent>
-                                <CardHeaderTabContent>
+                                </CardHeaderContent>
+                                <CardHeaderContent>
                                     <p className="text-inherit">fonctionne</p>
-                                </CardHeaderTabContent>
-                                <CardHeaderTabContent>
+                                </CardHeaderContent>
+                                <CardHeaderContent>
                                     <p className="text-inherit">fonctionne</p>
-                                </CardHeaderTabContent>
+                                </CardHeaderContent>
                             </CardHeaderTab>
                             <CardHeaderBase>
                                 <SubTitle>header</SubTitle>
@@ -94,15 +66,15 @@ export default function Home() {
                         <CardHeaderBase className="justify-between">
                             <SubTitle>header</SubTitle>
                             <CardHeaderSelector>
-                                <CardHeaderTabContent>
+                                <CardHeaderContent>
                                     <Annoyed></Annoyed>
-                                </CardHeaderTabContent>
-                                <CardHeaderTabContent>
+                                </CardHeaderContent>
+                                <CardHeaderContent>
                                     <Annoyed></Annoyed>
-                                </CardHeaderTabContent>
-                                <CardHeaderTabContent>
+                                </CardHeaderContent>
+                                <CardHeaderContent>
                                     <Annoyed></Annoyed>
-                                </CardHeaderTabContent>
+                                </CardHeaderContent>
                             </CardHeaderSelector>
                         </CardHeaderBase>
                     </CardHeader>
@@ -122,15 +94,15 @@ export default function Home() {
                         </CardBodyMultiple>
                     </CardBody>
                 </Card>
-            </div> */}
+            </div>
             ---
             <div className="">
                 <Card>
-                    <CardHeaderSort>
+                    <CardSort>
                         <CardHeader>
                             <CardHeaderBase className="flex justify-between">
                                 <SubTitle>Header</SubTitle>
-                                <div className='flex gap-2'>
+                                <div className="flex gap-2">
                                     <CardHeaderSortContent sortName={'aplha'}>
                                         <p className="text-inherit">apha</p>
                                     </CardHeaderSortContent>
@@ -146,7 +118,7 @@ export default function Home() {
                         <CardBody>
                             <SortedList />
                         </CardBody>
-                    </CardHeaderSort>
+                    </CardSort>
                 </Card>
             </div>
             <Footer />
