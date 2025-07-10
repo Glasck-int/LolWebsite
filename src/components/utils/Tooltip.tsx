@@ -124,7 +124,7 @@ export const Tooltip = ({
             onMouseLeave={handleMouseLeave}
             onMouseMove={handleMouseMove}
         >
-            {children ? children : <Info />}
+            {children ? children : <Info color='#bab9b9'/>}
             {mounted &&
                 tooltipElement &&
                 createPortal(tooltipElement, document.body)}

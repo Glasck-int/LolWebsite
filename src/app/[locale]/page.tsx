@@ -12,8 +12,14 @@ import {
     CardBodyMultipleContent,
     CardHeaderSelector,
 } from '@/components/ui/card/Card'
+import {
+    CardHeaderSort,
+    CardHeaderSortContent,
+} from '@/components/ui/card/CardSort'
+
 import { Annoyed } from 'lucide-react'
 import { SubTitle } from '@/components/ui/text/SubTitle'
+import { SortedList } from '@/components/ui/card/exemple/BodySort'
 
 export default function Home() {
     return (
@@ -44,7 +50,7 @@ export default function Home() {
                 </Card>
             </div>
             ---
-            <div className=" h-[200px]">
+            {/* <div className=" h-[200px]">
                 <Card>
                     <CardHeader>
                         <CardHeaderColumn>
@@ -115,6 +121,32 @@ export default function Home() {
                             </CardBodyMultipleContent>
                         </CardBodyMultiple>
                     </CardBody>
+                </Card>
+            </div> */}
+            ---
+            <div className="">
+                <Card>
+                    <CardHeaderSort>
+                        <CardHeader>
+                            <CardHeaderBase className="flex justify-between">
+                                <SubTitle>Header</SubTitle>
+                                <div className='flex gap-2'>
+                                    <CardHeaderSortContent sortName={'aplha'}>
+                                        <p className="text-inherit">apha</p>
+                                    </CardHeaderSortContent>
+                                    <CardHeaderSortContent sortName={'color'}>
+                                        <p className="text-inherit">color</p>
+                                    </CardHeaderSortContent>
+                                    <CardHeaderSortContent sortName={'numb'}>
+                                        <p className="text-inherit">numb</p>
+                                    </CardHeaderSortContent>
+                                </div>
+                            </CardHeaderBase>
+                        </CardHeader>
+                        <CardBody>
+                            <SortedList />
+                        </CardBody>
+                    </CardHeaderSort>
                 </Card>
             </div>
             <Footer />
