@@ -27,18 +27,30 @@ export const SortedList = () => {
     const { activeSort } = useSort()
 
     const sorted = [...strings].sort((a, b) => {
-        const sortType = activeSort ?? 'alpha'
+        const key = activeSort?.key
+        const direction = activeSort?.direction
 
-        switch (sortType) {
+        // Pas de tri actif
+        if (!key || !direction) return 0
+
+        let comparison = 0
+
+        switch (key) {
             case 'alpha':
-                return a.localeCompare(b)
+                comparison = a.localeCompare(b)
+                break
             case 'color':
-                return getColorValue(a) - getColorValue(b)
+                comparison = getColorValue(a) - getColorValue(b)
+                break
             case 'numb':
-                return getNumberCount(a) - getNumberCount(b)
+                comparison = getNumberCount(a) - getNumberCount(b)
+                break
             default:
-                return 0
+                comparison = 0
         }
+
+        // Appliquer le sens (asc ou desc)
+        return direction === 'asc' ? comparison : -comparison
     })
 
     return (

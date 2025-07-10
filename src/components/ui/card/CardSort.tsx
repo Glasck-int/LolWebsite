@@ -2,39 +2,34 @@
 
 import React, { useContext, createContext, useState, ReactNode } from 'react'
 import { CardProps } from './Card'
+import { ArrowUp } from 'lucide-react';
 
 interface CardSortProps {
     children: ReactNode
     className?: string
-    sortName: number | string
+    sortName:  string
+}
+
+type SortDirection = 'asc' | 'desc' | null
+
+type SortState = {
+    key: string | null
+    direction: SortDirection
 }
 
 const SortContext = createContext<{
-    activeSort: string | number | undefined
-    setActiveSort: (sort: number | string | undefined) => void
+    activeSort: SortState
+    setActiveSort: (key: string) => void
 } | null>(null)
 
 /**
- * Custom hook to access the current sort context.
+ * Provides the current sort state and a method to update it.
  *
- * Returns the current `activeSort` value and the `setActiveSort` function
- * from the `SortContext`. Must be used within a `CardSort` component.
+ * Must be used within a `CardSort` provider. Throws an error otherwise.
  *
- * @returns An object containing `activeSort` and `setActiveSort`.
+ * @returns The current active sort state and the function to change it.
  *
- * @throws Error - Throws an error if used outside of a `CardSort` provider.
- *
- * @example
- * ```ts
- * const { activeSort, setActiveSort } = useSort();
- * setActiveSort('alpha');
- * ```
- *
- * @remarks
- * This hook simplifies access to the sort state inside deeply nested components.
- * Ensure your component is wrapped in a `<CardSort>` or it will throw.
- *
- * @see CardSort
+ * @throws Error - If used outside of a `CardSort` component.
  */
 export const useSort = () => {
     const context = useContext(SortContext)
@@ -45,93 +40,58 @@ export const useSort = () => {
 }
 
 /**
- * Provider component for managing sort state context.
+ * CardSort component that wraps children with sort context.
  *
- * Wraps its children in a context that exposes `activeSort` and `setActiveSort`
- * for components to use via the `useSort` hook.
+ * Maintains the active sort key and direction state, and provides logic to toggle
+ * between ascending, descending, and no sort.
  *
- * @param children - React child components that will have access to sort context
- * @param className - Optional class name for styling the wrapping div
- * @returns A context provider element with sorting capabilities
+ * @param children - The content that will consume the sorting context.
+ * @param className - Optional additional className for styling.
+ * @returns A context provider wrapping the children.
  *
  * @example
- * ```tsx
+ * 
  * <CardSort>
- *   <CardHeaderSortContent sortName="alpha">Alpha</CardHeaderSortContent>
- *   <SortedList />
+ *   <CardHeaderSortContent sortName="alpha">Sort A-Z</CardHeaderSortContent>
+ *   <CardBody>...</CardBody>
  * </CardSort>
- * ```
- *
- * @remarks
- * All components that use `useSort` must be children of `CardSort`.
- *
- * @see useSort
  */
 export const CardSort = ({ children, className = '' }: CardProps) => {
-    const [activeSort, setActiveSort] = useState<string | number | undefined>()
+    const [activeSort, setSortState] = useState<SortState>({
+        key: null,
+        direction: null,
+    })
+
+    const setActiveSort = (key: string) => {
+        setSortState((prev) => {
+            if (prev.key !== key) return { key, direction: 'asc' }
+            if (prev.direction === 'asc') return { key, direction: 'desc' }
+            if (prev.direction === 'desc') return { key: null, direction: null }
+            return { key, direction: 'asc' } // fallback
+        })
+    }
 
     return (
         <SortContext.Provider value={{ activeSort, setActiveSort }}>
-            <div
-                className={`w-full h-full ${className}`}
-            >
-                {children}
-            </div>
+            <div className={`w-full h-full ${className}`}>{children}</div>
         </SortContext.Provider>
     )
 }
 
 /**
- * Utility function to toggle sort key.
+ * CardHeaderSortContent component to display a sortable header label.
  *
- * Returns `undefined` if the current sort key is the same as the next one,
- * effectively resetting the sort. Otherwise, returns the new sort key.
+ * Highlights the current active sort and displays an arrow icon indicating direction.
+ * Clicking toggles the sort state (asc → desc → none).
  *
- * @param current - The currently active sort key
- * @param next - The sort key to be applied
- * @returns The next sort key or `undefined` if toggled off
- *
- * @example
- * ```ts
- * const result = toggleSort('alpha', 'alpha'); // undefined
- * const result = toggleSort('alpha', 'color'); // 'color'
- * ```
- *
- * @remarks
- * Useful for deselecting a sort if the same value is clicked again.
- *
- * @see setActiveSort
- */
-const toggleSort = (
-    current: string | number | undefined,
-    next: string | number
-): string | number | undefined => {
-    return current === next ? undefined : next
-}
-
-
-/**
- * Clickable sort trigger component.
- *
- * Renders a UI element that updates the active sort key when clicked.
- * If clicked again with the same key, it deselects the sort (resets).
- *
- * @param children - Display content (typically a label or icon)
- * @param className - Optional class name for styling
- * @param sortName - The sort key associated with this component
- * @returns A styled div that updates sort context on click
+ * @param children - The label to be displayed (usually a string or element).
+ * @param className - Optional class names for custom styling.
+ * @param sortName - A unique key representing the sorting type this header controls.
+ * @returns A styled div with an interactive sort label and optional direction icon.
  *
  * @example
- * ```tsx
- * <CardHeaderSortContent sortName="color">Sort by color</CardHeaderSortContent>
- * ```
- *
- * @remarks
- * The component updates context using `toggleSort` and reflects active state
- * with conditional styling.
- *
- * @see useSort
- * @see toggleSort
+ * 
+ * <CardHeaderSortContent sortName="numb">By Number</CardHeaderSortContent>
  */
 export const CardHeaderSortContent = ({
     children,
@@ -140,13 +100,28 @@ export const CardHeaderSortContent = ({
 }: CardSortProps) => {
     const { activeSort, setActiveSort } = useSort()
 
-
+    const isActive = activeSort.key === sortName
     return (
         <div
-            className={`cursor-pointer hover:text-white ${activeSort === sortName ? 'text-white' : 'text-clear-grey'} ${className}`}
-            onClick={() => setActiveSort(toggleSort(activeSort, sortName))}
+            className={`relative cursor-pointer hover:text-white ${
+                activeSort.key === sortName ? 'text-white' : 'text-clear-grey'
+            } 
+            ${className}`}
+            onClick={() => setActiveSort(sortName)} 
+
         >
             {children}
+            {isActive && (
+                <span className="absolute -right-3.5 top-1/3 md:top-1/5 -translate-y-1/2 transform scale-50 md:scale-75">
+                    <ArrowUp
+                        className={`transition-transform duration-200 ${
+                            activeSort.direction === 'desc' ? 'rotate-180' : ''
+                        }`}
+                        size={16}
+                        color='#bab9b9'
+                    />
+                </span>
+            )}
         </div>
     )
 }
