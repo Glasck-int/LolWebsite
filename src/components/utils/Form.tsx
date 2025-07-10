@@ -26,7 +26,7 @@ export const Form = ({
                     (teamMatches) => teamMatches.team === standing.team
                 )
                 const matchData = teamMatches?.recentMatches?.[index]
-                console.log(matchData)
+                // console.log(matchData)
                 return (
                     <Tooltip
                         content={

@@ -10,12 +10,17 @@ import { LeagueDescription } from '@/components/leagues/LeagueDescription'
 import {
     Card,
     CardBody,
+    CardBodyMultiple,
     CardHeader,
     CardHeaderBase,
+    CardHeaderColumn,
+    CardHeaderTab,
 } from '@/components/ui/card/Card'
 import { getTeamsByNames } from '@/lib/api/teams'
 import { NextMatches } from '@/components/leagues/Matches/NextMatches'
 import { StandingsOverview } from '@/components/leagues/Standings/StandingsOverview'
+import { SubTitle } from '@/components/ui/text/SubTitle'
+import { StandingsWithTabs } from '@/components/leagues/Standings/StandingsWithTabs'
 
 interface LeaguePageProps {
     params: Promise<{ leagueName: string }>
@@ -44,10 +49,7 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
         // Use specifically the Spring Split tournament
         const tournamentName = 'LFL/2025 Season/Spring Split'
 
-        console.log(
-            'Available tournaments:',
-            tournaments.data?.map((t) => t.overviewPage)
-        )
+
         console.log('Selected tournament for standings:', tournamentName)
 
         const standings = await getTournamentsStandingsByTournamentOverviewPage(
@@ -74,6 +76,39 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
                         tournamentName={tournamentName}
                     />
                 )}
+
+                {standings.data && standings.data.length > 0 && (
+                    <StandingsWithTabs
+                        standings={standings.data}
+                        tournamentName={tournamentName}
+                        maxRows={null}
+                        highlightedTeam={'Joblife'}
+                    />
+                )}
+
+                <Card>
+                    <CardHeader>
+                        <CardHeaderColumn>
+                            <CardHeaderTab>
+                                <p className="text-inherit text-semibold">BO/SERIE</p>
+                                <p className="text-inherit text-semibold">GAMES</p>
+                            </CardHeaderTab>
+                            <CardHeaderBase>
+                                <SubTitle>header</SubTitle>
+                            </CardHeaderBase>
+                        </CardHeaderColumn>
+                    </CardHeader>
+                    <CardBody>
+                        <CardBodyMultiple>
+                            <div className="flex justify-center items-center h-full">
+                                <p>body 1</p>
+                            </div>
+                            <p>body 2</p>
+                            <p>body 3</p>
+                            <p>test</p>
+                        </CardBodyMultiple>
+                    </CardBody>
+                </Card>
 
                 <h1>Page de la ligue: {league.data?.name}</h1>
                 <p>Slug: {league.data?.slug}</p>

@@ -16,7 +16,7 @@ import { SubTitle } from '@/components/ui/text/SubTitle'
 export default function Home() {
     return (
         <div className="body-container">
-            {/* <div className=" h-[200px]">
+            <div className=" h-[200px]">
                 <Card>
                     <CardHeader>
                         <CardToolTip info="tooltip info bad long ca mere wtf ca va faire quoi ? ">
@@ -92,7 +92,7 @@ export default function Home() {
                         </CardBodyMultiple>
                     </CardBody>
                 </Card>
-            </div> */}
+            </div>
             <Footer />
         </div>
     )

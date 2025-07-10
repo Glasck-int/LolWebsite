@@ -9,6 +9,7 @@
 
 export { StandingsHeader } from './StandingsHeader'
 export { StandingsRow } from './StandingsRow'
+export { StandingsRows } from './StandingsRows'
 export { StandingsOverview } from './StandingsOverview'
 export {
     processStandingsData,

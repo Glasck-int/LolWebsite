@@ -50,13 +50,13 @@ export const StandingsHeader = <T,>({
     const rightColumns = visibleColumns.slice(2)
 
     return (
-        <CardHeaderBase className="flex items-center justify-between w-full h-[35px]">
+        <CardHeaderBase className="flex flex-row justify-between items-center w-full">
             <div className="flex items-center gap-8">
                 {leftColumns.map((col) => (
                     <SubTitle
                         key={col.key}
                         className={col.headerClassName}
-                        text={col.header as string}
+                        children={col.header as string}
                         tooltip={col.tooltip}
                     />
                 ))}
@@ -66,7 +66,7 @@ export const StandingsHeader = <T,>({
                     <SubTitle
                         key={col.key}
                         className={col.headerClassName}
-                        text={col.header as string}
+                        children={col.header as string}
                         tooltip={col.tooltip}
                     />
                 ))}

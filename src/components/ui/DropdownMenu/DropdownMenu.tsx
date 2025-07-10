@@ -87,7 +87,7 @@ export const DropdownMenu = ({
                 {/* Overlay for better text readability */}
                 <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" />
 
-                <div className="relative body-container py-6">
+                <div className="relative body-container py-6 ">
                     <nav className="flex flex-col justify-center items-end space-y-4 w-full">
                         <Link
                             href="/"
@@ -119,7 +119,7 @@ export const DropdownMenu = ({
 
             {/* Desktop/Tablet menu */}
             <div className="hidden md:block">
-                <div className="relative body-container">
+                <div className="relative body-container hidden">
                     <div className="absolute right-24 hidden md:block">
                         <DropdownMenuDesktop open={isMenuOpen} modal={false}>
                             <DropdownMenuTrigger asChild>

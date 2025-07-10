@@ -13,6 +13,8 @@ import { Column } from './types'
  * @param item - The data item containing team and standings information
  * @param columns - Array of column configurations defining cell renderers and styling
  * @param isHighlighted - Whether this row should be highlighted (e.g., for user's favorite team)
+ * @param leftColumns - Array of column configurations defining cell renderers and styling for the left side of the row
+ * @param rightColumns - Array of column configurations defining cell renderers and styling for the right side of the row
  * @returns A table row component with team data and statistics
  *
  * @example
@@ -33,19 +35,20 @@ export const StandingsRow = <T,>({
     item,
     columns,
     isHighlighted = false,
+    leftColumns = columns.slice(0, 2),
+    rightColumns = columns.slice(2),
 }: {
     item: T
     columns: Column<T>[]
     isHighlighted?: boolean
+    leftColumns?: Column<T>[]
+    rightColumns?: Column<T>[]
 }) => {
-    const leftColumns = columns.slice(0, 2)
-    const rightColumns = columns.slice(2)
-
     return (
         <div
             className={`flex items-center justify-between w-full h-[45px] transition-colors duration-200 cursor-pointer px-[15px] ${
                 isHighlighted
-                    ? 'bg-grey/10 hover:bg-grey/20'
+                    ? 'bg-grey/20 hover:bg-grey/20 border-t-1 border-b-1 border-grey/20'
                     : 'hover:bg-grey/10'
             }`}
         >

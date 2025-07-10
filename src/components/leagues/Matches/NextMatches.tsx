@@ -6,7 +6,6 @@ import { MatchSchedule as MatchScheduleType } from '../../../../backend/src/gene
 import { getTeamsByNames } from '@/lib/api/teams'
 import { getTeamImage } from '@/lib/api/image'
 import { TimeDisplay } from '@/lib/hooks/timeDisplay'
-import { useVisibleMatches } from '@/lib/hooks/useVisibleMatches'
 import { NextMatchesClient } from './NextMatchesClient'
 import { SubTitle } from '@/components/ui/text/SubTitle'
 
@@ -142,9 +141,9 @@ export const NextMatches = async ({
             <CardHeader>
                 <CardHeaderBase>
                     <div className="flex flex-row justify-between items-center w-full">
-                        <SubTitle text="Next Match" />
+                        <SubTitle>Next Match</SubTitle>
                         <SubTitle
-                            text={
+                            children={
                                 nextMatches.data?.[0]?.bestOf
                                     ? `Bo${nextMatches.data[0].bestOf}`
                                     : ''
