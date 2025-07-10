@@ -1,5 +1,5 @@
 import React from 'react'
-import { Card, CardBody, CardHeader, CardHeaderBase } from '../../ui/card/Card'
+import { Card, CardBody, CardHeader, CardHeaderBase } from '@/components/ui/card/index'
 import { getNextThreeMatchesForLeague } from '@/lib/api/league'
 import { League as LeagueType } from '../../../../backend/src/generated/prisma'
 import { MatchSchedule as MatchScheduleType } from '../../../../backend/src/generated/prisma'

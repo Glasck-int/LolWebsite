@@ -223,6 +223,35 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
         }
     )
 
+    // fastify.get<{ Params: { tournamentId: string } }>(
+    //     '/tournaments/id/:tournamentId/games',
+    //     {
+    //         schema: {
+    //             description: 'Get games for a tournament by tournament ID',
+    //             tags: ['tournaments'],
+    //             response: {
+    //                 200: TournamentGamesListResponse,
+    //                 404: ErrorResponseSchema,
+    //                 500: ErrorResponseSchema,
+    //             },
+    //         },
+    //     },
+    //     async (request, reply) => {
+    //         try {
+    //             const { tournamentId } = request.params
+    //             const games = await prisma.game.findMany({
+    //                 where: { tournamentId: parseInt(tournamentId) },
+    //             })
+    //             return games
+    //         } catch (error) {
+    //             console.error('Error in tournament games route:', error)
+    //             return reply
+    //                 .status(500)
+    //                 .send({ error: 'Internal server error' })
+    //         }
+    //     }
+    // )
+
     // Debug route to list all tournaments
     fastify.get(
         '/tournaments/debug/list',

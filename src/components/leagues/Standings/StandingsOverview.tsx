@@ -4,11 +4,9 @@ import { Standings as StandingsType } from '../../../../backend/src/generated/pr
 
 import { getTeamsByNames, getTeamsRecentMatches } from '@/lib/api/teams'
 import { getTeamImage } from '@/lib/api/image'
-import {
-    processStandingsData,
-} from './StandingsDataProcessor'
+import { processStandingsData } from './StandingsDataProcessor'
 import { Team } from '../../../../backend/src/generated/prisma'
-import { StandingsOverviewClient } from './StandingsOverviewClient'
+import { StandingsOverviewClient } from './clients/StandingsOverviewClient'
 
 /**
  * Standings overview component.

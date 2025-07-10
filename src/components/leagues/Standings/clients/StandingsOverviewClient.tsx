@@ -1,14 +1,14 @@
 'use client'
 
 import React from 'react'
-import { StandingsRow } from './StandingsRow'
-import { StandingsHeader } from './StandingsHeader'
-import { Column } from './types'
+import { StandingsRow } from '../StandingsRow'
+import { StandingsHeader } from '../StandingsHeader'
+import { Column } from '../types'
 import Image from 'next/image'
 import { Form } from '@/components/utils/Form'
 import { Card, CardBody, CardHeader } from '@/components/ui/card/index'
 import { useTranslate } from '@/lib/hooks/useTranslate'
-import { ProcessedStanding } from './StandingsDataProcessor'
+import { ProcessedStanding } from '../StandingsDataProcessor'
 
 /**
  * Client-side standings overview component.
@@ -49,8 +49,8 @@ export const StandingsOverviewClient = ({
             header: '#',
             cell: ({ standing }) => <p>{standing.place}.</p>,
             tooltip: t('#'),
-            headerClassName: 'w-8 text-center',
-            className: 'w-8 text-center',
+            headerClassName: ' text-center',
+            className: 'text-center',
         },
         {
             key: 'team',
@@ -66,7 +66,7 @@ export const StandingsOverviewClient = ({
                             className="w-6 h-6 object-contain"
                         />
                     ) : (
-                        <div className="w-8 h-8" />
+                        <div className="" />
                     )}
                     <p
                         className={`hidden lg:block justify-start items-center ${teamHover}`}
@@ -85,32 +85,32 @@ export const StandingsOverviewClient = ({
             header: 'J',
             tooltip: t('MatchesPlayedTooltip'),
             cell: ({ totalGames }) => <p>{totalGames}</p>,
-            headerClassName: 'w-8 text-center',
-            className: 'w-8 text-center',
+            headerClassName: 'text-center',
+            className: 'text-center',
         },
         {
             key: 'wins',
             header: 'W',
             tooltip: t('WinsTooltip'),
             cell: ({ standing }) => <p>{standing.winGames}</p>,
-            headerClassName: 'w-8 text-center',
-            className: 'w-8 text-center',
+            headerClassName: 'text-center',
+            className: ' text-center',
         },
         {
             key: 'losses',
             header: 'L',
             tooltip: t('LossesTooltip'),
             cell: ({ standing }) => <p>{standing.lossGames}</p>,
-            headerClassName: 'w-8 text-center',
-            className: 'w-8 text-center',
+            headerClassName: 'text-center',
+            className: 'text-center',
         },
         {
             key: 'winRate',
             header: 'WR',
             tooltip: t('WRTooltip'),
             cell: ({ winRate }) => <p>{winRate}%</p>,
-            headerClassName: 'w-8 text-center',
-            className: 'w-8 text-center',
+            headerClassName: ' text-center',
+            className: ' text-center',
         },
         {
             key: 'form',

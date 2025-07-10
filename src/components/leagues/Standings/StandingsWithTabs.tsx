@@ -10,8 +10,14 @@ import {
 } from './StandingsDataProcessor'
 import { Column } from './types'
 import { Team } from '../../../../backend/src/generated/prisma'
-import { Card, CardBody, CardBodyMultiple, CardHeader, CardHeaderTab } from '@/components/ui/card/index'
-import { StandingsWithTabsClient } from './StandingsWithTabsClient'
+import {
+    Card,
+    CardBody,
+    CardBodyMultiple,
+    CardHeader,
+    CardHeaderTab,
+} from '@/components/ui/card/index'
+import { StandingsWithTabsClient } from './clients/StandingsWithTabsClient'
 
 /**
  * Standings component with tabs using CardBodyMultiple.

@@ -1,51 +1,69 @@
 'use client'
 
 import React from 'react'
-import { StandingsRow } from './StandingsRow'
-import { Column } from './types'
-import { ProcessedStanding } from './StandingsDataProcessor'
+import { useSort } from '@/components/ui/card/index'
+import { ProcessedStanding } from '../StandingsDataProcessor'
+import { Column } from '../types'
+import { StandingsRow } from '../StandingsRow'
 
 /**
- * Standings rows component that handles the rendering logic for standings data.
+ * Renders sorted standings rows based on active sort state.
  *
- * Manages the visibility of rows based on highlighted team and responsive behavior.
- * Calculates which rows to show on mobile vs desktop and handles highlighting logic.
+ * Displays standings data with sorting functionality based on the active sort key.
+ * Supports highlighting specific teams and responsive row display.
  *
- * @param processedData - Processed standings data with team information and statistics
- * @param columns - Column definitions for the standings table
- * @param highlightedTeam - Optional team name to highlight in the standings
- * @param maxRows - Optional maximum number of rows to display (null for all rows)
- * @returns A component that renders the standings rows with proper visibility logic
- *
- * @example
- * ```tsx
- * <StandingsRows
- *   processedData={processedData}
- *   columns={columns}
- *   highlightedTeam="Team Liquid"
- *   maxRows={5}
- * />
- * ```
+ * @param processedData - Processed standings data to display
+ * @param columns - Column configuration for rendering
+ * @param highlightedTeam - Optional team name to highlight
+ * @param maxRows - Optional maximum number of rows to display
+ * @returns Sorted and filtered standings rows
  */
-export const StandingsRows = ({
+export const SortedRows = ({
     processedData,
     columns,
     highlightedTeam,
     maxRows,
-    gridTemplate, // <-- nouveau prop
 }: {
     processedData: ProcessedStanding[]
     columns: Column<ProcessedStanding>[]
     highlightedTeam?: string
     maxRows?: number | null
-    gridTemplate: string // <-- nouveau prop
 }) => {
+    const { activeSort } = useSort()
+
+    // Sort data based on activeSort
+    const sortedData = React.useMemo(() => {
+        if (!activeSort) return processedData
+
+        return [...processedData].sort((a, b) => {
+            console.log(activeSort)
+            switch (activeSort) {
+                case 'place':
+                    // Sort in descending order for 'place'
+                    return (b.standing.place || 0) - (a.standing.place ||  0)
+                case 'played':
+                    return a.totalGames - b.totalGames
+                case 'wins':
+                    return (a.standing.winGames || 0) - (b.standing.winGames || 0)
+                case 'losses':
+                    return (a.standing.lossGames || 0) - (b.standing.lossGames || 0)
+                case 'winRate':
+                    return (a.winRate || 0) - (b.winRate || 0)
+                case 'form':
+                    // Sort by recent form (you might need to implement this based on your form data)
+                    return 0 // Placeholder - implement based on your form logic
+                default:
+                    return 0
+            }
+        })
+    }, [processedData, activeSort])
+
     return (
         <div className="flex flex-col flex-1">
-            {processedData.map((item, index) => {
-                // Find highlighted team index
+            {sortedData.map((item, index) => {
+                // Find highlighted team index in sorted data
                 const highlightedIndex = highlightedTeam
-                    ? processedData.findIndex(
+                    ? sortedData.findIndex(
                           (data) => data.standing.team === highlightedTeam
                       )
                     : -1
@@ -120,7 +138,6 @@ export const StandingsRows = ({
                             isHighlighted={
                                 item.standing.team === highlightedTeam
                             }
-                            gridTemplate={gridTemplate}
                         />
                     </div>
                 )
