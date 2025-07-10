@@ -103,9 +103,9 @@ export default function Home() {
                         <CardHeader>
                             <CardHeaderBase className="flex justify-between">
                                 <SubTitle>Header</SubTitle>
-                                <div className="flex gap-2">
-                                    <CardHeaderSortContent sortName={'aplha'}>
-                                        <p className="text-inherit">apha</p>
+                                <div className="flex gap-4">
+                                    <CardHeaderSortContent sortName={'alpha'}>
+                                        <p className="text-inherit">alpha</p>
                                     </CardHeaderSortContent>
                                     <CardHeaderSortContent sortName={'color'}>
                                         <p className="text-inherit">color</p>
