@@ -1,13 +1,13 @@
 import React from 'react'
-import { Card, CardBody, CardHeader, CardHeaderBase } from '../ui/card/Card'
+import { Card, CardBody, CardHeader, CardHeaderBase } from '../../ui/card/Card'
 import { getNextThreeMatchesForLeague } from '@/lib/api/league'
-import { League as LeagueType } from '../../../backend/src/generated/prisma'
-import { MatchSchedule as MatchScheduleType } from '../../../backend/src/generated/prisma'
+import { League as LeagueType } from '../../../../backend/src/generated/prisma'
+import { MatchSchedule as MatchScheduleType } from '../../../../backend/src/generated/prisma'
 import { getTeamsByNames } from '@/lib/api/teams'
 import { getTeamImage } from '@/lib/api/image'
 import { TimeDisplay } from '@/lib/hooks/timeDisplay'
-import { useVisibleMatches } from '@/lib/hooks/useVisibleMatches'
 import { NextMatchesClient } from './NextMatchesClient'
+import { SubTitle } from '@/components/ui/text/SubTitle'
 
 /**
  * NextMatches component displays upcoming matches for a league
@@ -25,6 +25,11 @@ export const NextMatches = async ({
     showSingleMatchOnDesktop?: boolean
 }) => {
     const nextMatches = await getNextThreeMatchesForLeague(Number(league.id))
+
+    // Don't render the component if there are no matches
+    if (!nextMatches.data || nextMatches.data.length === 0) {
+        return null
+    }
 
     // Extract unique team names from matches
     const teamNames = new Set<string>()
@@ -136,17 +141,14 @@ export const NextMatches = async ({
             <CardHeader>
                 <CardHeaderBase>
                     <div className="flex flex-row justify-between items-center w-full">
-                        <p className="text-clear-grey font-semibold">
-                            {showSingleMatchOnDesktop
-                                ? 'Next Match'
-                                : 'Next Matches'}
-                        </p>
-                        <div className="flex flex-row items-center gap-2">
-                            <p>
-                                {nextMatches.data?.[0]?.bestOf &&
-                                    `Bo${nextMatches.data[0].bestOf}`}
-                            </p>
-                        </div>
+                        <SubTitle>Next Match</SubTitle>
+                        <SubTitle
+                            children={
+                                nextMatches.data?.[0]?.bestOf
+                                    ? `Bo${nextMatches.data[0].bestOf}`
+                                    : ''
+                            }
+                        />
                     </div>
                 </CardHeaderBase>
             </CardHeader>

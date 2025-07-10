@@ -129,6 +129,32 @@ const TournamentSchema = Type.Object({
     }),
 })
 
-const TournamentListResponse = Type.Array(TournamentSchema)
+const TournamentStandingsResponse = Type.Object({
+    id: Type.Number({ description: 'Unique identifier for the standings' }),
+    overviewPage: Type.Optional(Type.String({ description: 'Overview page of the tournament' })),
+    team: Type.Optional(Type.String({ description: 'Team name' })),
+    pageAndTeam: Type.Optional(Type.String({ description: 'Page and team' })),
+    n: Type.Optional(Type.Number({ description: 'N of the team' })),
+    place: Type.Optional(Type.Number({ description: 'Place of the team' })),
+    winSeries: Type.Optional(Type.Number({ description: 'Win series of the team' })),
+    lossSeries: Type.Optional(Type.Number({ description: 'Loss series of the team' })),
+    tieSeries: Type.Optional(Type.Number({ description: 'Tie series of the team' })),
+    winGames: Type.Optional(Type.Number({ description: 'Win games of the team' })),
+    lossGames: Type.Optional(Type.Number({ description: 'Loss games of the team' })),
+    points: Type.Optional(Type.Number({ description: 'Points of the team' })),
+    pointsTiebreaker: Type.Optional(Type.Number({ description: 'Points tiebreaker of the team' })),
+    streak: Type.Optional(Type.Number({ description: 'Streak of the team' })),
+    streakDirection: Type.Optional(Type.String({ description: 'Streak direction of the team' })),
+    createdAt: Type.String({
+        format: 'date-time',
+        description: 'Creation date of the standings in db',
+    }),
+    updatedAt: Type.String({
+        format: 'date-time',
+        description: 'Last update date of the standings in db',
+    }),
+})
 
-export { TournamentSchema, TournamentListResponse }
+const TournamentListResponse = Type.Array(TournamentSchema)
+const TournamentStandingsListResponse = Type.Array(TournamentStandingsResponse)
+export { TournamentSchema, TournamentListResponse, TournamentStandingsResponse, TournamentStandingsListResponse }

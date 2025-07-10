@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { MatchSchedule as MatchScheduleType } from '../../../backend/src/generated/prisma'
+import { MatchSchedule as MatchScheduleType } from '../../../../backend/src/generated/prisma'
 import { getTeamImage } from '@/lib/api/image'
 import { TimeDisplay } from '@/lib/hooks/timeDisplay'
 import { useVisibleMatches } from '@/lib/hooks/useVisibleMatches'

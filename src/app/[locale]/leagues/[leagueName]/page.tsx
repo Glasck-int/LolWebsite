@@ -1,16 +1,26 @@
 import React from 'react'
 import { getLeagueBySlug } from '@/lib/api/league'
-import { getTournamentsByLeagueName } from '@/lib/api/tournaments'
+import {
+    getTournamentsByLeagueName,
+    getTournamentsStandingsByTournamentOverviewPage,
+} from '@/lib/api/tournaments'
 import { getNextThreeMatchesForLeague } from '@/lib/api/league'
-import { LeagueDescription } from '@/components/leagues/leagueDescription'
+
+import { LeagueDescription } from '@/components/leagues/LeagueDescription'
 import {
     Card,
     CardBody,
+    CardBodyMultiple,
     CardHeader,
-    CardOneHeader,
+    CardHeaderBase,
+    CardHeaderColumn,
+    CardHeaderTab,
 } from '@/components/ui/card/Card'
 import { getTeamsByNames } from '@/lib/api/teams'
-import { NextMatches } from '@/components/leagues/nextMatches'
+import { NextMatches } from '@/components/leagues/Matches/NextMatches'
+import { StandingsOverview } from '@/components/leagues/Standings/StandingsOverview'
+import { SubTitle } from '@/components/ui/text/SubTitle'
+import { StandingsWithTabs } from '@/components/leagues/Standings/StandingsWithTabs'
 
 interface LeaguePageProps {
     params: Promise<{ leagueName: string }>
@@ -18,51 +28,126 @@ interface LeaguePageProps {
 
 export default async function LeaguePage({ params }: LeaguePageProps) {
     const { leagueName } = await params
-    const league = await getLeagueBySlug(leagueName)
 
-    const tournaments = await getTournamentsByLeagueName(
-        league.data?.name || ''
-    )
-    if (league.error) {
-        return <div>Error: {league.error}</div>
+    try {
+        const league = await getLeagueBySlug(leagueName)
+
+        if (league.error) {
+            console.error('League error:', league.error)
+            return <div>Error loading league: {league.error}</div>
+        }
+
+        const tournaments = await getTournamentsByLeagueName(
+            league.data?.name || ''
+        )
+
+        if (tournaments.error) {
+            console.error('Tournaments error:', tournaments.error)
+            return <div>Error loading tournaments: {tournaments.error}</div>
+        }
+
+        // Use specifically the Spring Split tournament
+        const tournamentName = 'LFL/2025 Season/Spring Split'
+
+
+        console.log('Selected tournament for standings:', tournamentName)
+
+        const standings = await getTournamentsStandingsByTournamentOverviewPage(
+            tournamentName
+        )
+
+        if (standings.error) {
+            console.error('Standings error:', standings.error)
+            return <div>Error loading standings: {standings.error}</div>
+        }
+
+        console.log('Ligue cliquée:', league.data?.name)
+        console.log('Tournament used for standings:', tournamentName)
+        console.log('Standings data:', standings.data?.length || 0, 'teams')
+
+        return (
+            <div className="pt-24 body-container">
+                {league.data && <LeagueDescription league={league.data} />}
+                {league.data && <NextMatches league={league.data} />}
+
+                {standings.data && standings.data.length > 0 && (
+                    <StandingsOverview
+                        standings={standings.data}
+                        tournamentName={tournamentName}
+                    />
+                )}
+
+                {standings.data && standings.data.length > 0 && (
+                    <StandingsWithTabs
+                        standings={standings.data}
+                        tournamentName={tournamentName}
+                        maxRows={null}
+                        highlightedTeam={'Joblife'}
+                    />
+                )}
+
+                <Card>
+                    <CardHeader>
+                        <CardHeaderColumn>
+                            <CardHeaderTab>
+                                <p className="text-inherit text-semibold">BO/SERIE</p>
+                                <p className="text-inherit text-semibold">GAMES</p>
+                            </CardHeaderTab>
+                            <CardHeaderBase>
+                                <SubTitle>header</SubTitle>
+                            </CardHeaderBase>
+                        </CardHeaderColumn>
+                    </CardHeader>
+                    <CardBody>
+                        <CardBodyMultiple>
+                            <div className="flex justify-center items-center h-full">
+                                <p>body 1</p>
+                            </div>
+                            <p>body 2</p>
+                            <p>body 3</p>
+                            <p>test</p>
+                        </CardBodyMultiple>
+                    </CardBody>
+                </Card>
+
+                <h1>Page de la ligue: {league.data?.name}</h1>
+                <p>Slug: {league.data?.slug}</p>
+                <p>ID: {league.data?.id}</p>
+                <p>Short: {league.data?.short}</p>
+                <p>Region: {league.data?.region}</p>
+                <p>Level: {league.data?.level}</p>
+                <p>IsOfficial: {league.data?.isOfficial ? 'Oui' : 'Non'}</p>
+                <p>IsMajor: {league.data?.isMajor ? 'Oui' : 'Non'}</p>
+                <h2>Tournaments</h2>
+                <ul className="list-disc text-red-500">
+                    {tournaments.data?.map((tournament) => (
+                        <li key={tournament.id}>
+                            {tournament.overviewPage} -{' '}
+                            {tournament.dateStart?.toString() || 'N/A'} -{' '}
+                            {tournament.dateEnd?.toString() || 'N/A'} -{' '}
+                            {tournament.dateStartFuzzy?.toString() || 'N/A'}
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        )
+    } catch (error) {
+        console.error('Unexpected error in LeaguePage:', error)
+        return (
+            <div className="pt-24 body-container">
+                <div className="text-red-500">
+                    <h1>Erreur inattendue</h1>
+                    <p>
+                        Une erreur s'est produite lors du chargement de la page.
+                    </p>
+                    <p>
+                        Détails:{' '}
+                        {error instanceof Error
+                            ? error.message
+                            : 'Erreur inconnue'}
+                    </p>
+                </div>
+            </div>
+        )
     }
-
-    // Fetch team information for all unique team names
-
-    // // Create a map for quick team lookup
-    // const teamsMap = new Map<string, any>()
-    // teamsData.data?.forEach((team) => {
-    //     if (team.overviewPage) {
-    //         teamsMap.set(team.overviewPage, team)
-    //     }
-    // })
-
-    console.log('Ligue cliquée:', league.data?.name)
-    // console.log('Teams found:', teamsData.data?.length || 0)
-
-    return (
-        <div className="pt-24 body-container">
-            {league.data && <LeagueDescription league={league.data} />}
-            {league.data && <NextMatches league={league.data} />}
-            <h1>Page de la ligue: {league.data?.name}</h1>
-            <p>Slug: {league.data?.slug}</p>
-            <p>ID: {league.data?.id}</p>
-            <p>Short: {league.data?.short}</p>
-            <p>Region: {league.data?.region}</p>
-            <p>Level: {league.data?.level}</p>
-            <p>IsOfficial: {league.data?.isOfficial ? 'Oui' : 'Non'}</p>
-            <p>IsMajor: {league.data?.isMajor ? 'Oui' : 'Non'}</p>
-            <h2>Tournaments</h2>
-            <ul className="list-disc text-red-500">
-                {tournaments.data?.map((tournament) => (
-                    <li key={tournament.id}>
-                        {tournament.name} -{' '}
-                        {tournament.dateStart?.toString() || 'N/A'} -{' '}
-                        {tournament.dateEnd?.toString() || 'N/A'} -{' '}
-                        {tournament.dateStartFuzzy?.toString() || 'N/A'}
-                    </li>
-                ))}
-            </ul>
-        </div>
-    )
 }

@@ -1,0 +1,110 @@
+import React from 'react'
+
+import { Standings as StandingsType } from '../../../../backend/src/generated/prisma'
+import { StandingsRow } from './StandingsRow'
+import { StandingsHeader } from './StandingsHeader'
+import { getTeamsByNames, getTeamsRecentMatches } from '@/lib/api/teams'
+import { getTeamImage } from '@/lib/api/image'
+import {
+    processStandingsData,
+    ProcessedStanding,
+} from './StandingsDataProcessor'
+import { Column } from './types'
+import Image from 'next/image'
+import { Form } from '@/components/utils/Form'
+import { Team } from '../../../../backend/src/generated/prisma'
+import { Card, CardBody } from '@/components/ui/card/Card'
+import { StandingsOverviewClient } from './StandingsOverviewClient'
+
+/**
+ * Standings overview component.
+ *
+ * Displays a complete standings table for a tournament with team statistics, recent form,
+ * and team images. Fetches team data, recent matches, and images asynchronously.
+ * Shows the top 3 teams by default on mobile, with all teams visible on desktop.
+ *
+ * @param standings - Array of raw standings data from the database
+ * @param tournamentName - Name of the tournament for fetching recent matches
+ * @param highlightedTeam - Optional team name to highlight in the standings
+ * @param maxRows - Optional maximum number of rows to display (null for all rows)
+ * @returns A complete standings table component with team data and statistics
+ *
+ * @example
+ * ```tsx
+ * const standings = await getStandings(tournamentId)
+ *
+ * <StandingsOverview
+ *   standings={standings}
+ *   tournamentName="LCS Spring 2024"
+ *   highlightedTeam="Team Liquid"
+ *   maxRows={5}
+ * />
+ * ```
+ *
+ * @remarks
+ * This component performs several async operations:
+ * - Fetches team data for all teams in standings
+ * - Retrieves recent matches for form calculation
+ * - Downloads team images for display
+ * - Processes and enriches standings data
+ */
+export const StandingsOverview = async ({
+    standings,
+    tournamentName,
+    highlightedTeam,
+    maxRows,
+}: {
+    standings: StandingsType[]
+    tournamentName: string
+    highlightedTeam?: string
+    maxRows?: number | null
+}) => {
+    const teamNames = standings
+        .map((s) => s.team)
+        .filter((name): name is string => !!name)
+
+    const [teamsDataResponse, teamsRecentMatchesResponse] = await Promise.all([
+        getTeamsByNames(teamNames),
+        getTeamsRecentMatches(teamNames, tournamentName),
+    ])
+
+    const teamsData = teamsDataResponse.data || []
+    const teamsRecentMatches = teamsRecentMatchesResponse.data || []
+
+    const teamImagePromises = teamsData.map(async (team: Team) => {
+        const teamImageResponse = await getTeamImage(
+            team.image?.replace('.png', '') || ''
+        )
+        return {
+            teamName: team.overviewPage,
+            imageUrl: teamImageResponse.data || '',
+        }
+    })
+
+    const teamImageResults = await Promise.all(teamImagePromises)
+
+    const teamsImages: Record<string, string> = teamImageResults.reduce(
+        (acc, result) => {
+            if (result.teamName) {
+                acc[result.teamName] = result.imageUrl
+            }
+            return acc
+        },
+        {} as Record<string, string>
+    )
+
+    const processedData = processStandingsData(
+        standings,
+        teamsData,
+        teamsImages,
+        teamsRecentMatches
+    )
+
+    return (
+        <StandingsOverviewClient
+            processedData={processedData}
+            highlightedTeam={highlightedTeam}
+            maxRows={maxRows}
+        />
+    )
+}

@@ -39,7 +39,7 @@ export const Card = ({ children, className = '' }: CardProps) => {
         <CardContext.Provider value={{ activeIndex, setActiveIndex }}>
             <div
                 className={
-                    'bg-white-06 default-border-radius h-full w-full flex flex-col justify-evenly backdrop-blur ' +
+                    'bg-white-06 default-border-radius h-full w-full flex flex-col justify-evenly backdrop-blur overflow-hidden ' +
                     className
                 }
             >
