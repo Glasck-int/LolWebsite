@@ -1,19 +1,20 @@
 import Footer from '@/components/layout/Footer/Footer'
-import { Card } from '@/components/ui/card/Card'
-import { CardSort, CardHeaderSortContent } from '@/components/ui/card/CardSort'
+
+
 import {
-    CardBody,
-    CardBodyMultiple,
-    CardBodyMultipleContent,
-} from '@/components/ui/card/CardBody'
-import {
+    Card,
+    CardSort,
     CardHeader,
     CardHeaderBase,
     CardHeaderColumn,
     CardHeaderContent,
     CardHeaderSelector,
     CardHeaderTab,
-} from '@/components/ui/card/CardHeader'
+    CardBody,
+    CardBodyMultiple,
+    CardBodyMultipleContent,
+    CardHeaderSortContent,
+} from '@/components/ui/card/index'
 
 import { Annoyed } from 'lucide-react'
 import { SubTitle } from '@/components/ui/text/SubTitle'

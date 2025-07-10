@@ -4,19 +4,18 @@ import {
     getTournamentsByLeagueName,
     getTournamentsStandingsByTournamentOverviewPage,
 } from '@/lib/api/tournaments'
-import { getNextThreeMatchesForLeague } from '@/lib/api/league'
-
 import { LeagueDescription } from '@/components/leagues/LeagueDescription'
 import {
     Card,
     CardBody,
     CardBodyMultiple,
+    CardBodyMultipleContent,
     CardHeader,
     CardHeaderBase,
     CardHeaderColumn,
     CardHeaderTab,
-} from '@/components/ui/card/Card'
-import { getTeamsByNames } from '@/lib/api/teams'
+    CardHeaderContent,
+} from '@/components/ui/card/index'
 import { NextMatches } from '@/components/leagues/Matches/NextMatches'
 import { StandingsOverview } from '@/components/leagues/Standings/StandingsOverview'
 import { SubTitle } from '@/components/ui/text/SubTitle'
@@ -90,8 +89,16 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
                     <CardHeader>
                         <CardHeaderColumn>
                             <CardHeaderTab>
-                                <p className="text-inherit text-semibold">BO/SERIE</p>
-                                <p className="text-inherit text-semibold">GAMES</p>
+                                <CardHeaderContent>
+                                    <p className="text-inherit text-semibold">
+                                        BO/SERIE
+                                    </p>
+                                </CardHeaderContent>
+                                <CardHeaderContent>
+                                    <p className="text-inherit text-semibold">
+                                        GAMES
+                                    </p>
+                                </CardHeaderContent>
                             </CardHeaderTab>
                             <CardHeaderBase>
                                 <SubTitle>header</SubTitle>
@@ -100,12 +107,21 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
                     </CardHeader>
                     <CardBody>
                         <CardBodyMultiple>
+                            <CardBodyMultipleContent>
+                                
                             <div className="flex justify-center items-center h-full">
                                 <p>body 1</p>
                             </div>
-                            <p>body 2</p>
-                            <p>body 3</p>
-                            <p>test</p>
+                            </CardBodyMultipleContent>
+                            <CardBodyMultipleContent>
+                                <p>body 2</p>
+                            </CardBodyMultipleContent>
+                            <CardBodyMultipleContent>
+                                <p>body 3</p>
+                            </CardBodyMultipleContent>
+                            <CardBodyMultipleContent>
+                                <p>test</p>
+                            </CardBodyMultipleContent>
                         </CardBodyMultiple>
                     </CardBody>
                 </Card>

@@ -1,19 +1,13 @@
 import React from 'react'
 
 import { Standings as StandingsType } from '../../../../backend/src/generated/prisma'
-import { StandingsRow } from './StandingsRow'
-import { StandingsHeader } from './StandingsHeader'
+
 import { getTeamsByNames, getTeamsRecentMatches } from '@/lib/api/teams'
 import { getTeamImage } from '@/lib/api/image'
 import {
     processStandingsData,
-    ProcessedStanding,
 } from './StandingsDataProcessor'
-import { Column } from './types'
-import Image from 'next/image'
-import { Form } from '@/components/utils/Form'
 import { Team } from '../../../../backend/src/generated/prisma'
-import { Card, CardBody } from '@/components/ui/card/Card'
 import { StandingsOverviewClient } from './StandingsOverviewClient'
 
 /**

@@ -6,10 +6,10 @@ import { StandingsHeader } from './StandingsHeader'
 import { Column } from './types'
 import Image from 'next/image'
 import { Form } from '@/components/utils/Form'
-import { Card, CardBody, CardHeader, CardHeaderBase } from '@/components/ui/card/Card'
+import { Card, CardBody, CardHeader } from '@/components/ui/card/index'
 import { useTranslate } from '@/lib/hooks/useTranslate'
 import { ProcessedStanding } from './StandingsDataProcessor'
-import { StandingsRows } from './StandingsRows'
+
 /**
  * Client-side standings overview component.
  *
@@ -133,11 +133,11 @@ export const StandingsOverviewClient = ({
     return (
         <Card>
             {/* Mobile header */}
-            <CardHeader>    
+            <CardHeader>
                 <div className="md:hidden w-full">
                     <StandingsHeader columns={columns} isMobile={true} />
                 </div>
-                        {/* Desktop header */}
+                {/* Desktop header */}
                 <div className="hidden md:block w-full">
                     <StandingsHeader columns={columns} isMobile={false} />
                 </div>

@@ -12,7 +12,9 @@ import {
     CardBodyMultiple,
     CardHeader,
     CardHeaderTab,
-} from '@/components/ui/card/Card'
+    CardHeaderContent,
+    CardBodyMultipleContent,
+} from '@/components/ui/card/index'
 import { useTranslate } from '@/lib/hooks/useTranslate'
 import { ProcessedStanding } from './StandingsDataProcessor'
 
@@ -141,36 +143,42 @@ export const StandingsWithTabsClient = ({
         <Card className="flex flex-col w-full h-full">
             <CardHeader>
                 <CardHeaderTab>
-                    <p className="text-inherit">BO/SERIE</p>
-                    <p className="text-inherit">GAMES</p>
+                    <CardHeaderContent>
+                        <p className="text-inherit">BO/SERIE</p>
+                    </CardHeaderContent>
+                    <CardHeaderContent>
+                        <p className="text-inherit">GAMES</p>
+                    </CardHeaderContent>
                     {/* Future tabs can be added here */}
                 </CardHeaderTab>
             </CardHeader>
             <CardBody>
                 <CardBodyMultiple>
-                    {/* Tab 1: Standings */}
-                    <div className="flex flex-col w-full h-full">
-                        {/* Mobile header */}
-                        <div className="md:hidden">
-                            <StandingsHeader
+                    <CardBodyMultipleContent>
+                        {/* Tab 1: Standings */}
+                        <div className="flex flex-col w-full h-full">
+                            {/* Mobile header */}
+                            <div className="md:hidden">
+                                <StandingsHeader
+                                    columns={columns}
+                                    isMobile={true}
+                                />
+                            </div>
+                            {/* Desktop header */}
+                            <div className="hidden md:block">
+                                <StandingsHeader
+                                    columns={columns}
+                                    isMobile={false}
+                                />
+                            </div>
+                            <StandingsRows
+                                processedData={processedData}
                                 columns={columns}
-                                isMobile={true}
+                                highlightedTeam={highlightedTeam}
+                                maxRows={maxRows}
                             />
                         </div>
-                        {/* Desktop header */}
-                        <div className="hidden md:block">
-                            <StandingsHeader
-                                columns={columns}
-                                isMobile={false}
-                            />
-                        </div>
-                        <StandingsRows
-                            processedData={processedData}
-                            columns={columns}
-                            highlightedTeam={highlightedTeam}
-                            maxRows={maxRows}
-                        />
-                    </div>
+                    </CardBodyMultipleContent>
 
                     {/* Future tabs can be added here */}
                 </CardBodyMultiple>

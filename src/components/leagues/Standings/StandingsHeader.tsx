@@ -1,7 +1,7 @@
 import React from 'react'
 import { SubTitle } from '@/components/ui/text/SubTitle'
 import { Column } from './types'
-import { CardHeaderBase } from '@/components/ui/card/Card'
+import { CardHeaderBase } from '@/components/ui/card/index'
 
 /**
  * Standings table header component.
