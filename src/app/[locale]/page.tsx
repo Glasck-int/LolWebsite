@@ -1,6 +1,5 @@
 import Footer from '@/components/layout/Footer/Footer'
 
-
 import {
     Card,
     CardSort,
@@ -14,6 +13,8 @@ import {
     CardBodyMultiple,
     CardBodyMultipleContent,
     CardHeaderSortContent,
+    CardFooter,
+    CardFooterContent,
 } from '@/components/ui/card/index'
 
 import { Annoyed } from 'lucide-react'
@@ -61,6 +62,29 @@ export default function Home() {
                 </Card>
             </div>
             ---
+            <div>
+                <Card>
+                    <CardBody>
+                        <div>
+                            <p>superbody</p>
+                            <p>superbody</p>
+                            <p>superbody</p>
+                        </div>
+                    </CardBody>
+                    <CardFooter>
+                        <CardFooterContent>
+                            <p className='text-inherit'>superfooter</p>
+                        </CardFooterContent>
+                        <CardFooterContent>
+                            <p className='text-inherit'>superfooter</p>
+                        </CardFooterContent>
+                        <CardFooterContent>
+                            <p className='text-inherit'>superfooter</p>
+                        </CardFooterContent>
+                    </CardFooter>
+                </Card>
+            </div>
+            ---
             <div className="h-[200px]">
                 <Card>
                     <CardHeader>
@@ -104,9 +128,15 @@ export default function Home() {
                             <CardHeaderBase className="flex justify-between">
                                 <SubTitle>Header</SubTitle>
                                 <div className="flex gap-4">
-                                    <CardHeaderSortContent sortName={'alpha'}>
-                                        <p className="text-inherit">alpha</p>
-                                    </CardHeaderSortContent>
+                                    <div className="grid grid-cols-1 w-60">
+                                        <CardHeaderSortContent
+                                            sortName={'alpha'}
+                                        >
+                                            <p className="text-inherit">
+                                                alpha
+                                            </p>
+                                        </CardHeaderSortContent>
+                                    </div>
                                     <CardHeaderSortContent sortName={'color'}>
                                         <p className="text-inherit">color</p>
                                     </CardHeaderSortContent>

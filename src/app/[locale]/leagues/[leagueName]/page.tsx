@@ -4,7 +4,7 @@ import {
     getTournamentsByLeagueName,
     getTournamentsStandingsByTournamentOverviewPage,
 } from '@/lib/api/tournaments'
-import { LeagueDescription } from '@/components/leagues/LeagueDescription'
+import { LeagueDescription } from '../../../../components/leagues/leagueDescription'
 import {
     Card,
     CardBody,

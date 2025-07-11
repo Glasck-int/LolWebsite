@@ -110,6 +110,7 @@ export const CardHeaderSortContent = ({
             onClick={() => setActiveSort(sortName)} 
 
         >
+            <span className='inline-block relative w-fit select-none'>
             {children}
             {isActive && (
                 <span className="absolute -right-3.5 top-1/3 md:top-1/5 -translate-y-1/2 transform scale-50 md:scale-75">
@@ -122,6 +123,8 @@ export const CardHeaderSortContent = ({
                     />
                 </span>
             )}
+            </span>
         </div>
     )
 }
+

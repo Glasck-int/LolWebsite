@@ -85,7 +85,7 @@ export const CardHeaderSelector = ({ children, className }: CardProps) => {
                 if (React.isValidElement(child)) {
                     return (
                         <div
-                            className={` cursor-pointer ${
+                            className={` cursor-pointer select-none ${
                                 activeIndex === index
                                     ? 'text-white'
                                     : 'text-grey hover:text-clear-grey'
@@ -200,7 +200,7 @@ export const CardHeaderTab = ({ children, className = '' }: CardProps) => {
                 if (React.isValidElement(child)) {
                     return (
                         <div
-                            className={`z-10 flex-1 text-center cursor-pointer px-2 py-2 transition-colors duration-100 ${
+                            className={`z-10 flex-1 text-center cursor-pointer select-none px-2 py-2 transition-colors duration-100 ${
                                 activeIndex === index
                                     ? 'text-white'
                                     : 'text-grey hover:text-clear-grey'

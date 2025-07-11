@@ -49,16 +49,3 @@ export const Card = ({ children, className = '' }: CardProps) => {
     )
 }
 
-// super css pour faire des slide undertab (regarder sur gpt)
-// <motion.div
-//     className="absolute bottom-0 h-[2px] bg-blue-500"
-//     animate={{
-//         width: `${tabWidth}%`,
-//         left: `${tabWidth * activeIndex}%`,
-//     }}
-//     transition={{
-//         type: "spring",
-//         stiffness: 300,
-//         damping: 30,
-//     }}
-// />
