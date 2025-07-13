@@ -8,6 +8,7 @@ import {
 } from './StandingsDataProcessor'
 import { Column } from '../types'
 import { StandingsRow } from '../components/StandingsRow'
+import { useFlipAnimation } from '../hooks/useFlipAnimation'
 
 /**
  * Renders sorted standings rows based on active sort state.
@@ -37,6 +38,8 @@ export const SortedRows = ({
     className?: string
 }) => {
     const { activeSort } = useSort()
+    const { containerRef, isAnimating } = useFlipAnimation([activeSort, processedData])
+    
     // Sort data based on activeSort
     const sortedData = React.useMemo(() => {
         if (!activeSort.key)
@@ -91,7 +94,7 @@ export const SortedRows = ({
     }, [processedData, activeSort])
 
     return (
-        <div className={`flex flex-col flex-1`}>
+        <div ref={containerRef} className={`flex flex-col flex-1`}>
             {sortedData.map((item, index) => {
                 // Find highlighted team index in sorted data
                 const highlightedIndex = highlightedTeam
@@ -162,8 +165,17 @@ export const SortedRows = ({
                     classNameAppend = 'hidden' // Hide on both
                 }
 
+                const teamKey = 'standing' in item ? item.standing.team : item.team
+                
                 return (
-                    <div key={'standing' in item ? item.standing.team : item.team} className={classNameAppend}>
+                    <div 
+                        key={teamKey} 
+                        data-team-key={teamKey}
+                        className={classNameAppend}
+                        style={{
+                            zIndex: highlightedTeam && teamKey === highlightedTeam ? 10 : 1,
+                        }}
+                    >
                         <StandingsRow
                             item={item}
                             columns={columns as Column<typeof item>[]}

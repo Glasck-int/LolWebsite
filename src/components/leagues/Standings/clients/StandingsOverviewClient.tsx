@@ -53,10 +53,10 @@ export const StandingsOverviewClient = ({
         <Card className="flex flex-col w-full h-full">
             <CardSort>
                 <CardBody>
-                            <div className="flex flex-col w-full h-full">
+                            <div className="flex flex-col w-full h-full ">
                                 <CardHeader>
                                     <CardHeaderBase>
-                                        <div className="hidden md:block w-full">
+                                        <div className="hidden md:block w-full ">
                                             <StandingsHeader
                                                 columns={columns}
                                                 gridTemplate={gridTemplate}

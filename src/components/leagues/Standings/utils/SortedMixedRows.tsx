@@ -5,6 +5,7 @@ import { useSort } from '@/components/ui/card/index'
 import { ProcessedGameStats, ProcessedStanding } from './StandingsDataProcessor'
 import { Column } from '../types'
 import { StandingsRow } from '../components/StandingsRow'
+import { useFlipAnimation } from '../hooks/useFlipAnimation'
 
 /**
  * Renders sorted standings rows based on active sort state.
@@ -34,6 +35,8 @@ export const SortedMixedRows = ({
     className?: string
 }) => {
     const { activeSort } = useSort()
+    const { containerRef, isAnimating } = useFlipAnimation([activeSort, processedData])
+    
     // Sort data based on activeSort
     const sortedData = React.useMemo(() => {
         if (!activeSort.key)
@@ -76,9 +79,9 @@ export const SortedMixedRows = ({
                 case 'wins':
                 case 'matchesWins':
                     const aWins =
-                        'standing' in a ? a.standing.winGames || 0 : a.wins || 0
+                        'standing' in a ? a.standing.winSeries || 0 : a.wins || 0
                     const bWins =
-                        'standing' in b ? b.standing.winGames || 0 : b.wins || 0
+                        'standing' in b ? b.standing.winSeries || 0 : b.wins || 0
                     comparison = aWins - bWins
                     break
                 case 'gamesWins':
@@ -90,11 +93,11 @@ export const SortedMixedRows = ({
                 case 'matchesLosses':
                     const aLosses =
                         'standing' in a
-                            ? a.standing.lossGames || 0
+                            ? a.standing.lossSeries || 0
                             : a.losses || 0
                     const bLosses =
                         'standing' in b
-                            ? b.standing.lossGames || 0
+                            ? b.standing.lossSeries || 0
                             : b.losses || 0
                     comparison = aLosses - bLosses
                     break
@@ -130,7 +133,7 @@ export const SortedMixedRows = ({
     }, [processedData, activeSort])
 
     return (
-        <div className={`flex flex-col flex-1`}>
+        <div ref={containerRef} className={`flex flex-col flex-1`}>
             {sortedData.map((item, index) => {
                 // Find highlighted team index in sorted data
                 const highlightedIndex = highlightedTeam
@@ -204,12 +207,16 @@ export const SortedMixedRows = ({
                     classNameAppend = 'hidden' // Hide on both
                 }
 
+                const teamKey = 'standing' in item ? item.standing.team : item.team
+                
                 return (
                     <div
-                        key={
-                            'standing' in item ? item.standing.team : item.team
-                        }
+                        key={teamKey}
+                        data-team-key={teamKey}
                         className={classNameAppend}
+                        style={{
+                            zIndex: highlightedTeam && teamKey === highlightedTeam ? 10 : 1,
+                        }}
                     >
                         <StandingsRow
                             item={item}
