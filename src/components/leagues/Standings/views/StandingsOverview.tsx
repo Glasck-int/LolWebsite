@@ -2,11 +2,11 @@ import React from 'react'
 
 import { Standings as StandingsType } from '../../../../backend/src/generated/prisma'
 
-import { getTeamsByNames, getTeamsRecentMatches } from '@/lib/api/teams'
+import { getTeamsByNames, getTeamsRecentGames, getTeamsRecentMatches } from '@/lib/api/teams'
 import { getTeamImage } from '@/lib/api/image'
-import { processStandingsData } from './StandingsDataProcessor'
+import { processStandingsData } from '../utils/StandingsDataProcessor'
 import { Team } from '../../../../backend/src/generated/prisma'
-import { StandingsOverviewClient } from './clients/StandingsOverviewClient'
+import { StandingsOverviewClient } from '../clients/StandingsOverviewClient'
 
 /**
  * Standings overview component.
@@ -55,9 +55,10 @@ export const StandingsOverview = async ({
         .map((s) => s.team)
         .filter((name): name is string => !!name)
 
-    const [teamsDataResponse, teamsRecentMatchesResponse] = await Promise.all([
+    const [teamsDataResponse, teamsRecentMatchesResponse, gamesRecentResponse] = await Promise.all([
         getTeamsByNames(teamNames),
         getTeamsRecentMatches(teamNames, tournamentName),
+        getTeamsRecentGames(teamNames, tournamentName),
     ])
 
     const teamsData = teamsDataResponse.data || []
@@ -89,7 +90,8 @@ export const StandingsOverview = async ({
         standings,
         teamsData,
         teamsImages,
-        teamsRecentMatches
+        teamsRecentMatches,
+        gamesRecentResponse.data || [],
     )
 
     return (

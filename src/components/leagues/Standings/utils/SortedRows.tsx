@@ -2,9 +2,12 @@
 
 import React from 'react'
 import { useSort } from '@/components/ui/card/index'
-import { ProcessedStanding } from '../StandingsDataProcessor'
+import {
+    ProcessedGameStats,
+    ProcessedStanding,
+} from './StandingsDataProcessor'
 import { Column } from '../types'
-import { StandingsRow } from '../StandingsRow'
+import { StandingsRow } from '../components/StandingsRow'
 
 /**
  * Renders sorted standings rows based on active sort state.
@@ -23,48 +26,77 @@ export const SortedRows = ({
     columns,
     highlightedTeam,
     maxRows,
+    gridTemplate,
+    className,
 }: {
-    processedData: ProcessedStanding[]
-    columns: Column<ProcessedStanding>[]
+    processedData: ProcessedStanding[] | ProcessedGameStats[]
+    columns: Column<ProcessedStanding>[] | Column<ProcessedGameStats>[]
     highlightedTeam?: string
     maxRows?: number | null
+    gridTemplate: string | null
+    className?: string
 }) => {
     const { activeSort } = useSort()
-
     // Sort data based on activeSort
     const sortedData = React.useMemo(() => {
-        if (!activeSort) return processedData
+        if (!activeSort.key)
+            return processedData.sort((a, b) => {
+                const aPlace = 'standing' in a ? (a.standing.place || 0) : 0
+                const bPlace = 'standing' in b ? (b.standing.place || 0) : 0
+                return aPlace - bPlace
+            })
 
         return [...processedData].sort((a, b) => {
-            console.log(activeSort)
-            switch (activeSort) {
+            let comparison = 0
+            const key = activeSort.key
+            const direction = activeSort.direction
+
+            if (!key || !direction) return 0
+
+            console.log(key, direction)
+
+            switch (key) {
                 case 'place':
-                    // Sort in descending order for 'place'
-                    return (b.standing.place || 0) - (a.standing.place ||  0)
+                    const aPlace = 'standing' in a ? (a.standing.place || 0) : 0
+                    const bPlace = 'standing' in b ? (b.standing.place || 0) : 0
+                    comparison = bPlace - aPlace
+                    break
                 case 'played':
-                    return a.totalGames - b.totalGames
+                    comparison = ('totalGames' in a ? a.totalGames : a.gamesStats.totalGames) - 
+                                ('totalGames' in b ? b.totalGames : b.gamesStats.totalGames)
+                    break
                 case 'wins':
-                    return (a.standing.winGames || 0) - (b.standing.winGames || 0)
+                    const aWins = 'standing' in a ? (a.standing.winGames || 0) : (a.wins || 0)
+                    const bWins = 'standing' in b ? (b.standing.winGames || 0) : (b.wins || 0)
+                    comparison = aWins - bWins
+                    break
                 case 'losses':
-                    return (a.standing.lossGames || 0) - (b.standing.lossGames || 0)
+                    const aLosses = 'standing' in a ? (a.standing.lossGames || 0) : (a.losses || 0)
+                    const bLosses = 'standing' in b ? (b.standing.lossGames || 0) : (b.losses || 0)
+                    comparison = aLosses - bLosses
+                    break
                 case 'winRate':
-                    return (a.winRate || 0) - (b.winRate || 0)
+                    comparison = ('winRate' in a ? a.winRate || 0 : a.gamesStats.winRate || 0) - 
+                                ('winRate' in b ? b.winRate || 0 : b.gamesStats.winRate || 0)
+                    break
                 case 'form':
-                    // Sort by recent form (you might need to implement this based on your form data)
-                    return 0 // Placeholder - implement based on your form logic
+                    comparison = 0 // Placeholder
+                    break
                 default:
                     return 0
             }
+
+            return activeSort.direction === 'desc' ? -comparison : comparison
         })
     }, [processedData, activeSort])
 
     return (
-        <div className="flex flex-col flex-1">
+        <div className={`flex flex-col flex-1`}>
             {sortedData.map((item, index) => {
                 // Find highlighted team index in sorted data
                 const highlightedIndex = highlightedTeam
                     ? sortedData.findIndex(
-                          (data) => data.standing.team === highlightedTeam
+                          (data) => ('standing' in data ? data.standing.team : data.team) === highlightedTeam
                       )
                     : -1
 
@@ -119,25 +151,27 @@ export const SortedRows = ({
                 }
 
                 // Determine CSS classes based on visibility
-                let className = ''
+                let classNameAppend = ''
                 if (shouldShowOnMobile && shouldShowOnDesktop) {
-                    className = 'flex' // Show on both mobile and desktop
+                    classNameAppend = 'flex' // Show on both mobile and desktop
                 } else if (shouldShowOnMobile && !shouldShowOnDesktop) {
-                    className = 'flex md:hidden' // Show only on mobile
+                    classNameAppend = 'flex md:hidden' // Show only on mobile
                 } else if (!shouldShowOnMobile && shouldShowOnDesktop) {
-                    className = 'hidden md:flex' // Show only on desktop
+                    classNameAppend = 'hidden md:flex' // Show only on desktop
                 } else {
-                    className = 'hidden' // Hide on both
+                    classNameAppend = 'hidden' // Hide on both
                 }
 
                 return (
-                    <div key={item.standing.team} className={className}>
+                    <div key={'standing' in item ? item.standing.team : item.team} className={classNameAppend}>
                         <StandingsRow
                             item={item}
-                            columns={columns}
+                            columns={columns as Column<typeof item>[]}
                             isHighlighted={
-                                item.standing.team === highlightedTeam
+                                ('standing' in item ? item.standing.team : item.team) === highlightedTeam
                             }
+                            gridTemplate={gridTemplate}
+                            className={className}
                         />
                     </div>
                 )

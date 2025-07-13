@@ -7,7 +7,6 @@ import { FunctionalSearchBar } from '@/components/ui/search/FunctionalSearchBar'
 import { OfficialToggle } from '@/components/utils/OfficialToggle'
 import { useLeagueSearch } from '@/lib/hooks/useLeagueSearch'
 import { League as LeagueType } from '../../../../backend/src/generated/prisma'
-import { getLeagueImage } from '@/lib/api/image'
 import Image from 'next/image'
 import { getApiBaseUrl } from '@/lib/api/utils'
 

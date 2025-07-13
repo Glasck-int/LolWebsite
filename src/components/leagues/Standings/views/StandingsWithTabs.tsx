@@ -1,33 +1,25 @@
 import React from 'react'
 import { Standings as StandingsType } from '../../../../backend/src/generated/prisma'
-import { StandingsRow } from './StandingsRow'
-import { StandingsHeader } from './StandingsHeader'
-import { getTeamsByNames, getTeamsRecentMatches } from '@/lib/api/teams'
+import {
+    getTeamsByNames,
+    getTeamsRecentGames,
+    getTeamsRecentMatches,
+} from '@/lib/api/teams'
 import { getTeamImage } from '@/lib/api/image'
-import {
-    processStandingsData,
-    ProcessedStanding,
-} from './StandingsDataProcessor'
-import { Column } from './types'
+import { getTournamentsGamesByTournamentOverviewPage } from '@/lib/api/tournaments'
+import { processStandingsData } from '../utils/StandingsDataProcessor'
 import { Team } from '../../../../backend/src/generated/prisma'
-import {
-    Card,
-    CardBody,
-    CardBodyMultiple,
-    CardHeader,
-    CardHeaderTab,
-} from '@/components/ui/card/index'
-import { StandingsWithTabsClient } from './clients/StandingsWithTabsClient'
+import { StandingsWithTabsClient } from '../clients/StandingsWithTabsClient'
 
 /**
  * Standings component with tabs using CardBodyMultiple.
  *
  * Displays standings data in a card with multiple tabs, where the first tab
- * contains the complete standings table. Uses the same data processing as
- * StandingsOverview but with CardBodyMultiple structure for future tab expansion.
+ * contains the complete standings table and the second tab shows games statistics.
+ * Uses the same data processing as StandingsOverview but with CardBodyMultiple structure.
  *
  * @param standings - Array of raw standings data from the database
- * @param tournamentName - Name of the tournament for fetching recent matches
+ * @param tournamentName - Name of the tournament for fetching recent matches and games
  * @param highlightedTeam - Optional team name to highlight in the standings
  * @param maxRows - Optional maximum number of rows to display (null for all rows)
  * @returns A standings component with tabs structure and complete standings in first tab
@@ -45,13 +37,14 @@ import { StandingsWithTabsClient } from './clients/StandingsWithTabsClient'
  * ```
  *
  * @remarks
- * This component performs the same async operations as StandingsOverview:
+ * This component performs several async operations:
  * - Fetches team data for all teams in standings
  * - Retrieves recent matches for form calculation
  * - Downloads team images for display
- * - Processes and enriches standings data
+ * - Fetches games data for the second tab
+ * - Processes and enriches standings and games data
  *
- * The component uses CardBodyMultiple to allow for future expansion with additional tabs.
+ * The component uses CardBodyMultiple to allow for tab switching between standings and games.
  */
 export const StandingsWithTabs = async ({
     standings,
@@ -68,13 +61,21 @@ export const StandingsWithTabs = async ({
         .map((s) => s.team)
         .filter((name): name is string => !!name)
 
-    const [teamsDataResponse, teamsRecentMatchesResponse] = await Promise.all([
+    const [
+        teamsDataResponse,
+        teamsRecentMatchesResponse,
+        gamesResponse,
+        gamesRecentResponse,
+    ] = await Promise.all([
         getTeamsByNames(teamNames),
         getTeamsRecentMatches(teamNames, tournamentName),
+        getTournamentsGamesByTournamentOverviewPage(tournamentName),
+        getTeamsRecentGames(teamNames, tournamentName),
     ])
 
     const teamsData = teamsDataResponse.data || []
     const teamsRecentMatches = teamsRecentMatchesResponse.data || []
+    const games = gamesResponse.data || []
 
     const teamImagePromises = teamsData.map(async (team: Team) => {
         const teamImageResponse = await getTeamImage(
@@ -102,7 +103,9 @@ export const StandingsWithTabs = async ({
         standings,
         teamsData,
         teamsImages,
-        teamsRecentMatches
+        teamsRecentMatches,
+        gamesRecentResponse.data || [],
+        games
     )
 
     return (

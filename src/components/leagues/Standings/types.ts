@@ -4,6 +4,7 @@ import { ReactNode } from 'react'
  * Column configuration interface for standings table.
  *
  * Defines the structure for configuring table columns with headers, tooltips, and cell renderers.
+ * Supports both sortable and non-sortable columns.
  *
  * @template T - The type of data item that will be passed to the cell renderer
  */
@@ -20,4 +21,6 @@ export interface Column<T> {
     className?: string
     /** CSS classes to apply to the column header */
     headerClassName?: string
+    /** Whether this column is sortable (defaults to false) */
+    sortable?: boolean
 }

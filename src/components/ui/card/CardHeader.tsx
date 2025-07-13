@@ -40,7 +40,7 @@ export const CardHeader = ({ children, className = '' }: CardProps) => {
  * <CardHeaderBase>Title</CardHeaderBase>
  * ```
  */
-export const CardHeaderBase = ({ children, className = '' }: CardProps) => {
+export const CardHeaderBase = ({ children, style, className = '' }: { children: React.ReactNode, style?: React.CSSProperties, className?: string }) => {
     return (
         <div
             className={
@@ -48,6 +48,7 @@ export const CardHeaderBase = ({ children, className = '' }: CardProps) => {
                 ' ' +
                 className
             }
+            style={style}
         >
             {children}
         </div>
@@ -80,7 +81,7 @@ export const CardHeaderSelector = ({ children, className }: CardProps) => {
     const { activeIndex, setActiveIndex } = useCard()
 
     return (
-        <div className="flex">
+        <div className="flex ">
             {React.Children.map(children, (child, index) => {
                 if (React.isValidElement(child)) {
                     return (

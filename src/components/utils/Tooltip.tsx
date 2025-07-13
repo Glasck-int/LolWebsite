@@ -18,7 +18,6 @@ export const Tooltip = ({
     const [visible, setVisible] = useState(false)
     const [showTooltip, setShowTooltip] = useState(false)
     const [mouseX, setMouseX] = useState(0)
-    const [mouseY, setMouseY] = useState(0)
     const [tooltipWidth, setTooltipWidth] = useState(0)
     const [tooltipHeight, setTooltipHeight] = useState(0)
     const [mounted, setMounted] = useState(false)
@@ -31,7 +30,6 @@ export const Tooltip = ({
 
     const handleMouseMove = (e: React.MouseEvent) => {
         setMouseX(e.clientX)
-        setMouseY(e.clientY)
     }
 
     const handleMouseEnter = () => {

@@ -1,10 +1,8 @@
 "use client";
 
 import React from "react";
-import { useTranslate } from "@/lib/hooks/useTranslate";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import {
-	ChangeEvent,
 	ReactNode,
 	useTransition,
 	useState,

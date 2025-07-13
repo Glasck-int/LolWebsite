@@ -4,7 +4,7 @@ import {
     getTournamentsByLeagueName,
     getTournamentsStandingsByTournamentOverviewPage,
 } from '@/lib/api/tournaments'
-import { LeagueDescription } from '@/components/leagues/LeagueDescription'
+import { LeagueDescription } from '@/components/leagues/components/LeagueDescription'
 import {
     Card,
     CardBody,
@@ -17,9 +17,9 @@ import {
     CardHeaderContent,
 } from '@/components/ui/card/index'
 import { NextMatches } from '@/components/leagues/Matches/NextMatches'
-import { StandingsOverview } from '@/components/leagues/Standings/StandingsOverview'
+import { StandingsOverview } from '@/components/leagues/Standings/views/StandingsOverview'
 import { SubTitle } from '@/components/ui/text/SubTitle'
-import { StandingsWithTabs } from '@/components/leagues/Standings/StandingsWithTabs'
+import { StandingsWithTabs } from '@/components/leagues/Standings/views/StandingsWithTabs'
 
 interface LeaguePageProps {
     params: Promise<{ leagueName: string }>
@@ -46,7 +46,7 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
         }
 
         // Use specifically the Spring Split tournament
-        const tournamentName = 'LFL/2025 Season/Spring Split'
+        const tournamentName = 'LEC/2025 Season/Spring Season'
 
 
         console.log('Selected tournament for standings:', tournamentName)
@@ -81,7 +81,6 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
                         standings={standings.data}
                         tournamentName={tournamentName}
                         maxRows={null}
-                        highlightedTeam={'Joblife'}
                     />
                 )}
 

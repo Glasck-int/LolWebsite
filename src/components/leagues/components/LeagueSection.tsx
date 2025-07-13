@@ -1,7 +1,6 @@
 import React from 'react'
 import { LeagueGrid } from './LeagueGrid'
 import { League as LeagueType } from '../../../backend/src/generated/prisma'
-import Link from 'next/link'
 
 interface LeagueSectionProps {
     title?: string[]

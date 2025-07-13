@@ -2,6 +2,7 @@ import {
     Standings as StandingsType,
     Tournament as TournamentType,
 } from '../../../backend/src/generated/prisma'
+import { MatchScheduleGameType } from '../../../backend/src/schemas/matchScheduleGame'
 import { apiRequest, ApiResponse } from './utils'
 
 /**
@@ -32,7 +33,25 @@ async function getTournamentsStandingsByTournamentOverviewPage(
     )
 }
 
+/**
+ * Get all match schedule games for a tournament by tournament overview page
+ *
+ * @param tournamentOverviewPage - The overview page of the tournament to fetch games for
+ * @returns Promise with array of match schedule games or error
+ */
+async function getTournamentsGamesByTournamentOverviewPage(
+    tournamentOverviewPage: string
+): Promise<ApiResponse<MatchScheduleGameType[]>> {
+    // Encode the overviewPage to handle special characters in URLs
+    const encodedOverviewPage = encodeURIComponent(tournamentOverviewPage)
+    console.log('encodedOverviewPage', encodedOverviewPage)
+    return apiRequest<MatchScheduleGameType[]>(
+        `/api/tournaments/${encodedOverviewPage}/games`
+    )
+}
+
 export {
     getTournamentsByLeagueName,
     getTournamentsStandingsByTournamentOverviewPage,
+    getTournamentsGamesByTournamentOverviewPage,
 }

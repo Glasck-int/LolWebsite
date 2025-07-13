@@ -1,5 +1,6 @@
 import React from 'react'
-import { Column } from './types'
+import { Column } from '../types'
+import { getColumnBackgroundClass } from '../hooks/useStandingsColumns'
 
 /**
  * Standings table row component.
@@ -32,29 +33,34 @@ export const StandingsRow = <T,>({
     item,
     columns,
     isHighlighted = false,
-    gridTemplate, // <-- nouveau prop
+    gridTemplate,
+    className,
 }: {
     item: T
     columns: Column<T>[]
     isHighlighted?: boolean
     gridTemplate: string | null
+    className?: string
 }) => {
     return (
         <div
-            className={`grid w-full items-center h-[45px] transition-colors duration-200 cursor-pointer px-[15px] ${
+            className={`grid w-full items-center h-[45px] transition-colors duration-200 cursor-pointer px-[14px] ${
                 isHighlighted
                     ? 'bg-grey/20 hover:bg-grey/20 border-t-1 border-b-1 border-grey/20'
                     : 'hover:bg-grey/10'
-            }`}
+            } ${className}`}
             style={{
                 gridTemplateColumns: gridTemplate ?? undefined,
             }}
         >
-            {columns.map((col) => (
-                <div key={col.key} className={col.className}>
-                    {col.cell && col.cell(item)}
-                </div>
-            ))}
+            {columns.map((col) => {
+                const backgroundClass = getColumnBackgroundClass(col.key)
+                return (
+                    <div key={col.key} className={`${col.className} ${backgroundClass} h-full flex items-center justify-center px-2`}>
+                        {col.cell && col.cell(item)}
+                    </div>
+                )
+            })}
         </div>
     )
 }

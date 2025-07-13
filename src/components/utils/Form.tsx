@@ -1,12 +1,18 @@
 import React from 'react'
 import { TeamRecentMatchesResponse } from '@/lib/api/teams'
-import { Standings as StandingsType } from '../../../backend/src/generated/prisma'
+import {
+    MatchScheduleGame as MatchScheduleGameType,
+    Standings as StandingsType,
+} from '../../../backend/src/generated/prisma'
 import { Tooltip } from './Tooltip'
+
 export const Form = ({
     teamsRecentMatches,
+    teamsRecentGames,
     standing,
 }: {
-    teamsRecentMatches: TeamRecentMatchesResponse[]
+    teamsRecentMatches?: TeamRecentMatchesResponse[]
+    teamsRecentGames?: MatchScheduleGameType[]
     standing: StandingsType
 }) => {
     // Get team form from recent matches in the specific tournament
@@ -18,29 +24,49 @@ export const Form = ({
         standing.winSeries?.toString() ||
         ''
 
+    const teamFormGames = teamsRecentGames?.map((game) => {
+        if (game.blue === standing.team) {
+            return game.winner === 1 ? 'W' : 'L'
+        } else if (game.red === standing.team) {
+            return game.winner === 2 ? 'W' : 'L'
+        }
+        return 'L'
+    })
+
+    // Use teamFormGames if available, otherwise fallback to teamForm
+    const displayForm =
+        teamFormGames && teamFormGames.length > 0
+            ? teamFormGames.join('')
+            : teamForm
+
+    // Filter games for the current team
+    const teamGames = teamsRecentGames?.filter(
+        (game) => game.blue === standing.team || game.red === standing.team
+    )
+
     return (
         <div className="flex gap-1">
-            {teamForm.split('').map((letter, index) => {
+            {displayForm.split('').map((letter, index) => {
                 // Get the corresponding match data for this form letter
                 const teamMatches = teamsRecentMatches?.find(
                     (teamMatches) => teamMatches.team === standing.team
                 )
                 const matchData = teamMatches?.recentMatches?.[index]
-                // console.log(matchData)
+
+                // Get the corresponding game data for this form letter
+                const gameData = teamGames?.[index]
+
+                // Determine which data source to use for tooltip
+                const tooltipData = matchData || gameData
+
                 return (
                     <Tooltip
                         content={
-                            matchData ? (
+                            tooltipData ? (
                                 <div className="text-center">
                                     <div className="font-semibold">
-                                        {matchData.team1} vs {matchData.team2}
-                                    </div>
-                                    <div className="text-sm text-grey">
-                                        {matchData.dateTime_UTC
-                                            ? new Date(
-                                                  matchData.dateTime_UTC
-                                              ).toLocaleDateString()
-                                            : ''}
+                                        {matchData?.team1 || gameData?.blue} vs{' '}
+                                        {matchData?.team2 || gameData?.red}
                                     </div>
                                 </div>
                             ) : null

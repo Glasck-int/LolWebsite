@@ -6,6 +6,7 @@ import {
 } from '../../schemas/tournaments'
 import { ErrorResponseSchema } from '../../schemas/common'
 import prisma from '../../services/prisma'
+import { MatchScheduleGameListResponse } from '../../schemas/matchScheduleGame'
 
 export default async function tournamentsRoutes(fastify: FastifyInstance) {
     const redis = fastify.redis
@@ -223,34 +224,78 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
         }
     )
 
-    // fastify.get<{ Params: { tournamentId: string } }>(
-    //     '/tournaments/id/:tournamentId/games',
-    //     {
-    //         schema: {
-    //             description: 'Get games for a tournament by tournament ID',
-    //             tags: ['tournaments'],
-    //             response: {
-    //                 200: TournamentGamesListResponse,
-    //                 404: ErrorResponseSchema,
-    //                 500: ErrorResponseSchema,
-    //             },
-    //         },
-    //     },
-    //     async (request, reply) => {
-    //         try {
-    //             const { tournamentId } = request.params
-    //             const games = await prisma.game.findMany({
-    //                 where: { tournamentId: parseInt(tournamentId) },
-    //             })
-    //             return games
-    //         } catch (error) {
-    //             console.error('Error in tournament games route:', error)
-    //             return reply
-    //                 .status(500)
-    //                 .send({ error: 'Internal server error' })
-    //         }
-    //     }
-    // )
+    fastify.get<{ Params: { tournamentOverviewPage: string } }>(
+        '/tournaments/:tournamentOverviewPage/games',
+        {
+            schema: {
+                description:
+                    'Get all match schedule games for a tournament by tournament ID',
+                tags: ['tournaments'],
+                response: {
+                    200: MatchScheduleGameListResponse,
+                    404: ErrorResponseSchema,
+                    500: ErrorResponseSchema,
+                },
+            },
+        },
+        async (request, reply) => {
+            try {
+                const { tournamentOverviewPage } = request.params
+                const cacheKey = `tournament_games:${tournamentOverviewPage}`
+
+                // Check cache first
+                const cached = await redis.get(cacheKey)
+                if (cached) {
+                    return JSON.parse(cached)
+                }
+
+                // Single query with relations
+                const tournamentWithGames = await prisma.tournament.findUnique({
+                    where: { overviewPage: tournamentOverviewPage },
+                    select: {
+                        overviewPage: true,
+                        MatchSchedule: {
+                            select: {
+                                matchId: true,
+                                MatchScheduleGame: {
+                                    orderBy: [
+                                        { nMatchInTab: 'asc' },
+                                        { nGameInMatch: 'asc' },
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                })
+
+                if (!tournamentWithGames) {
+                    return reply
+                        .status(404)
+                        .send({ error: 'Tournament not found' })
+                }
+
+                // Flatten the games from all match schedules
+                const games = tournamentWithGames.MatchSchedule.flatMap(
+                    (schedule) => schedule.MatchScheduleGame
+                )
+
+                if (games.length === 0) {
+                    return reply.status(404).send({
+                        error: 'No games found for this tournament',
+                    })
+                }
+
+                // Cache for 1 hour (3600 seconds)
+                await redis.setex(cacheKey, 3600, JSON.stringify(games))
+                return games
+            } catch (error) {
+                console.error('Error in tournament games route:', error)
+                return reply
+                    .status(500)
+                    .send({ error: 'Internal server error' })
+            }
+        }
+    )
 
     // Debug route to list all tournaments
     fastify.get(

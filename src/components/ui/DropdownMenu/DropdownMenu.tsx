@@ -8,8 +8,6 @@ import {
     DropdownMenuDesktop,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from './DropdownMenuDesktop'
 import LocaleSwitcher from '../../layout/LocaleSwitcher/LocaleSwitcher'

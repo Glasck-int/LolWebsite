@@ -6,7 +6,6 @@ import { Card } from '@/components/ui/card/Card'
 import { League as LeagueType } from '../../../backend/src/generated/prisma'
 import { createLeagueSlug } from '@/lib/utils'
 import { getLeagueImage } from '@/lib/api/image'
-import { Tooltip } from '../utils/Tooltip'
 
 interface LeagueCardProps {
     league: LeagueType
@@ -54,7 +53,7 @@ export const LeagueCard: React.FC<LeagueCardProps> = ({
                     height={120}
                     className="w-full h-full object-contain justify-center items-center"
                     style={{ width: 'auto', height: 'auto' }}
-                    onError={(e) => {
+                    onError={() => {
                         console.error(
                             `Image failed to load for ${league.name}:`,
                             imageUrl

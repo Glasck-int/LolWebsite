@@ -1,6 +1,6 @@
 import React from 'react'
-import { Tooltip } from '../utils/Tooltip'
-import { League as LeagueType } from '../../../backend/src/generated/prisma'
+import { Tooltip } from '../../utils/Tooltip'
+import { League as LeagueType } from '../../../../backend/src/generated/prisma'
 import Image from 'next/image'
 import { truncateText } from '@/lib/utils'
 import { getLeagueImage } from '@/lib/api/image'

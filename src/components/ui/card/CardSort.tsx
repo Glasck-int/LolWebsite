@@ -2,12 +2,14 @@
 
 import React, { useContext, createContext, useState, ReactNode } from 'react'
 import { CardProps } from './Card'
-import { ArrowUp } from 'lucide-react';
+import { ArrowUp } from 'lucide-react'
+import { Tooltip } from '@/components/utils/Tooltip'
 
 interface CardSortProps {
     children: ReactNode
     className?: string
     sortName:  string
+    tooltip?: string
 }
 
 type SortDirection = 'asc' | 'desc' | null
@@ -97,31 +99,70 @@ export const CardHeaderSortContent = ({
     children,
     className = '',
     sortName,
+    tooltip,
 }: CardSortProps) => {
     const { activeSort, setActiveSort } = useSort()
 
     const isActive = activeSort.key === sortName
-    return (
+    
+    const content = (
         <div
-            className={`relative cursor-pointer hover:text-white ${
+            className={`relative cursor-pointer hover:text-white  ${
                 activeSort.key === sortName ? 'text-white' : 'text-clear-grey'
             } 
             ${className}`}
-            onClick={() => setActiveSort(sortName)} 
-
+            onClick={() => setActiveSort(sortName)}
         >
-            {children}
-            {isActive && (
-                <span className="absolute -right-3.5 top-1/3 md:top-1/5 -translate-y-1/2 transform scale-50 md:scale-75">
-                    <ArrowUp
-                        className={`transition-transform duration-200 ${
-                            activeSort.direction === 'desc' ? 'rotate-180' : ''
-                        }`}
-                        size={16}
-                        color='#bab9b9'
-                    />
-                </span>
-            )}
+            <span className="inline-block relative w-fit">
+                {children}
+                {isActive && (
+                    <span className="absolute -right-3.5 top-1/3 md:top-1/5 -translate-y-1/2 transform scale-50 md:scale-75">
+                        <ArrowUp
+                            className={`transition-transform duration-200 ${
+                                activeSort.direction === 'desc'
+                                    ? 'rotate-180'
+                                    : ''
+                            }`}
+                            size={16}
+                            color="#bab9b9"
+                        />
+                    </span>
+                )}
+            </span>
         </div>
     )
+
+    if (tooltip) {
+        return (
+            <div className={className}>
+                <Tooltip content={tooltip}>
+                    <div
+                        className={`relative cursor-pointer hover:text-white  text-center ${
+                            activeSort.key === sortName ? 'text-white' : 'text-clear-grey'
+                        }`}
+                        onClick={() => setActiveSort(sortName)}
+                    >
+                        <span className="inline-block relative w-fit">
+                            {children}
+                            {isActive && (
+                                <span className="absolute -right-3.5 top-1/3 md:top-1/5 -translate-y-1/2 transform scale-50 md:scale-75">
+                                    <ArrowUp
+                                        className={`transition-transform duration-200 ${
+                                            activeSort.direction === 'desc'
+                                                ? 'rotate-180'
+                                                : ''
+                                        }`}
+                                        size={16}
+                                        color="#bab9b9"
+                                    />
+                                </span>
+                            )}
+                        </span>
+                    </div>
+                </Tooltip>
+            </div>
+        )
+    }
+
+    return content
 }

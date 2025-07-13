@@ -2,8 +2,8 @@
 
 import React from 'react'
 import { StandingsRow } from './StandingsRow'
-import { Column } from './types'
-import { ProcessedStanding } from './StandingsDataProcessor'
+import { Column } from '../types'
+import { ProcessedStanding } from '../utils/StandingsDataProcessor'
 
 /**
  * Standings rows component that handles the rendering logic for standings data.
@@ -32,16 +32,18 @@ export const StandingsRows = ({
     columns,
     highlightedTeam,
     maxRows,
-    gridTemplate, // <-- nouveau prop
+    gridTemplate,
+    className,
 }: {
     processedData: ProcessedStanding[]
     columns: Column<ProcessedStanding>[]
     highlightedTeam?: string
     maxRows?: number | null
-    gridTemplate: string // <-- nouveau prop
+    gridTemplate: string | null
+    className?: string
 }) => {
     return (
-        <div className="flex flex-col flex-1">
+        <div className={`flex flex-col flex-1 `}>
             {processedData.map((item, index) => {
                 // Find highlighted team index
                 const highlightedIndex = highlightedTeam
@@ -101,19 +103,19 @@ export const StandingsRows = ({
                 }
 
                 // Determine CSS classes based on visibility
-                let className = ''
+                let classNameAppend = ''
                 if (shouldShowOnMobile && shouldShowOnDesktop) {
-                    className = 'flex' // Show on both mobile and desktop
+                    classNameAppend = 'flex' // Show on both mobile and desktop
                 } else if (shouldShowOnMobile && !shouldShowOnDesktop) {
-                    className = 'flex md:hidden' // Show only on mobile
+                    classNameAppend = 'flex md:hidden' // Show only on mobile
                 } else if (!shouldShowOnMobile && shouldShowOnDesktop) {
-                    className = 'hidden md:flex' // Show only on desktop
+                    classNameAppend = 'hidden md:flex' // Show only on desktop
                 } else {
-                    className = 'hidden' // Hide on both
+                    classNameAppend = 'hidden' // Hide on both
                 }
 
                 return (
-                    <div key={item.standing.team} className={className}>
+                    <div key={item.standing.team} className={classNameAppend}>
                         <StandingsRow
                             item={item}
                             columns={columns}
@@ -121,6 +123,7 @@ export const StandingsRows = ({
                                 item.standing.team === highlightedTeam
                             }
                             gridTemplate={gridTemplate}
+                            className={className}
                         />
                     </div>
                 )

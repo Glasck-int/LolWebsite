@@ -4,6 +4,7 @@ import React from 'react'
 import { MatchSchedule as MatchScheduleType } from '../../../../backend/src/generated/prisma'
 import { TimeDisplay } from '@/lib/hooks/timeDisplay'
 import { useVisibleMatches } from '@/lib/hooks/useVisibleMatches'
+import Image from 'next/image'
 
 interface NextMatchesClientProps {
     matches: MatchScheduleType[]
@@ -75,13 +76,18 @@ export const NextMatchesClient = ({
             >
                 {/* Team 1 */}
                 <div className="flex flex-col items-center w-16">
-                    {team1?.image && (
-                        <img
-                            src={images.team1Image || ''}
-                            alt={team1.short || ''}
-                            className="w-12 h-12 object-contain mb-2"
-                        />
-                    )}
+                    {team1?.image &&
+                        images.team1Image &&
+                        images.team1Image.trim() !== '' &&
+                        images.team1Image !== 'null' && (
+                            <Image
+                                src={images.team1Image}
+                                alt={team1.short || 'Team 1'}
+                                width={48}
+                                height={48}
+                                className="w-12 h-12 object-contain mb-2"
+                            />
+                        )}
                     <span className="font-bold text-white text-xl">
                         {team1?.short || match.team1}
                     </span>
@@ -94,13 +100,18 @@ export const NextMatchesClient = ({
 
                 {/* Team 2 */}
                 <div className="flex flex-col items-center w-16">
-                    {team2?.image && (
-                        <img
-                            src={images.team2Image || ''}
-                            alt={team2.short || ''}
-                            className="w-12 h-12 object-contain mb-2"
-                        />
-                    )}
+                    {team2?.image &&
+                        images.team2Image &&
+                        images.team2Image.trim() !== '' &&
+                        images.team2Image !== 'null' && (
+                            <Image
+                                src={images.team2Image}
+                                alt={team2.short || 'Team 2'}
+                                width={48}
+                                height={48}
+                                className="w-12 h-12 object-contain mb-2"
+                            />
+                        )}
                     <span className="font-bold text-white text-xl">
                         {team2?.short || match.team2}
                     </span>

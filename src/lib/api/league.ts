@@ -1,6 +1,6 @@
 import { League as LeagueType } from '../../../backend/src/generated/prisma'
 import { MatchSchedule as MatchScheduleType } from '../../../backend/src/generated/prisma'
-import { getApiBaseUrl, apiRequest, ApiResponse } from './utils'
+import { apiRequest, ApiResponse } from './utils'
 
 /**
  * Get a league by its ID
