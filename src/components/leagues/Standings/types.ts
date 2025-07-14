@@ -16,7 +16,7 @@ export interface Column<T> {
     /** Tooltip text to show when hovering over the column header */
     tooltip?: string
     /** Function to render the cell content for each row */
-    cell?: (props: T) => ReactNode
+    cell?: (props: T, sortedPosition?: number) => ReactNode
     /** CSS classes to apply to the column cells */
     className?: string
     /** CSS classes to apply to the column header */

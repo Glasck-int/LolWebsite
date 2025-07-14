@@ -35,12 +35,14 @@ export const StandingsRow = <T,>({
     isHighlighted = false,
     gridTemplate,
     className,
+    sortedPosition,
 }: {
     item: T
     columns: Column<T>[]
     isHighlighted?: boolean
     gridTemplate: string | null
     className?: string
+    sortedPosition?: number
 }) => {
     return (
         <div
@@ -57,7 +59,7 @@ export const StandingsRow = <T,>({
                 const backgroundClass = getColumnBackgroundClass(col.key)
                 return (
                     <div key={col.key} className={`${col.className} ${backgroundClass} h-full flex items-center justify-center px-2`}>
-                        {col.cell && col.cell(item)}
+                        {col.cell && col.cell(item, sortedPosition)}
                     </div>
                 )
             })}

@@ -228,6 +228,7 @@ export const SortedMixedRows = ({
                             }
                             gridTemplate={gridTemplate}
                             className={className}
+                            sortedPosition={index + 1}
                         />
                     </div>
                 )

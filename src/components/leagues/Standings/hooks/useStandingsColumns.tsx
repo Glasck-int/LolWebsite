@@ -30,7 +30,7 @@ export const useStandingsColumns = (config: StandingsColumnsConfig) => {
         {
             key: 'place',
             header: '#',
-            cell: ({ standing }) => <p>{standing.place}.</p>,
+            cell: ({ standing }, sortedPosition) => <p>{sortedPosition ?? standing.place}.</p>,
             tooltip: t('#'),
             headerClassName: 'cursor-pointer flex items-center justify-center',
             className: 'text-center cursor-pointer flex-shrink-0 ' ,
@@ -120,7 +120,7 @@ export const useStandingsColumns = (config: StandingsColumnsConfig) => {
                         standing={standing}
                     />
                 ) : null,
-            headerClassName: 'text-left hidden md:flex flex-shrink-0 w-42',
+            headerClassName: 'text-left hidden md:flex flex-shrink-0 w-42 ml-4',
             className: 'text-left hidden md:flex flex-shrink-0 w-42',
             sortable,
         },
@@ -174,7 +174,7 @@ export const useStandingsColumns = (config: StandingsColumnsConfig) => {
                         standing={standing}
                     />
                 ) : null,
-            headerClassName: 'text-left hidden md:flex flex-shrink-0 w-42',
+            headerClassName: 'text-left hidden md:flex flex-shrink-0 w-42 ml-4',
             className: 'text-left hidden md:flex flex-shrink-0 w-42',
             sortable,
         },
@@ -249,7 +249,7 @@ export const useCombinedStandingsColumns = (sortable: boolean = true) => {
         {
             key: 'place',
             header: '#',
-            cell: ({ standing }) => <p>{standing.place}.</p>,
+            cell: ({ standing }, sortedPosition) => <p>{sortedPosition ?? standing.place}.</p>,
             tooltip: t('#'),
             headerClassName: 'cursor-pointer flex items-center justify-center',
             className: 'text-center justify-center items-center cursor-pointer flex-shrink-0 ',
@@ -381,7 +381,7 @@ export const useCombinedStandingsColumns = (sortable: boolean = true) => {
                         standing={standing}
                     />
                 ) : null,
-            headerClassName: 'text-left hidden md:flex flex-shrink-0 w-42',
+            headerClassName: 'text-left hidden md:flex flex-shrink-0 w-42 ml-4',
             className: 'text-left hidden md:flex flex-shrink-0 w-42',
             sortable,
         },
