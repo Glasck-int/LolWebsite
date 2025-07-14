@@ -2,24 +2,51 @@ import { Type } from '@sinclair/typebox'
 import { MatchSchedule } from '../generated/prisma'
 
 /**
- * MatchSchedule schema for API responses
+ * MatchSchedule schema for API responses with comprehensive validation
  *
  * Uses Prisma-generated types to ensure type safety
  */
 export const MatchScheduleSchema = Type.Object({
-    id: Type.Number(),
-    dateTime_UTC: Type.Optional(Type.String({ format: 'date-time' })),
+    id: Type.Number({
+        description: 'Unique identifier for the match',
+        examples: [1, 2, 3]
+    }),
+    dateTime_UTC: Type.Optional(Type.String({ 
+        format: 'date-time',
+        description: 'Match date and time in UTC format',
+        examples: ['2024-01-15T18:00:00Z', '2024-03-20T15:30:00Z']
+    })),
     team1: Type.Optional(
-        Type.String({ description: 'Name of the first team' })
+        Type.String({ 
+            minLength: 1,
+            maxLength: 100,
+            description: 'Name of the first team',
+            examples: ['G2 Esports', 'T1', 'Fnatic']
+        })
     ),
     team2: Type.Optional(
-        Type.String({ description: 'Name of the second team' })
+        Type.String({ 
+            minLength: 1,
+            maxLength: 100,
+            description: 'Name of the second team',
+            examples: ['Team Liquid', 'Cloud9', 'MAD Lions']
+        })
     ),
     dst: Type.Optional(
         Type.String({ description: 'Destination of the match' })
     ),
-    round: Type.Optional(Type.String({ description: 'Round of the match' })),
-    winner: Type.Optional(Type.String({ description: 'Winner of the match' })),
+    round: Type.Optional(Type.String({ 
+        minLength: 1,
+        maxLength: 50,
+        description: 'Tournament round or phase',
+        examples: ['Regular Season', 'Playoffs', 'Finals']
+    })),
+    winner: Type.Optional(Type.String({ 
+        minLength: 1,
+        maxLength: 100,
+        description: 'Name of the winning team',
+        examples: ['G2 Esports', 'T1', 'TBD']
+    })),
     team1Points: Type.Optional(
         Type.Number({ description: 'Points of the first team' })
     ),
@@ -27,10 +54,18 @@ export const MatchScheduleSchema = Type.Object({
         Type.Number({ description: 'Points of the second team' })
     ),
     team1Score: Type.Optional(
-        Type.Number({ description: 'Score of the first team' })
+        Type.Number({ 
+            minimum: 0,
+            description: 'Games won by the first team',
+            examples: [3, 2, 0]
+        })
     ),
     team2Score: Type.Optional(
-        Type.Number({ description: 'Score of the second team' })
+        Type.Number({ 
+            minimum: 0,
+            description: 'Games won by the second team',
+            examples: [1, 3, 2]
+        })
     ),
     tab: Type.Optional(Type.String({ description: 'Tab of the match' })),
     groupName: Type.Optional(
@@ -44,11 +79,29 @@ export const MatchScheduleSchema = Type.Object({
     ),
     mvp: Type.Optional(Type.String({ description: 'MVP of the match' })),
     overviewPage: Type.Optional(
-        Type.String({ description: 'Overview page of the match' })
+        Type.String({ 
+            minLength: 1,
+            maxLength: 300,
+            description: 'Tournament overview page identifier',
+            examples: ['LEC_2024_Spring', 'Worlds_2024_Main']
+        })
     ),
-    createdAt: Type.Optional(Type.String({ description: 'Created at' })),
-    updatedAt: Type.Optional(Type.String({ description: 'Updated at' })),
-    bestOf: Type.Optional(Type.Number({ description: 'Best of' })),
+    createdAt: Type.Optional(Type.String({ 
+        format: 'date-time',
+        description: 'Database creation timestamp',
+        examples: ['2024-01-15T10:30:00Z']
+    })),
+    updatedAt: Type.Optional(Type.String({ 
+        format: 'date-time',
+        description: 'Database last update timestamp',
+        examples: ['2024-01-15T10:30:00Z']
+    })),
+    bestOf: Type.Optional(Type.Number({ 
+        minimum: 1,
+        maximum: 7,
+        description: 'Best of X format (e.g., Bo3, Bo5)',
+        examples: [1, 3, 5]
+    })),
     casters: Type.Optional(
         Type.Array(Type.String({ description: 'Casters of the match' }))
     ),
@@ -196,6 +249,15 @@ export const MatchScheduleSchema = Type.Object({
     ),
 })
 
+/**
+ * Create and Update schemas for match schedules
+ */
+export const CreateMatchScheduleSchema = Type.Omit(MatchScheduleSchema, ['id', 'createdAt', 'updatedAt'])
+export const UpdateMatchScheduleSchema = Type.Partial(CreateMatchScheduleSchema)
+
+/**
+ * Response arrays and types
+ */
 export const MatchScheduleListResponse = Type.Array(MatchScheduleSchema)
 
 // Export Prisma type for direct use

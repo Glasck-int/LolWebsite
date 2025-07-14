@@ -36,3 +36,19 @@ export const PaginationSchema = Type.Object({
     total: Type.Number({ description: 'Total number of items' }),
     totalPages: Type.Number({ description: 'Total number of pages' }),
 })
+
+/**
+ * Paginated response wrapper
+ */
+export const PaginatedResponseSchema = (dataSchema: TSchema) =>
+    Type.Object({
+        data: Type.Array(dataSchema),
+        pagination: PaginationSchema,
+        meta: Type.Object({
+            cached: Type.Boolean({ description: 'Whether response was cached' }),
+            timestamp: Type.String({
+                format: 'date-time',
+                description: 'Response timestamp',
+            }),
+        }),
+    })

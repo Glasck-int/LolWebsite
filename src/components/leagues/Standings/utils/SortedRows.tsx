@@ -11,16 +11,60 @@ import { StandingsRow } from '../components/StandingsRow'
 import { useFlipAnimation } from '../hooks/useFlipAnimation'
 
 /**
- * Renders sorted standings rows based on active sort state.
+ * Simplified dynamic standings rows component with sorting capabilities.
  *
- * Displays standings data with sorting functionality based on the active sort key.
- * Supports highlighting specific teams and responsive row display.
+ * This component provides a streamlined version of SortedMixedRows with basic sorting
+ * functionality for standings data. It handles dynamic reordering based on user-selected
+ * criteria and includes responsive visibility management with team highlighting support.
+ * 
+ * This version uses a simplified sorting algorithm compared to SortedMixedRows and may
+ * be used for specific use cases where the full feature set isn't required.
  *
- * @param processedData - Processed standings data to display
- * @param columns - Column configuration for rendering
- * @param highlightedTeam - Optional team name to highlight
- * @param maxRows - Optional maximum number of rows to display
- * @returns Sorted and filtered standings rows
+ * Key features:
+ * - Dynamic sorting based on basic statistics (place, wins, losses, win rate)
+ * - FLIP animations for smooth transitions between sort states
+ * - Responsive row limiting with team-centered visibility
+ * - Support for both ProcessedStanding and ProcessedGameStats data types
+ *
+ * @param props - Component properties
+ * @param props.processedData - Array of processed standings or game statistics data to sort and display.
+ *                             Can handle both match-level and game-level statistics.
+ * @param props.columns - Array of column configurations defining how each data field should be rendered.
+ *                       Columns specify cell renderers, headers, tooltips, and styling.
+ * @param props.highlightedTeam - Optional team name to emphasize in the standings.
+ *                               When provided, the view centers around this team and applies highlighting.
+ * @param props.maxRows - Maximum number of rows to display on each device type.
+ *                       When null, shows all rows. Otherwise applies responsive limits.
+ * @param props.gridTemplate - CSS Grid template string for consistent column layout.
+ *                            Must match header component for proper alignment.
+ * @param props.className - Additional CSS classes to apply to individual row components.
+ *
+ * @returns Sorted and animated standings rows with basic functionality
+ *
+ * @example
+ * ```tsx
+ * // Basic sortable standings
+ * <SortedRows
+ *   processedData={standingsData}
+ *   columns={standingsColumns}
+ *   maxRows={10}
+ *   gridTemplate="50px 1fr 60px 60px 80px"
+ * />
+ *
+ * // With team highlighting
+ * <SortedRows
+ *   processedData={gameStatsData}
+ *   columns={gameColumns}
+ *   highlightedTeam="Team Liquid"
+ *   maxRows={5}
+ *   gridTemplate="50px 1fr 60px 60px 80px"
+ * />
+ * ```
+ *
+ * @see {@link SortedMixedRows} for full-featured sorting with advanced statistics support
+ * @see {@link useSort} for sort state management
+ * @see {@link useFlipAnimation} for animation implementation
+ * @see {@link StandingsRow} for individual row rendering
  */
 export const SortedRows = ({
     processedData,
@@ -184,6 +228,7 @@ export const SortedRows = ({
                             }
                             gridTemplate={gridTemplate}
                             className={className}
+                            sortedPosition={index + 1} // Dynamic position based on current sort order
                         />
                     </div>
                 )

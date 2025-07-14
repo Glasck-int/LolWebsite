@@ -1,5 +1,5 @@
 import React from 'react'
-import { Standings as StandingsType } from '../../../../backend/src/generated/prisma'
+import { Standings as StandingsType } from '../../../../../backend/src/generated/prisma'
 import {
     getTeamsByNames,
     getTeamsRecentGames,
@@ -8,7 +8,7 @@ import {
 import { getTeamImage } from '@/lib/api/image'
 import { getTournamentsGamesByTournamentOverviewPage } from '@/lib/api/tournaments'
 import { processStandingsData } from '../utils/StandingsDataProcessor'
-import { Team } from '../../../../backend/src/generated/prisma'
+import { Team } from '../../../../../backend/src/generated/prisma'
 import { StandingsWithTabsClient } from '../clients/StandingsWithTabsClient'
 
 /**

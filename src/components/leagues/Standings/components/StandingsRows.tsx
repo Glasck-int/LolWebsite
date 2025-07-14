@@ -6,26 +6,69 @@ import { Column } from '../types'
 import { ProcessedStanding } from '../utils/StandingsDataProcessor'
 
 /**
- * Standings rows component that handles the rendering logic for standings data.
+ * Standings rows container component that manages row visibility and responsive display logic.
  *
- * Manages the visibility of rows based on highlighted team and responsive behavior.
- * Calculates which rows to show on mobile vs desktop and handles highlighting logic.
+ * This component handles the complex logic for determining which standings rows should be visible
+ * on different screen sizes, with special behavior for highlighting specific teams. It calculates
+ * responsive visibility based on team highlighting, centering the highlighted team when possible,
+ * and applying appropriate CSS classes for mobile/desktop display.
  *
- * @param processedData - Processed standings data with team information and statistics
- * @param columns - Column definitions for the standings table
- * @param highlightedTeam - Optional team name to highlight in the standings
- * @param maxRows - Optional maximum number of rows to display (null for all rows)
- * @returns A component that renders the standings rows with proper visibility logic
+ * The component is designed to work with static data that maintains its original order (unlike
+ * SortedMixedRows which handles dynamic sorting). It provides consistent row limiting behavior
+ * across different viewport sizes while ensuring highlighted teams remain visible.
+ *
+ * @param props - Component properties
+ * @param props.processedData - Array of processed standings data with team information and statistics.
+ *                             Expected to be in the original tournament order (by place).
+ * @param props.columns - Array of column definitions that specify how to render each data field.
+ *                       Used by individual StandingsRow components for cell rendering.
+ * @param props.highlightedTeam - Optional team name to emphasize in the standings display.
+ *                               When provided, the component centers the view around this team
+ *                               and applies special highlighting styling.
+ * @param props.maxRows - Maximum number of rows to display on each device type.
+ *                       When null, shows all rows. When specified, shows different amounts
+ *                       on mobile (typically 3) vs desktop (typically 4).
+ * @param props.gridTemplate - CSS Grid template string for consistent column layout.
+ *                            Passed through to individual row components to maintain alignment
+ *                            with the header component.
+ * @param props.className - Additional CSS classes to apply to individual row components.
+ *                         Applied to each StandingsRow for consistent styling.
+ *
+ * @returns A container component that renders appropriately filtered standings rows
  *
  * @example
  * ```tsx
+ * // Display top 5 teams with Team Liquid highlighted
  * <StandingsRows
- *   processedData={processedData}
- *   columns={columns}
+ *   processedData={processedStandings}
+ *   columns={standingsColumns}
  *   highlightedTeam="Team Liquid"
  *   maxRows={5}
+ *   gridTemplate="50px 1fr 60px 60px 80px"
+ *   className="border-b border-gray-200"
+ * />
+ *
+ * // Show all teams without highlighting
+ * <StandingsRows
+ *   processedData={processedStandings}
+ *   columns={standingsColumns}
+ *   maxRows={null}
+ *   gridTemplate="50px 1fr 60px 60px 80px"
+ * />
+ *
+ * // Mobile-optimized display with fewer visible teams
+ * <StandingsRows
+ *   processedData={processedStandings}
+ *   columns={mobileColumns}
+ *   highlightedTeam="G2 Esports"
+ *   maxRows={3}
+ *   gridTemplate="40px 1fr 50px"
  * />
  * ```
+ *
+ * @see {@link StandingsRow} for individual row rendering
+ * @see {@link SortedMixedRows} for sortable row display with dynamic positioning
+ * @see {@link ProcessedStanding} for data structure requirements
  */
 export const StandingsRows = ({
     processedData,
@@ -45,18 +88,25 @@ export const StandingsRows = ({
     return (
         <div className={`flex flex-col flex-1 `}>
             {processedData.map((item, index) => {
-                // Find highlighted team index
+                /**
+                 * Find the index of the highlighted team in the current data set.
+                 * This is used to center the view around the highlighted team.
+                 */
                 const highlightedIndex = highlightedTeam
                     ? processedData.findIndex(
                           (data) => data.standing.team === highlightedTeam
                       )
                     : -1
 
-                // Calculate which rows to show based on highlighted team
+                /**
+                 * Calculate responsive visibility based on highlighted team and device type.
+                 * Mobile and desktop may show different numbers of rows to optimize screen space.
+                 */
                 let shouldShowOnMobile = false
                 let shouldShowOnDesktop = false
 
                 if (highlightedIndex !== -1) {
+                    // Highlighted team is present - center view around it
                     if (maxRows === null) {
                         // Show all rows when maxRows is null
                         shouldShowOnMobile = true
@@ -87,7 +137,7 @@ export const StandingsRows = ({
                             index >= desktopStart && index < desktopEnd
                     }
                 } else {
-                    // No highlighted team, show top rows
+                    // No highlighted team - show top rows
                     if (maxRows === null) {
                         // Show all rows when maxRows is null
                         shouldShowOnMobile = true
@@ -102,7 +152,10 @@ export const StandingsRows = ({
                     }
                 }
 
-                // Determine CSS classes based on visibility
+                /**
+                 * Generate appropriate CSS classes based on calculated visibility.
+                 * Uses Tailwind responsive classes to show/hide rows on different screen sizes.
+                 */
                 let classNameAppend = ''
                 if (shouldShowOnMobile && shouldShowOnDesktop) {
                     classNameAppend = 'flex' // Show on both mobile and desktop

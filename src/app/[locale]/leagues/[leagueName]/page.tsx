@@ -73,6 +73,7 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
                     <StandingsOverview
                         standings={standings.data}
                         tournamentName={tournamentName}
+                        maxRows={3}
                     />
                 )}
 

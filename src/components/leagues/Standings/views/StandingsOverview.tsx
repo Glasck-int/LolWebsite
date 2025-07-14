@@ -1,11 +1,11 @@
 import React from 'react'
 
-import { Standings as StandingsType } from '../../../../backend/src/generated/prisma'
+import { Standings as StandingsType } from '../../../../../backend/src/generated/prisma'
 
 import { getTeamsByNames, getTeamsRecentGames, getTeamsRecentMatches } from '@/lib/api/teams'
 import { getTeamImage } from '@/lib/api/image'
 import { processStandingsData } from '../utils/StandingsDataProcessor'
-import { Team } from '../../../../backend/src/generated/prisma'
+import { Team } from '../../../../../backend/src/generated/prisma'
 import { StandingsOverviewClient } from '../clients/StandingsOverviewClient'
 
 /**

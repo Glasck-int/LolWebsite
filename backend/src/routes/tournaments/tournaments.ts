@@ -7,6 +7,7 @@ import {
 import { ErrorResponseSchema } from '../../schemas/common'
 import prisma from '../../services/prisma'
 import { MatchScheduleGameListResponse } from '../../schemas/matchScheduleGame'
+import { LeagueNameParamSchema, TournamentIdParamSchema, OverviewPageParamSchema, TournamentOverviewPageParamSchema } from '../../schemas/params'
 
 export default async function tournamentsRoutes(fastify: FastifyInstance) {
     const redis = fastify.redis
@@ -20,10 +21,12 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
         '/tournaments/league/:leagueName',
         {
             schema: {
-                description: 'Get tournaments by league id',
+                description: 'Get tournaments by league name',
                 tags: ['tournaments'],
+                params: LeagueNameParamSchema,
                 response: {
                     200: TournamentListResponse,
+                    404: ErrorResponseSchema,
                     500: ErrorResponseSchema,
                 },
             },
@@ -72,6 +75,7 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
             schema: {
                 description: 'Get standings for a tournament by tournament ID',
                 tags: ['tournaments'],
+                params: TournamentIdParamSchema,
                 response: {
                     200: TournamentStandingsListResponse,
                     404: ErrorResponseSchema,
@@ -149,6 +153,7 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
             schema: {
                 description: 'Get standings for a tournament by overview page',
                 tags: ['tournaments'],
+                params: OverviewPageParamSchema,
                 response: {
                     200: TournamentStandingsListResponse,
                     404: ErrorResponseSchema,
@@ -229,8 +234,9 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
         {
             schema: {
                 description:
-                    'Get all match schedule games for a tournament by tournament ID',
+                    'Get all match schedule games for a tournament by overview page',
                 tags: ['tournaments'],
+                params: TournamentOverviewPageParamSchema,
                 response: {
                     200: MatchScheduleGameListResponse,
                     404: ErrorResponseSchema,

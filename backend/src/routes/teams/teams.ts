@@ -4,6 +4,7 @@ import { ErrorResponseSchema } from '../../schemas/common'
 import { MatchScheduleSchema } from '../../schemas/matchShedule'
 import prisma from '../../services/prisma'
 import { MatchScheduleGameListResponse } from '../../schemas/matchScheduleGame'
+import { TeamNameParamSchema, TeamTournamentParamsSchema } from '../../schemas/params'
 
 export default async function teamsRoutes(fastify: FastifyInstance) {
     const redis = fastify.redis
@@ -19,6 +20,7 @@ export default async function teamsRoutes(fastify: FastifyInstance) {
             schema: {
                 description: 'Get a team by name',
                 tags: ['teams'],
+                params: TeamNameParamSchema,
                 response: {
                     200: TeamSchema,
                     404: ErrorResponseSchema,
@@ -57,6 +59,7 @@ export default async function teamsRoutes(fastify: FastifyInstance) {
                 description:
                     'Get the 5 most recent matches for a team in a specific tournament with win/loss status',
                 tags: ['teams'],
+                params: TeamTournamentParamsSchema,
                 response: {
                     200: {
                         type: 'object',
@@ -187,6 +190,7 @@ export default async function teamsRoutes(fastify: FastifyInstance) {
                 description:
                     'Get the 5 most recent games for a team in a specific tournament with win/loss status',
                 tags: ['teams'],
+                params: TeamTournamentParamsSchema,
                 response: {
                     200: {
                         type: 'object',
@@ -328,6 +332,7 @@ export default async function teamsRoutes(fastify: FastifyInstance) {
                 description:
                     'Get all match schedule games for a team in a specific tournament',
                 tags: ['teams'],
+                params: TeamTournamentParamsSchema,
                 response: {
                     200: MatchScheduleGameListResponse,
                     404: ErrorResponseSchema,

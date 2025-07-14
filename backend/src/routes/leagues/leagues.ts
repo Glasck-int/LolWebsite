@@ -3,6 +3,7 @@ import { LeagueSchema, LeagueListResponse } from '../../schemas/league'
 import { MatchScheduleListResponse } from '../../schemas/matchShedule'
 import { ErrorResponseSchema } from '../../schemas/common'
 import prisma from '../../services/prisma'
+import { LeagueSlugParamSchema, IdParamSchema } from '../../schemas/params'
 
 /**
  * Register leagues routes
@@ -87,8 +88,10 @@ export default async function leaguesRoutes(fastify: FastifyInstance) {
                 description:
                     'Get a league by slug (note :modify the findfirst to find unique when database ok)',
                 tags: ['leagues'],
+                params: LeagueSlugParamSchema,
                 response: {
                     200: LeagueSchema,
+                    404: ErrorResponseSchema,
                     500: ErrorResponseSchema,
                 },
             },
@@ -123,8 +126,10 @@ export default async function leaguesRoutes(fastify: FastifyInstance) {
             schema: {
                 description: 'Get the next three matches for a league by ID',
                 tags: ['leagues'],
+                params: IdParamSchema,
                 response: {
                     200: MatchScheduleListResponse,
+                    404: ErrorResponseSchema,
                     500: ErrorResponseSchema,
                 },
             },
@@ -201,8 +206,10 @@ export default async function leaguesRoutes(fastify: FastifyInstance) {
             schema: {
                 description: 'Get a league by id',
                 tags: ['leagues'],
+                params: IdParamSchema,
                 response: {
                     200: LeagueSchema,
+                    404: ErrorResponseSchema,
                     500: ErrorResponseSchema,
                 },
             },

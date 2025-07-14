@@ -8,16 +8,71 @@ import { StandingsRow } from '../components/StandingsRow'
 import { useFlipAnimation } from '../hooks/useFlipAnimation'
 
 /**
- * Renders sorted standings rows based on active sort state.
+ * Dynamic standings rows component with sorting and animation capabilities.
  *
- * Displays standings data with sorting functionality based on the active sort key.
- * Supports highlighting specific teams and responsive row display.
+ * This component handles the complex logic of sorting standings data based on user interaction,
+ * providing smooth animations during transitions, and managing responsive visibility with
+ * team highlighting support. Unlike static row components, this one dynamically reorders
+ * data and updates position numbers based on the active sort criteria.
  *
- * @param processedData - Processed standings data to display
- * @param columns - Column configuration for rendering
- * @param highlightedTeam - Optional team name to highlight
- * @param maxRows - Optional maximum number of rows to display
- * @returns Sorted and filtered standings rows
+ * Key features:
+ * - Dynamic sorting based on various statistics (place, wins, losses, win rate, etc.)
+ * - FLIP animations for smooth transitions between sort states
+ * - Dynamic position numbering that updates with sort order
+ * - Responsive row limiting with team-centered visibility
+ * - Support for both ProcessedStanding and ProcessedGameStats data types
+ *
+ * The component integrates with the global sort state through useSort hook and provides
+ * visual feedback during data transitions through flip animations.
+ *
+ * @param props - Component properties
+ * @param props.processedData - Array of processed standings or game statistics data to sort and display.
+ *                             Can handle both match-level and game-level statistics.
+ * @param props.columns - Array of column configurations defining how each data field should be rendered.
+ *                       Columns specify cell renderers, headers, tooltips, and styling.
+ * @param props.highlightedTeam - Optional team name to emphasize in the standings.
+ *                               When provided, the view centers around this team and applies highlighting.
+ * @param props.maxRows - Maximum number of rows to display on each device type.
+ *                       When null, shows all rows. Otherwise applies responsive limits.
+ * @param props.gridTemplate - CSS Grid template string for consistent column layout.
+ *                            Must match header component for proper alignment.
+ * @param props.className - Additional CSS classes to apply to individual row components.
+ *
+ * @returns Sorted and animated standings rows with dynamic positioning
+ *
+ * @example
+ * ```tsx
+ * // Basic sortable standings
+ * <SortedMixedRows
+ *   processedData={standingsData}
+ *   columns={standingsColumns}
+ *   maxRows={10}
+ *   gridTemplate="50px 1fr 60px 60px 80px"
+ * />
+ *
+ * // With team highlighting and responsive limits
+ * <SortedMixedRows
+ *   processedData={gameStatsData}
+ *   columns={gameColumns}
+ *   highlightedTeam="Team Liquid"
+ *   maxRows={5}
+ *   gridTemplate="50px 1fr 60px 60px 80px"
+ *   className="border-b"
+ * />
+ *
+ * // Show all teams without limits
+ * <SortedMixedRows
+ *   processedData={standingsData}
+ *   columns={standingsColumns}
+ *   maxRows={null}
+ *   gridTemplate="50px 1fr 60px 60px 80px"
+ * />
+ * ```
+ *
+ * @see {@link useSort} for sort state management
+ * @see {@link useFlipAnimation} for animation implementation
+ * @see {@link StandingsRow} for individual row rendering
+ * @see {@link StandingsRows} for static row display without sorting
  */
 export const SortedMixedRows = ({
     processedData,
@@ -37,8 +92,16 @@ export const SortedMixedRows = ({
     const { activeSort } = useSort()
     const { containerRef, isAnimating } = useFlipAnimation([activeSort, processedData])
     
-    // Sort data based on activeSort
+    /**
+     * Memoized sorted data based on active sort state.
+     * Handles both default sorting (by place) and dynamic sorting by user-selected criteria.
+     * Supports multiple data types and statistics for comprehensive sorting options.
+     */
     const sortedData = React.useMemo(() => {
+        /**
+         * Default sorting: When no sort is active, sort by original place/position.
+         * This maintains the tournament's official standings order.
+         */
         if (!activeSort.key)
             return processedData.sort((a, b) => {
                 const aPlace = 'standing' in a ? a.standing.place || 0 : 0
@@ -46,6 +109,10 @@ export const SortedMixedRows = ({
                 return aPlace - bPlace
             })
 
+        /**
+         * Dynamic sorting: Sort by user-selected criteria.
+         * Creates a new array to avoid mutating the original data.
+         */
         return [...processedData].sort((a, b) => {
             let comparison = 0
             const key = activeSort.key
@@ -53,8 +120,11 @@ export const SortedMixedRows = ({
 
             if (!key || !direction) return 0
 
-            console.log(key, direction)
-
+            /**
+             * Sort comparison logic for different statistical categories.
+             * Handles both ProcessedStanding and ProcessedGameStats data structures.
+             * Each case extracts the appropriate value and calculates comparison.
+             */
             switch (key) {
                 case 'place':
                     const aPlace = 'standing' in a ? a.standing.place || 0 : 0
@@ -128,6 +198,10 @@ export const SortedMixedRows = ({
                     return 0
             }
 
+            /**
+             * Apply sort direction to comparison result.
+             * 'desc' inverts the comparison for descending order.
+             */
             return activeSort.direction === 'desc' ? -comparison : comparison
         })
     }, [processedData, activeSort])
@@ -135,7 +209,11 @@ export const SortedMixedRows = ({
     return (
         <div ref={containerRef} className={`flex flex-col flex-1`}>
             {sortedData.map((item, index) => {
-                // Find highlighted team index in sorted data
+                /**
+                 * Find the position of the highlighted team in the current sorted data.
+                 * This is recalculated for each item to ensure consistent centering
+                 * as the sort order may have changed the team's position.
+                 */
                 const highlightedIndex = highlightedTeam
                     ? sortedData.findIndex(
                           (data) =>
@@ -145,7 +223,11 @@ export const SortedMixedRows = ({
                       )
                     : -1
 
-                // Calculate which rows to show based on highlighted team
+                /**
+                 * Calculate responsive visibility for current row.
+                 * Determines if this row should be shown on mobile vs desktop
+                 * based on highlighted team position and row limits.
+                 */
                 let shouldShowOnMobile = false
                 let shouldShowOnDesktop = false
 
@@ -207,6 +289,10 @@ export const SortedMixedRows = ({
                     classNameAppend = 'hidden' // Hide on both
                 }
 
+                /**
+                 * Extract team identifier for keys and highlighting.
+                 * Handles both ProcessedStanding and ProcessedGameStats structures.
+                 */
                 const teamKey = 'standing' in item ? item.standing.team : item.team
                 
                 return (
@@ -228,7 +314,7 @@ export const SortedMixedRows = ({
                             }
                             gridTemplate={gridTemplate}
                             className={className}
-                            sortedPosition={index + 1}
+                            sortedPosition={index + 1} // Dynamic position based on current sort order
                         />
                     </div>
                 )
