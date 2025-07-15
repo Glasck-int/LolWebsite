@@ -20,6 +20,11 @@ import {
 import { Annoyed } from 'lucide-react'
 import { SubTitle } from '@/components/ui/text/SubTitle'
 import { SortedList } from '@/components/ui/card/exemple/BodySort'
+import { TabbleEntityLayout, TabbleEntityHeader, TabbleEntityRow } from '@/components/layout/TabbebEntityLayout/TabbebEntityLayout'
+
+const DropDownExemple = ["2021", "2022", "2023", "2024", "2025"]
+const row1Exemple = ['winter', 'MainEvent', 'Spring']
+const row2Exemple = ['Regular Season', 'Playoff']
 
 export default function Home() {
     return (
@@ -48,7 +53,7 @@ export default function Home() {
                         <CardBodyMultiple>
                             <CardBodyMultipleContent>
                                 <div className="flex justify-center items-center h-full">
-                                    <p>body 1</p>
+                                    <p>TODO Pouvoir fermer les cartes</p>
                                 </div>
                             </CardBodyMultipleContent>
                             <CardBodyMultipleContent>
@@ -63,26 +68,49 @@ export default function Home() {
             </div>
             ---
             <div>
-                <Card>
-                    <CardBody>
-                        <div>
-                            <p>superbody</p>
-                            <p>superbody</p>
-                            <p>superbody</p>
-                        </div>
-                    </CardBody>
-                    <CardFooter>
-                        <CardFooterContent>
-                            <p className='text-inherit'>superfooter</p>
-                        </CardFooterContent>
-                        <CardFooterContent>
-                            <p className='text-inherit'>superfooter</p>
-                        </CardFooterContent>
-                        <CardFooterContent>
-                            <p className='text-inherit'>superfooter</p>
-                        </CardFooterContent>
-                    </CardFooter>
-                </Card>
+                {/* ici definir un context */}
+                <TabbleEntityLayout>
+                    {/* header */}
+                    <Card>
+                        <CardBody>
+                            <TabbleEntityHeader>
+                                <TabbleEntityRow
+                                    display="select"
+                                    data={DropDownExemple}
+                                />
+                                <TabbleEntityRow
+                                    display="tab"
+                                    data={row1Exemple}
+                                    all={false}
+                                />
+                                <TabbleEntityRow
+                                    display="tab"
+                                    data={row2Exemple}
+                                />
+                            </TabbleEntityHeader>
+                        </CardBody>
+                        <CardFooter>
+                            <CardFooterContent>
+                                <p className="text-inherit">superfooter</p>
+                            </CardFooterContent>
+                            <CardFooterContent>
+                                <p className="text-inherit">superfooter</p>
+                            </CardFooterContent>
+                            <CardFooterContent>
+                                <p className="text-inherit">superfooter</p>
+                            </CardFooterContent>
+                        </CardFooter>
+                    </Card>
+                    {/* body */}
+                    {/* <TabbleEntityBody>
+                        <TabbleEntityContent>
+                            <p>Content</p>
+                        </TabbleEntityContent>
+                        <TabbleEntityContent>
+                            <p>Content</p>
+                        </TabbleEntityContent>
+                    </TabbleEntityBody> */}
+                </TabbleEntityLayout>
             </div>
             ---
             <div className="h-[200px]">
