@@ -17,14 +17,42 @@ import {
     CardFooterContent,
 } from '@/components/ui/card/index'
 
+import { Left, Right, Mid } from '@/components/layout/TabbebEntityLayout/exemple/exemple'
 import { Annoyed } from 'lucide-react'
 import { SubTitle } from '@/components/ui/text/SubTitle'
 import { SortedList } from '@/components/ui/card/exemple/BodySort'
-import { TabbleEntityLayout, TabbleEntityHeader, TabbleEntityRow } from '@/components/layout/TabbebEntityLayout/TabbebEntityLayout'
+import { TabbleEntityLayout, TabbleEntityHeader, TabbleEntityBody, TabbleEntityContent } from '@/components/layout/TabbebEntityLayout/TabbebEntityLayout'
 
 const DropDownExemple = ["2021", "2022", "2023", "2024", "2025"]
 const row1Exemple = ['winter', 'MainEvent', 'Spring']
 const row2Exemple = ['Regular Season', 'Playoff']
+const seasons: {
+  [year: string]: {
+    split: string[];
+    tournament: string[];
+  };
+} = {
+  "2025": {
+    split: ["Winter", "MainEvent", "Spring"],
+    tournament: ["RegularSeason", "Playoff"]
+  },
+  "2024": {
+    split: ["PreSeason", "MidSeason", "Summer"],
+    tournament: ["RegularSeason", "Finals"]
+  },
+  "2023": {
+    split: ["EarlySeason", "Championship", "Fall"],
+    tournament: ["Qualifiers", "Playoffs"]
+  },
+  "2022": {
+    split: ["Opening", "MidSeason", "EndSeason"],
+    tournament: ["GroupStage", "Knockout"]
+  },
+  "2021": {
+    split: ["Start", "MidYear", "LateYear"],
+    tournament: ["Elimination", "FinalMatch"]
+  }
+};
 
 export default function Home() {
     return (
@@ -52,8 +80,9 @@ export default function Home() {
                     <CardBody>
                         <CardBodyMultiple>
                             <CardBodyMultipleContent>
-                                <div className="flex justify-center items-center h-full">
+                                <div className="flex flex-col justify-center items-center h-full">
                                     <p>TODO Pouvoir fermer les cartes</p>
+                                    <p>TODO switch context</p>
                                 </div>
                             </CardBodyMultipleContent>
                             <CardBodyMultipleContent>
@@ -68,48 +97,36 @@ export default function Home() {
             </div>
             ---
             <div>
-                {/* ici definir un context */}
                 <TabbleEntityLayout>
                     {/* header */}
                     <Card>
                         <CardBody>
-                            <TabbleEntityHeader>
-                                <TabbleEntityRow
-                                    display="select"
-                                    data={DropDownExemple}
-                                />
-                                <TabbleEntityRow
-                                    display="tab"
-                                    data={row1Exemple}
-                                    all={false}
-                                />
-                                <TabbleEntityRow
-                                    display="tab"
-                                    data={row2Exemple}
-                                />
-                            </TabbleEntityHeader>
+                            <TabbleEntityHeader data={seasons} />
                         </CardBody>
                         <CardFooter>
                             <CardFooterContent>
-                                <p className="text-inherit">superfooter</p>
+                                <p className="text-inherit">left</p>
                             </CardFooterContent>
                             <CardFooterContent>
-                                <p className="text-inherit">superfooter</p>
+                                <p className="text-inherit">mid</p>
                             </CardFooterContent>
                             <CardFooterContent>
-                                <p className="text-inherit">superfooter</p>
+                                <p className="text-inherit">right</p>
                             </CardFooterContent>
                         </CardFooter>
                     </Card>
                     {/* body */}
-                    {/* <TabbleEntityBody>
+                    <TabbleEntityBody>
                         <TabbleEntityContent>
-                            <p>Content</p>
+                            <Left/>
                         </TabbleEntityContent>
                         <TabbleEntityContent>
-                            <p>Content</p>
+                            <Mid />
                         </TabbleEntityContent>
-                    </TabbleEntityBody> */}
+                        <TabbleEntityContent>
+                            <Right />
+                        </TabbleEntityContent>
+                    </TabbleEntityBody>
                 </TabbleEntityLayout>
             </div>
             ---

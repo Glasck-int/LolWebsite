@@ -1,11 +1,12 @@
 'use client'
 
 import React, {useState, useEffect, useRef} from 'react'
-import { CardProps, useCard } from './Card'
+import { CardProps } from './Card'
 import { motion } from 'framer-motion'
+import { useLayout } from '@/components/layout/TabbebEntityLayout/TabbebEntityLayout'
 
 export const CardFooter = ({ children, className = '' }: CardProps) => {
-    const { activeIndex, setActiveIndex } = useCard()
+    const { activeIndex, setActiveIndex } = useLayout()
     const tabCount = React.Children.count(children)
 
     const containerRef = useRef<HTMLDivElement>(null)
@@ -74,5 +75,3 @@ export const CardFooter = ({ children, className = '' }: CardProps) => {
 export const CardFooterContent = ({ children, className = '' }: CardProps) => {
     return <div className={'w-full h-full' + ' ' + className}>{children}</div>
 }
-
-// super css pour faire des slide undertab (regarder sur gpt)
