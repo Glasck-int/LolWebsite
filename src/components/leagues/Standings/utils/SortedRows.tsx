@@ -86,6 +86,11 @@ export const SortedRows = ({
     
     // Sort data based on activeSort
     const sortedData = React.useMemo(() => {
+        // Early return with empty array if processedData is null/undefined
+        if (!processedData || !Array.isArray(processedData)) {
+            return []
+        }
+
         if (!activeSort.key)
             return processedData.sort((a, b) => {
                 const aPlace = 'standing' in a ? (a.standing.place || 0) : 0

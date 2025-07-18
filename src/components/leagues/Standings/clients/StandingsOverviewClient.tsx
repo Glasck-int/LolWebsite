@@ -50,7 +50,7 @@ export const StandingsOverviewClient = ({
     const gridTemplateMobile = getGridTemplate(true)
 
     return (
-        <Card className="flex flex-col w-full h-full">
+        <Card className="flex flex-col ">
             <CardSort>
                 <CardBody>
                             <div className="flex flex-col w-full h-full ">

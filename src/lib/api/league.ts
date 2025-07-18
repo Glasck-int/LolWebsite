@@ -22,6 +22,10 @@ async function getLeagueBySlug(slug: string): Promise<ApiResponse<LeagueType>> {
     return apiRequest<LeagueType>(`/api/leagues/slug/${slug}`)
 }
 
+async function getLeagueByName(name: string): Promise<ApiResponse<LeagueType>> {
+    return apiRequest<LeagueType>(`/api/leagues/name/${name}`)
+}
+
 /**
  * Get all leagues from the API
  *
@@ -60,4 +64,5 @@ export {
     getLeagueById,
     getLeagueBySlug,
     getNextThreeMatchesForLeague,
+    getLeagueByName,
 }

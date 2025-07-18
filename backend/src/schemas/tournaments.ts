@@ -1,10 +1,8 @@
 import { Type } from '@sinclair/typebox'
-import { SuccessResponseSchema } from './common'
-
 /**
  * Tournament schema with comprehensive field descriptions and validation
  */
-export const TournamentSchema = Type.Object({
+const TournamentSchema = Type.Object({
     id: Type.Number({ 
         description: 'Unique identifier for the tournament',
         examples: [1, 2, 3]
@@ -186,7 +184,7 @@ export const TournamentSchema = Type.Object({
 /**
  * Tournament standings schema with detailed field descriptions
  */
-export const TournamentStandingsResponse = Type.Object({
+ const TournamentStandingsResponse = Type.Object({
     id: Type.Number({ 
         description: 'Unique identifier for the standings entry',
         examples: [1, 2, 3]
@@ -272,14 +270,14 @@ const TournamentGamesListResponse = Type.Object({
 /**
  * Create and Update schemas for tournaments
  */
-export const CreateTournamentSchema = Type.Omit(TournamentSchema, ['id', 'createdAt', 'updatedAt'])
-export const UpdateTournamentSchema = Type.Partial(CreateTournamentSchema)
+const CreateTournamentSchema = Type.Omit(TournamentSchema, ['id', 'createdAt', 'updatedAt'])
+const UpdateTournamentSchema = Type.Partial(CreateTournamentSchema)
 
 /**
  * Response arrays
  */
-export const TournamentListResponse = Type.Array(TournamentSchema)
-export const TournamentStandingsListResponse = Type.Array(TournamentStandingsResponse)
+const TournamentListResponse = Type.Array(TournamentSchema)
+const TournamentStandingsListResponse = Type.Array(TournamentStandingsResponse)
 export {
     TournamentSchema,
     CreateTournamentSchema,

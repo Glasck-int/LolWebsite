@@ -91,6 +91,18 @@ export const TournamentOverviewPageParamSchema = Type.Object({
  * League name parameter
  */
 export const LeagueNameParamSchema = Type.Object({
+    name: Type.String({
+        minLength: 1,
+        maxLength: 100,
+        description: 'League name',
+        examples: ['LEC', 'LCS', 'LCK']
+    })
+})
+
+/**
+ * League name parameter for tournaments route
+ */
+export const TournamentLeagueNameParamSchema = Type.Object({
     leagueName: Type.String({
         minLength: 1,
         maxLength: 100,

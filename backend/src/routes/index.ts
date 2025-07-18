@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify'
 import leaguesRoutes from './leagues/leagues'
 import teamsRoutes from './teams/teams'
 import tournamentsRoutes from './tournaments/tournaments'
+import playersRoutes from './players/players'
 /**
  * Register all application routes
  *
@@ -14,6 +15,7 @@ async function registerRoutes(fastify: FastifyInstance) {
     await fastify.register(leaguesRoutes, { prefix: '/api' })
     await fastify.register(tournamentsRoutes, { prefix: '/api' })
     await fastify.register(teamsRoutes, { prefix: '/api' })
+    await fastify.register(playersRoutes, { prefix: '/api' })
     // Add more route modules here as needed
     // await fastify.register(authRoutes, { prefix: '/api' });
     // await fastify.register(productRoutes, { prefix: '/api' });

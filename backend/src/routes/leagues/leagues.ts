@@ -3,7 +3,7 @@ import { LeagueSchema, LeagueListResponse } from '../../schemas/league'
 import { MatchScheduleListResponse } from '../../schemas/matchShedule'
 import { ErrorResponseSchema } from '../../schemas/common'
 import prisma from '../../services/prisma'
-import { LeagueSlugParamSchema, IdParamSchema } from '../../schemas/params'
+import { LeagueSlugParamSchema, IdParamSchema, LeagueNameParamSchema } from '../../schemas/params'
 
 /**
  * Register leagues routes
@@ -119,6 +119,46 @@ export default async function leaguesRoutes(fastify: FastifyInstance) {
             return league
         }
     )
+
+        fastify.get<{ Params: { name: string } }>(
+            '/leagues/name/:name',
+            {
+                schema: {
+                    description:
+                        'Get a league by name',
+                    tags: ['leagues'],
+                    params: LeagueNameParamSchema,
+                    response: {
+                        200: LeagueSchema,
+                        404: ErrorResponseSchema,
+                        500: ErrorResponseSchema,
+                    },
+                },
+            },
+            async (request, reply) => {
+                const cacheKey = `league:name:${request.params.name}`
+                customMetric.inc({ operation: 'get_league_by_name' })
+                const cached = await redis.get(cacheKey)
+                if (cached) {
+                    return JSON.parse(cached)
+                }
+
+                const { name } = request.params
+                const league = await prisma.league.findUnique({
+                    where: { name },
+                })
+
+                // Cache for 1 week (604800 seconds)
+                await redis.setex(cacheKey, 604800, JSON.stringify(league))
+
+                if (!league) {
+                    return reply.status(404).send({ error: 'League not found' })
+                }
+
+                return league
+            }
+        )
+
 
     fastify.get<{ Params: { id: string } }>(
         '/leagues/id/:id/next-matches',

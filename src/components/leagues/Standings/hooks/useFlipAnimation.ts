@@ -53,7 +53,10 @@ export const useFlipAnimation = (dependencies: any[]) => {
         if (!containerRef.current) return
 
         const container = containerRef.current
-        const items = container.querySelectorAll('[data-team-key]')
+        const items = Array.from(container.querySelectorAll('[data-team-key]'))
+        
+        // Batch DOM reads to avoid layout thrashing
+        const containerRect = container.getBoundingClientRect()
         
         /**
          * First render: Store initial positions without animating.
@@ -64,7 +67,6 @@ export const useFlipAnimation = (dependencies: any[]) => {
                 const teamKey = item.getAttribute('data-team-key')
                 if (teamKey) {
                     const rect = item.getBoundingClientRect()
-                    const containerRect = container.getBoundingClientRect()
                     prevPositions.current.set(teamKey, {
                         top: rect.top - containerRect.top,
                         height: rect.height
@@ -80,28 +82,38 @@ export const useFlipAnimation = (dependencies: any[]) => {
          */
         const animations: { element: Element; deltaY: number }[] = []
         
-        items.forEach((item) => {
+        // Batch all DOM reads first
+        const currentPositions = items.map(item => {
             const teamKey = item.getAttribute('data-team-key')
-            if (!teamKey) return
+            if (!teamKey) return null
+            
+            const rect = item.getBoundingClientRect()
+            return {
+                element: item,
+                teamKey,
+                top: rect.top - containerRect.top,
+                height: rect.height
+            }
+        }).filter(Boolean)
 
-            const currentRect = item.getBoundingClientRect()
-            const containerRect = container.getBoundingClientRect()
-            const currentTop = currentRect.top - containerRect.top
-
-            const prevPosition = prevPositions.current.get(teamKey)
+        // Then calculate animations
+        currentPositions.forEach((current) => {
+            if (!current) return
+            
+            const prevPosition = prevPositions.current.get(current.teamKey)
             if (prevPosition) {
-                const deltaY = prevPosition.top - currentTop
+                const deltaY = prevPosition.top - current.top
                 
                 // Only animate if there's significant movement (> 1px)
                 if (Math.abs(deltaY) > 1) {
-                    animations.push({ element: item, deltaY })
+                    animations.push({ element: current.element, deltaY })
                 }
             }
 
             // Update stored position for next animation cycle
-            prevPositions.current.set(teamKey, {
-                top: currentTop,
-                height: currentRect.height
+            prevPositions.current.set(current.teamKey, {
+                top: current.top,
+                height: current.height
             })
         })
 
@@ -112,39 +124,39 @@ export const useFlipAnimation = (dependencies: any[]) => {
         if (animations.length > 0) {
             setIsAnimating(true)
 
-            // INVERT: Apply initial transforms to move elements back to previous positions
+            // INVERT: Apply initial transforms (simplified for performance)
             animations.forEach(({ element, deltaY }) => {
                 const htmlElement = element as HTMLElement
                 htmlElement.style.transform = `translateY(${deltaY}px)`
                 htmlElement.style.transition = 'none'
             })
 
-            // Force a reflow to ensure transforms are applied before animation
-            container.offsetHeight
-
-            // PLAY: Animate transforms back to 0, moving elements to final positions
-            animations.forEach(({ element }) => {
-                const htmlElement = element as HTMLElement
-                htmlElement.style.transform = 'translateY(0px)'
-                htmlElement.style.transition = 'transform 0.3s ease-in-out'
-            })
-
-            /**
-             * Clean up animation styles after completion.
-             * This prevents interference with future layouts and animations.
-             */
-            const cleanup = () => {
+            // Use requestAnimationFrame instead of setTimeout for better performance
+            requestAnimationFrame(() => {
+                // PLAY: Animate transforms back to 0
                 animations.forEach(({ element }) => {
                     const htmlElement = element as HTMLElement
-                    htmlElement.style.transition = ''
-                    htmlElement.style.transform = ''
+                    htmlElement.style.transform = 'translateY(0px)'
+                    htmlElement.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
                 })
-                setIsAnimating(false)
-            }
 
-            // Set cleanup timer (double the animation duration for safety)
-            const timer = setTimeout(cleanup, 600)
-            return () => clearTimeout(timer)
+                /**
+                 * Clean up animation styles after completion.
+                 * This prevents interference with future layouts and animations.
+                 */
+                const cleanup = () => {
+                    animations.forEach(({ element }) => {
+                        const htmlElement = element as HTMLElement
+                        htmlElement.style.transition = ''
+                        htmlElement.style.transform = ''
+                    })
+                    setIsAnimating(false)
+                }
+
+                // Use single timeout for cleanup
+                const timer = setTimeout(cleanup, 300)
+                return () => clearTimeout(timer)
+            })
         }
     }, dependencies)
 

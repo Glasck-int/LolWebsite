@@ -12,14 +12,15 @@ export const LeagueDescription = async ({ league }: LeagueDescriptionProps) => {
         const image = await getLeagueImage(league.name || '')
 
     return (
-         <div className="flex flex-row z-50 mb-4 gap-4 md:hidden">
+        
+         <div className="flex flex-row mb-4 gap-4 md:hidden">
                 {image.data && (
                     <Image
                         src={image.data}
                         alt={league.name || ''}
                         className="object-contain"
                         width={75}
-                            height={75}
+                        height={75}
                         />
                 )}
                 <div className="flex flex-col justify-end items-start gap-0">

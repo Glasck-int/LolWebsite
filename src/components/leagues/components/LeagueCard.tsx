@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Card } from '@/components/ui/card/Card'
-import { League as LeagueType } from '../../../backend/src/generated/prisma'
+import { League as LeagueType } from '../../../../backend/src/generated/prisma'
 import { createLeagueSlug } from '@/lib/utils'
 import { getLeagueImage } from '@/lib/api/image'
 
@@ -79,11 +79,9 @@ export const LeagueCard: React.FC<LeagueCardProps> = ({
         )
     }
 
-    const slug = createLeagueSlug(league.name)
-
     if (square) {
         return (
-            <Link href={`/leagues/${slug}`}>
+            <Link href={`/leagues/${league.name}`}>
                 <div
                     className={`w-full aspect-square cursor-pointer ${className}`}
                 >
@@ -100,8 +98,10 @@ export const LeagueCard: React.FC<LeagueCardProps> = ({
         )
     }
 
+    const encodedName = encodeURIComponent(league.name)
+
     return (
-        <Link href={`/leagues/${slug}`}>
+        <Link href={`/leagues/${encodedName}`}>
             <div className={`w-full h-10 cursor-pointer ${className}`}>
                 <Card className=" backdrop-blur p-5 shadow-md h-full flex flex-row items-center justify-start cursor-pointer hover:bg-white/10 active:bg-white/5 transition-all duration-200">
                     {leagueImageUrl && (

@@ -4,6 +4,10 @@ import {
 } from '../../../backend/src/generated/prisma'
 import { MatchScheduleGameType } from '../../../backend/src/schemas/matchScheduleGame'
 import { apiRequest, ApiResponse } from './utils'
+import {
+    ScoreboardPlayersListResponse,
+    PlayerStatsSchema,
+} from '../../../backend/src/schemas/scoreboardPlayers'
 
 /**
  * Get tournaments by league ID
@@ -14,7 +18,8 @@ import { apiRequest, ApiResponse } from './utils'
 async function getTournamentsByLeagueName(
     leagueName: string
 ): Promise<ApiResponse<TournamentType[]>> {
-    return apiRequest<TournamentType[]>(`/api/tournaments/league/${leagueName}`)
+    const encodedLeagueName = encodeURIComponent(leagueName)
+    return apiRequest<TournamentType[]>(`/api/tournaments/league/${encodedLeagueName}`)
 }
 
 /**
@@ -50,8 +55,34 @@ async function getTournamentsGamesByTournamentOverviewPage(
     )
 }
 
+/**
+ * Get scoreboard players by tournament overview page
+ *
+ * @param tournamentOverviewPage - The overview page of the tournament to fetch scoreboard players for
+ * @returns Promise with array of scoreboard players or error
+ */
+async function getTournamentsScoreboardPlayersByTournamentOverviewPage(
+    tournamentOverviewPage: string
+): Promise<ApiResponse<typeof ScoreboardPlayersListResponse>> {
+    const encodedOverviewPage = encodeURIComponent(tournamentOverviewPage)
+    return apiRequest<typeof ScoreboardPlayersListResponse>(
+        `/api/tournaments/${encodedOverviewPage}/scoreboardplayers`
+    )
+}
+
+async function getTournamentPlayersStatsByTournamentOverviewPage(
+    tournamentOverviewPage: string
+): Promise<ApiResponse<typeof PlayerStatsSchema>> {
+    const encodedOverviewPage = encodeURIComponent(tournamentOverviewPage)
+    return apiRequest<typeof PlayerStatsSchema>(
+        `/api/tournaments/${encodedOverviewPage}/player-stats`
+    )
+}
+
 export {
     getTournamentsByLeagueName,
     getTournamentsStandingsByTournamentOverviewPage,
     getTournamentsGamesByTournamentOverviewPage,
+    getTournamentsScoreboardPlayersByTournamentOverviewPage,
+    getTournamentPlayersStatsByTournamentOverviewPage,
 }

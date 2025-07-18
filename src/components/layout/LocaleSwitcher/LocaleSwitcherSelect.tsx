@@ -15,6 +15,7 @@ interface LocaleSwitcherSelectProps {
 	defaultValue: string;
 	label: string;
 	showOnMobile?: boolean;
+	className?: string;
 }
 
 /**
@@ -46,6 +47,7 @@ export default function LocaleSwitcherSelect({
 	children,
 	defaultValue,
 	label,
+	className,
 	showOnMobile = false,
 }: LocaleSwitcherSelectProps) {
 	const router = useRouter();
@@ -99,7 +101,7 @@ export default function LocaleSwitcherSelect({
 
 	return (
 		<div
-			className={`relative ${showOnMobile ? "hidden" : "block"} md:block`}
+			className={`relative md:block ${className}`}
 			ref={dropdownRef}
 		>
 			<p className="sr-only">{label}</p>

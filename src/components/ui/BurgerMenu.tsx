@@ -36,7 +36,7 @@ export const BurgerMenu = ({ isOpen, setIsOpen }: BurgerMenuProps) => {
 	};
 
 	return (
-		<div className="flex justify-center items-center">
+		<div className="flex justify-center items-center" id="burger-menu-trigger">
 			<button
 				onClick={handleClick}
 				className="transition-all duration-200"

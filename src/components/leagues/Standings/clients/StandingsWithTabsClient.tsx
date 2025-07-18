@@ -17,6 +17,7 @@ import { ProcessedStanding } from '../utils/StandingsDataProcessor'
 import { SortedRows } from '../utils/SortedRows'
 import { useMatchesColumns, useGamesColumns, useCombinedStandingsColumns, getGridTemplate, getCombinedGridTemplate, getMobileColumns } from '../hooks/useStandingsColumns'
 import { SortedMixedRows } from '../utils/SortedMixedRows'
+import { SubTitle } from '@/components/ui/text/SubTitle'
 const desktopGridTemplate = getCombinedGridTemplate(false)
 const tabletGridTemplate = getGridTemplate(false) // Tablette: grid complet avec Form
 const mobileGridTemplate = getGridTemplate(true)
@@ -66,16 +67,19 @@ export const StandingsWithTabsClient = ({
                 {/* Desktop: combined view with sections */}
                 <div className="hidden lg:block">
                     <CardBody>
-                        <div className="flex flex-col w-full h-full">
+                        <div className="flex flex-col w-full h-full ">
                             {/* Section headers for BO/SERIES and GAMES */}
-                            <div className="w-full text-clear-grey" style={{ display: 'grid', gridTemplateColumns: desktopGridTemplate }}>
+                            <div
+                                className="w-full text-clear-grey bg-white/8"
+                                style={{ display: 'grid', gridTemplateColumns: desktopGridTemplate }}
+                            >
                                 <div></div> {/* Place column - empty */}
                                 <div></div> {/* Team column - empty */}
                                 
                                 <div></div> {/* J matches - empty */}
                                 {/* BO/SERIES header between W and L - same style as tabs */}
                                 <div className="flex items-center justify-center">
-                                    <p className="text-clear-grey whitespace-nowrap font-medium mb-2 mt-2">BO/SERIES</p>
+                                    <SubTitle className="whitespace-nowrap mb-2 mt-2">BO/SERIES</SubTitle>
                                 </div>
                                 <div></div> {/* L matches - empty */}
                                 <div></div> {/* WR matches - empty */}
@@ -83,7 +87,7 @@ export const StandingsWithTabsClient = ({
                                 <div></div> {/* J games - empty */}
                                 {/* GAMES header between W and L - same style as tabs */}
                                 <div className="flex items-center justify-center">
-                                    <p className="text-clear-grey whitespace-nowrap font-medium mb-2 mt-2">GAMES</p>
+                                    <SubTitle className="whitespace-nowrap mb-2 mt-2">GAMES</SubTitle>
                                 </div>
                                 <div></div> {/* L games - empty */}
                                 <div></div> {/* WR games - empty */}

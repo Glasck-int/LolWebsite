@@ -7,13 +7,14 @@ import {
 import { ErrorResponseSchema } from '../../schemas/common'
 import prisma from '../../services/prisma'
 import { MatchScheduleGameListResponse } from '../../schemas/matchScheduleGame'
-import { LeagueNameParamSchema, TournamentIdParamSchema, OverviewPageParamSchema, TournamentOverviewPageParamSchema } from '../../schemas/params'
+import { ScoreboardPlayersListResponse, PlayerStatsListResponse } from '../../schemas/scoreboardPlayers'
+import { TournamentLeagueNameParamSchema, TournamentIdParamSchema, OverviewPageParamSchema, TournamentOverviewPageParamSchema } from '../../schemas/params'
 
 export default async function tournamentsRoutes(fastify: FastifyInstance) {
     const redis = fastify.redis
     const customMetric = new fastify.metrics.client.Counter({
-        name: 'tournaments_by_league_name',
-        help: 'Tournaments by league name',
+        name: 'tournaments',
+        help: 'Tournaments',
         labelNames: ['operation'],
     })
 
@@ -23,7 +24,7 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
             schema: {
                 description: 'Get tournaments by league name',
                 tags: ['tournaments'],
-                params: LeagueNameParamSchema,
+                params: TournamentLeagueNameParamSchema,
                 response: {
                     200: TournamentListResponse,
                     404: ErrorResponseSchema,
@@ -296,6 +297,251 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
                 return games
             } catch (error) {
                 console.error('Error in tournament games route:', error)
+                return reply
+                    .status(500)
+                    .send({ error: 'Internal server error' })
+            }
+        }
+    )
+
+    fastify.get<{ Params: { tournamentOverviewPage: string } }>(
+        '/tournaments/:tournamentOverviewPage/scoreboardplayers',
+        {
+            schema: {
+                description:
+                    'Get all scoreboard players for a tournament by overview page',
+                tags: ['tournaments'],
+                params: TournamentOverviewPageParamSchema,
+                response: {
+                    200: ScoreboardPlayersListResponse,
+                    404: ErrorResponseSchema,
+                    500: ErrorResponseSchema,
+                },
+            },
+        },
+        async (request, reply) => {
+            try {
+                const { tournamentOverviewPage } = request.params
+                const cacheKey = `tournament_scoreboardplayers:${tournamentOverviewPage}`
+
+                // Check cache first
+                const cached = await redis.get(cacheKey)
+                if (cached) {
+                    return JSON.parse(cached)
+                }
+
+                // Get tournament end date for dynamic cache strategy
+                const tournament = await prisma.tournament.findUnique({
+                    where: { overviewPage: tournamentOverviewPage },
+                    select: { dateEnd: true }
+                })
+
+                // Direct query to ScoreboardPlayers with tournament overviewPage
+                const players = await prisma.scoreboardPlayers.findMany({
+                    where: {
+                        overviewPage: tournamentOverviewPage,
+                    },
+                    orderBy: [
+                        { matchId: 'asc' },
+                        { gameId: 'asc' },
+                        { role_Number: 'asc' },
+                    ],
+                })
+
+                if (players.length === 0) {
+                    return reply.status(404).send({
+                        error: 'No scoreboard players found for this tournament',
+                    })
+                }
+
+                // Dynamic cache strategy based on tournament status
+                let cacheTime: number
+
+                if (!tournament?.dateEnd) {
+                    // Tournament without end date = active
+                    cacheTime = 300 // 5 minutes
+                } else {
+                    const tournamentEndDate = new Date(tournament.dateEnd)
+                    const now = new Date()
+                    const daysSinceEnd = Math.floor((now.getTime() - tournamentEndDate.getTime()) / (1000 * 60 * 60 * 24))
+                    
+                    if (tournamentEndDate > now) {
+                        // Tournament not yet finished
+                        cacheTime = 300 // 5 minutes
+                    } else if (daysSinceEnd <= 2) {
+                        // Tournament finished ≤ 2 days ago (possible corrections)
+                        cacheTime = 3600 // 1 hour
+                    } else if (daysSinceEnd <= 30) {
+                        // Tournament finished 3-30 days ago
+                        cacheTime = 604800 // 7 days
+                    } else {
+                        // Tournament finished > 30 days ago (historical data is fixed)
+                        cacheTime = 2592000 // 30 days
+                    }
+                }
+
+                await redis.setex(cacheKey, cacheTime, JSON.stringify(players))
+                return players
+            } catch (error) {
+                console.error('Error in tournament scoreboard players route:', error)
+                return reply
+                    .status(500)
+                    .send({ error: 'Internal server error' })
+            }
+        }
+    )
+
+    // Player stats aggregation endpoint
+    fastify.get<{ Params: { tournamentOverviewPage: string } }>(
+        '/tournaments/:tournamentOverviewPage/player-stats',
+        {
+            schema: {
+                description: 'Get aggregated player statistics (KDA, damage, etc.) for a tournament',
+                tags: ['tournaments'],
+                params: TournamentOverviewPageParamSchema,
+                response: {
+                    200: PlayerStatsListResponse,
+                    404: ErrorResponseSchema,
+                    500: ErrorResponseSchema,
+                },
+            },
+        },
+        async (request, reply) => {
+            try {
+                const { tournamentOverviewPage } = request.params
+                const cacheKey = `tournament_player_stats:${tournamentOverviewPage}`
+
+                // Check cache first
+                const cached = await redis.get(cacheKey)
+                if (cached) {
+                    return JSON.parse(cached)
+                }
+
+                // Get tournament end date for cache strategy
+                const tournament = await prisma.tournament.findUnique({
+                    where: { overviewPage: tournamentOverviewPage },
+                    select: { dateEnd: true }
+                })
+
+                // Récupérer SEULEMENT les champs nécessaires (plus rapide)
+                const players = await prisma.scoreboardPlayers.findMany({
+                    where: { overviewPage: tournamentOverviewPage },
+                    select: {
+                        name: true,
+                        link: true,
+                        team: true,
+                        role: true,
+                        kills: true,
+                        deaths: true,
+                        assists: true,
+                        damageToChampions: true,
+                        gold: true,
+                        cs: true,
+                        visionScore: true,
+                        playerWin: true
+                    }
+                })
+
+                if (players.length === 0) {
+                    return reply.status(404).send({
+                        error: 'No player data found for this tournament',
+                    })
+                }
+
+                // Grouper par joueur et calculer les stats
+                const playerStatsMap = new Map<string, any>()
+
+                players.forEach(player => {
+                    const key = `${player.name}-${player.team}-${player.role}`
+                    
+                    if (!playerStatsMap.has(key)) {
+                        playerStatsMap.set(key, {
+                            name: player.name,
+                            link: player.link,
+                            team: player.team,
+                            role: player.role,
+                            gamesPlayed: 0,
+                            totalKills: 0,
+                            totalDeaths: 0,
+                            totalAssists: 0,
+                            totalDamage: 0,
+                            totalGold: 0,
+                            totalCS: 0,
+                            totalVisionScore: 0,
+                            wins: 0
+                        })
+                    }
+
+                    const stats = playerStatsMap.get(key)!
+                    stats.gamesPlayed++
+                    stats.totalKills += player.kills || 0
+                    stats.totalDeaths += player.deaths || 0
+                    stats.totalAssists += player.assists || 0
+                    stats.totalDamage += player.damageToChampions || 0
+                    stats.totalGold += player.gold || 0
+                    stats.totalCS += player.cs || 0
+                    stats.totalVisionScore += player.visionScore || 0
+                    if (player.playerWin === 'Yes') stats.wins++
+                })
+
+                // Calculer les moyennes
+                const playerStats = Array.from(playerStatsMap.values()).map(stats => ({
+                    name: stats.name,
+                    link: stats.link,
+                    team: stats.team,
+                    role: stats.role,
+                    gamesPlayed: stats.gamesPlayed,
+                    avgKills: Math.round((stats.totalKills / stats.gamesPlayed) * 100) / 100,
+                    avgDeaths: Math.round((stats.totalDeaths / stats.gamesPlayed) * 100) / 100,
+                    avgAssists: Math.round((stats.totalAssists / stats.gamesPlayed) * 100) / 100,
+                    kda: stats.totalDeaths === 0 
+                        ? stats.totalKills + stats.totalAssists 
+                        : Math.round(((stats.totalKills + stats.totalAssists) / stats.totalDeaths) * 100) / 100,
+                    totalKills: stats.totalKills,
+                    totalDeaths: stats.totalDeaths,
+                    totalAssists: stats.totalAssists,
+                    avgDamage: Math.round(stats.totalDamage / stats.gamesPlayed),
+                    avgGold: Math.round(stats.totalGold / stats.gamesPlayed),
+                    avgCS: Math.round((stats.totalCS / stats.gamesPlayed) * 10) / 10,
+                    avgVisionScore: Math.round((stats.totalVisionScore / stats.gamesPlayed) * 10) / 10,
+                    winRate: Math.round((stats.wins / stats.gamesPlayed) * 1000) / 10
+                }))
+
+                // Trier par KDA décroissant
+                playerStats.sort((a, b) => b.kda - a.kda)
+
+                const result = { players: playerStats }
+
+                // Dynamic cache strategy based on tournament status
+                let cacheTime: number
+
+                if (!tournament?.dateEnd) {
+                    // Tournament without end date = active
+                    cacheTime = 300 // 5 minutes
+                } else {
+                    const tournamentEndDate = new Date(tournament.dateEnd)
+                    const now = new Date()
+                    const daysSinceEnd = Math.floor((now.getTime() - tournamentEndDate.getTime()) / (1000 * 60 * 60 * 24))
+                    
+                    if (tournamentEndDate > now) {
+                        // Tournament not yet finished
+                        cacheTime = 300 // 5 minutes
+                    } else if (daysSinceEnd <= 2) {
+                        // Tournament finished ≤ 2 days ago (possible corrections)
+                        cacheTime = 3600 // 1 hour
+                    } else if (daysSinceEnd <= 30) {
+                        // Tournament finished 3-30 days ago
+                        cacheTime = 604800 // 7 days
+                    } else {
+                        // Tournament finished > 30 days ago (historical data is fixed)
+                        cacheTime = 2592000 // 30 days
+                    }
+                }
+
+                await redis.setex(cacheKey, cacheTime, JSON.stringify(result))
+                return result
+            } catch (error) {
+                console.error('Error in tournament player stats route:', error)
                 return reply
                     .status(500)
                     .send({ error: 'Internal server error' })

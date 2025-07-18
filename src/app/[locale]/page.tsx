@@ -1,6 +1,5 @@
 import Footer from '@/components/layout/Footer/Footer'
 
-
 import {
     Card,
     CardSort,

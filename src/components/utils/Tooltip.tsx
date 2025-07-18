@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { Info } from 'lucide-react'
+import { InfoIcon } from 'lucide-react'
 
 interface TooltipProps {
     content: React.ReactNode
@@ -125,7 +125,7 @@ export const Tooltip = ({
             onMouseLeave={handleMouseLeave}
             onMouseMove={handleMouseMove}
         >
-            {children ? children : <Info color='#bab9b9'/>}
+            {children ? children : <InfoIcon className='w-5 h-5 text-grey'/>}
             {mounted &&
                 tooltipElement &&
                 createPortal(tooltipElement, document.body)}

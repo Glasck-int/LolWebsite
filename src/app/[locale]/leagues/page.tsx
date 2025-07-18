@@ -6,12 +6,20 @@ import {
 } from '../../../lib/api/league'
 import { LeaguesClient } from './LeaguesClient'
 import { getLeagueImage } from '@/lib/api/image'
+import { generateMetadata } from './metadata'
+
+/**
+ * Metadata for the Leagues page
+ */
+export { generateMetadata }
+
 
 /**
  * Leagues page component
  *
  * Displays all leagues and major leagues fetched from the API
  */
+
 export default async function Leagues() {
     const [allLeaguesResponse, majorLeaguesResponse] = await Promise.all([
         getAllLeagues(),

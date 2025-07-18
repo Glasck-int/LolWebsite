@@ -1,25 +1,18 @@
 import React from 'react'
-import { getLeagueBySlug } from '@/lib/api/league'
+import { getLeagueByName } from '@/lib/api/league'
 import {
     getTournamentsByLeagueName,
     getTournamentsStandingsByTournamentOverviewPage,
+    getTournamentPlayersStatsByTournamentOverviewPage,
 } from '@/lib/api/tournaments'
+import { fetchEnrichedStandingsData } from '@/lib/api/standings'
 import { LeagueDescription } from '@/components/leagues/components/LeagueDescription'
-import {
-    Card,
-    CardBody,
-    CardBodyMultiple,
-    CardBodyMultipleContent,
-    CardHeader,
-    CardHeaderBase,
-    CardHeaderColumn,
-    CardHeaderTab,
-    CardHeaderContent,
-} from '@/components/ui/card/index'
 import { NextMatches } from '@/components/leagues/Matches/NextMatches'
-import { StandingsOverview } from '@/components/leagues/Standings/views/StandingsOverview'
-import { SubTitle } from '@/components/ui/text/SubTitle'
-import { StandingsWithTabs } from '@/components/leagues/Standings/views/StandingsWithTabs'
+import { StandingsOverviewClient } from '@/components/leagues/Standings/views/StandingsOverviewClient'
+import { StandingsWithTabsClient } from '@/components/leagues/Standings/views/StandingsWithTabsClient'
+import PlayersKda from '@/components/leagues/Stats/views/playersKda'
+
+import { TournamentProvider } from '@/contexts/TournamentContext'
 
 interface LeaguePageProps {
     params: Promise<{ leagueName: string }>
@@ -29,7 +22,7 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
     const { leagueName } = await params
 
     try {
-        const league = await getLeagueBySlug(leagueName)
+        const league = await getLeagueByName(leagueName)
 
         if (league.error) {
             console.error('League error:', league.error)
@@ -45,11 +38,17 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
             return <div>Error loading tournaments: {tournaments.error}</div>
         }
 
-        // Use specifically the Spring Split tournament
         const tournamentName = 'LEC/2025 Season/Spring Season'
 
+        const playerStats =
+            await getTournamentPlayersStatsByTournamentOverviewPage(
+                tournamentName
+            )
 
-        console.log('Selected tournament for standings:', tournamentName)
+        if (playerStats.error) {
+            console.error('Player stats error:', playerStats.error)
+            return <div>Error loading player stats: {playerStats.error}</div>
+        }
 
         const standings = await getTournamentsStandingsByTournamentOverviewPage(
             tournamentName
@@ -60,71 +59,38 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
             return <div>Error loading standings: {standings.error}</div>
         }
 
-        console.log('Ligue cliquée:', league.data?.name)
-        console.log('Tournament used for standings:', tournamentName)
-        console.log('Standings data:', standings.data?.length || 0, 'teams')
+        // Fetch enriched standings data server-side
+        const enrichedStandingsData = await fetchEnrichedStandingsData(
+            standings.data || [],
+            tournamentName
+        )
 
         return (
             <div className="pt-24 body-container">
                 {league.data && <LeagueDescription league={league.data} />}
                 {league.data && <NextMatches league={league.data} />}
-
-                {standings.data && standings.data.length > 0 && (
-                    <StandingsOverview
-                        standings={standings.data}
-                        tournamentName={tournamentName}
-                        maxRows={3}
-                    />
-                )}
-
-                {standings.data && standings.data.length > 0 && (
-                    <StandingsWithTabs
-                        standings={standings.data}
-                        tournamentName={tournamentName}
-                        maxRows={null}
-                    />
-                )}
-
-                <Card>
-                    <CardHeader>
-                        <CardHeaderColumn>
-                            <CardHeaderTab>
-                                <CardHeaderContent>
-                                    <p className="text-inherit text-semibold">
-                                        BO/SERIE
-                                    </p>
-                                </CardHeaderContent>
-                                <CardHeaderContent>
-                                    <p className="text-inherit text-semibold">
-                                        GAMES
-                                    </p>
-                                </CardHeaderContent>
-                            </CardHeaderTab>
-                            <CardHeaderBase>
-                                <SubTitle>header</SubTitle>
-                            </CardHeaderBase>
-                        </CardHeaderColumn>
-                    </CardHeader>
-                    <CardBody>
-                        <CardBodyMultiple>
-                            <CardBodyMultipleContent>
-                                
-                            <div className="flex justify-center items-center h-full">
-                                <p>body 1</p>
+                {standings.data &&
+                    standings.data.length > 0 &&
+                    playerStats.data?.players && (
+                        <TournamentProvider
+                            standings={standings.data}
+                            playerStats={playerStats.data.players}
+                            tournamentName={tournamentName}
+                            enrichedStandingsData={
+                                enrichedStandingsData.processedData
+                            }
+                            enrichedGamesData={enrichedStandingsData.gamesData}
+                        >
+                            {playerStats.data.players.length > 0 && (
+                                <PlayersKda />
+                            )}
+                            <div className="flex flex-row gap-4">
+                                <StandingsOverviewClient maxRows={3} />
                             </div>
-                            </CardBodyMultipleContent>
-                            <CardBodyMultipleContent>
-                                <p>body 2</p>
-                            </CardBodyMultipleContent>
-                            <CardBodyMultipleContent>
-                                <p>body 3</p>
-                            </CardBodyMultipleContent>
-                            <CardBodyMultipleContent>
-                                <p>test</p>
-                            </CardBodyMultipleContent>
-                        </CardBodyMultiple>
-                    </CardBody>
-                </Card>
+
+                            <StandingsWithTabsClient maxRows={null} />
+                        </TournamentProvider>
+                    )}
 
                 <h1>Page de la ligue: {league.data?.name}</h1>
                 <p>Slug: {league.data?.slug}</p>
