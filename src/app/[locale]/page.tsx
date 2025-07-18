@@ -17,42 +17,131 @@ import {
     CardFooterContent,
 } from '@/components/ui/card/index'
 
-import { Left, Right, Mid } from '@/components/layout/TabbebEntityLayout/exemple/exemple'
+import {
+    Left,
+    Right,
+    Mid,
+} from '@/components/layout/TabbebEntityLayout/exemple/exemple'
 import { Annoyed } from 'lucide-react'
 import { SubTitle } from '@/components/ui/text/SubTitle'
 import { SortedList } from '@/components/ui/card/exemple/BodySort'
-import { TabbleEntityLayout, TabbleEntityHeader, TabbleEntityBody, TabbleEntityContent } from '@/components/layout/TabbebEntityLayout/TabbebEntityLayout'
+import {
+    TabbleEntityLayout,
+    TabbleEntityHeader,
+    TabbleEntityBody,
+    TabbleEntityContent,
+} from '@/components/layout/TabbebEntityLayout/TabbebEntityLayout'
 
-const DropDownExemple = ["2021", "2022", "2023", "2024", "2025"]
-const row1Exemple = ['winter', 'MainEvent', 'Spring']
-const row2Exemple = ['Regular Season', 'Playoff']
-const seasons: {
-  [year: string]: {
-    split: string[];
-    tournament: string[];
-  };
-} = {
-  "2025": {
-    split: ["Winter", "MainEvent", "Spring"],
-    tournament: ["RegularSeason", "Playoff"]
+const seasons = [
+  {
+    season: "s8",
+    data: [
+      {
+        split: "winter",
+        tournaments: [
+          { tournament: "Regular", id: 11 },
+          { tournament: "PlayOff", id: 12 }
+        ]
+      },
+      {
+        split: "spring",
+        tournaments: [
+          { tournament: "MainEvent", id: 13 },
+          { tournament: "PlayOff", id: 14 }
+        ]
+      }
+    ]
   },
-  "2024": {
-    split: ["PreSeason", "MidSeason", "Summer"],
-    tournament: ["RegularSeason", "Finals"]
+  {
+    season: "s9",
+    data: [
+      {
+        split: "winter",
+        tournaments: [
+          { tournament: "Qualifiers", id: 21 },
+          { tournament: "Knockout", id: 22 }
+        ]
+      },
+      {
+        split: "spring",
+        tournaments: [
+          { tournament: "Championship", id: 23 },
+          { tournament: "Finale", id: 24 }
+        ]
+      },
+      {
+        split: "summer",
+        tournaments: [
+          { tournament: "Warmup", id: 25 },
+          { tournament: "GrandFinal", id: 26 }
+        ]
+      }
+    ]
   },
-  "2023": {
-    split: ["EarlySeason", "Championship", "Fall"],
-    tournament: ["Qualifiers", "Playoffs"]
+  {
+    season: "s10",
+    data: [
+      {
+        split: "winter",
+        tournaments: [
+          { tournament: "OpenBracket", id: 31 },
+          { tournament: "Elimination", id: 32 }
+        ]
+      },
+      {
+        split: "group",
+        tournaments: [
+          { tournament: "UpperGroup", id: 33 },
+          { tournament: "LowerGroup", id: 34 }
+        ]
+      }
+    ]
   },
-  "2022": {
-    split: ["Opening", "MidSeason", "EndSeason"],
-    tournament: ["GroupStage", "Knockout"]
+  {
+    season: "s11",
+    data: [
+      {
+        tournaments: [
+          { tournament: "Winter Start", id: 51 },
+          { tournament: "MidWinter", id: 52 }
+        ]
+      }
+    ]
   },
-  "2021": {
-    split: ["Start", "MidYear", "LateYear"],
-    tournament: ["Elimination", "FinalMatch"]
+  {
+    season: "s12",
+    data: [
+      {
+        split: "winter",
+        tournaments: [
+          { tournament: "Winter Start", id: 51 },
+          { tournament: "MidWinter", id: 52 }
+        ]
+      },
+      {
+        split: "spring",
+        tournaments: [
+          { tournament: "Spring Open", id: 53 },
+          { tournament: "Spring Showdown", id: 54 }
+        ]
+      },
+      {
+        split: "summer",
+        tournaments: [
+          { tournament: "Beach Brawl", id: 55 },
+          { tournament: "Heatwave Finals", id: 56 }
+        ]
+      },
+      {
+        split: "group",
+        tournaments: [
+          { tournament: "Group Stage Alpha", id: 57 },
+          { tournament: "Group Stage Omega", id: 58 }
+        ]
+      }
+    ]
   }
-};
+]
 
 export default function Home() {
     return (
@@ -83,6 +172,8 @@ export default function Home() {
                                 <div className="flex flex-col justify-center items-center h-full">
                                     <p>TODO Pouvoir fermer les cartes</p>
                                     <p>TODO switch context</p>
+                                    <p>gerer le all + classname</p>
+                                    <p>faire la version ordi du component</p>
                                 </div>
                             </CardBodyMultipleContent>
                             <CardBodyMultipleContent>
@@ -101,7 +192,7 @@ export default function Home() {
                     {/* header */}
                     <Card>
                         <CardBody>
-                            <TabbleEntityHeader data={seasons} />
+                            <TabbleEntityHeader seasons={seasons} />
                         </CardBody>
                         <CardFooter>
                             <CardFooterContent>
@@ -118,7 +209,7 @@ export default function Home() {
                     {/* body */}
                     <TabbleEntityBody>
                         <TabbleEntityContent>
-                            <Left/>
+                            <Left />
                         </TabbleEntityContent>
                         <TabbleEntityContent>
                             <Mid />
