@@ -4,7 +4,9 @@ import React from 'react'
 import { MatchSchedule as MatchScheduleType } from '../../../../backend/src/generated/prisma'
 import { TimeDisplay } from '@/lib/hooks/timeDisplay'
 import { useVisibleMatches } from '@/lib/hooks/useVisibleMatches'
+import { useTranslations } from 'next-intl'
 import Image from 'next/image'
+import { SubTitle } from '@/components/ui/text/SubTitle'
 
 interface NextMatchesClientProps {
     matches: MatchScheduleType[]
@@ -18,6 +20,9 @@ interface NextMatchesClientProps {
         team2Image?: string | null
     }>
     showSingleMatchOnDesktop: boolean
+    lastMatches: boolean
+    isHeader?: boolean
+    bestOf?: number | null
 }
 
 /**
@@ -28,7 +33,11 @@ export const NextMatchesClient = ({
     teamsData,
     teamImages,
     showSingleMatchOnDesktop,
+    lastMatches,
+    isHeader = false,
+    bestOf,
 }: NextMatchesClientProps) => {
+    const t = useTranslations('Tournaments')
     const { containerRef, testRef, visibleCount } = useVisibleMatches(
         matches.length,
         showSingleMatchOnDesktop
@@ -38,6 +47,18 @@ export const NextMatchesClient = ({
 
     const hover =
         'hover:opacity-70 transition-opacity duration-200 cursor-pointer'
+
+    // If this is the header component, render the title
+    if (isHeader) {
+        return (
+            <div className="flex flex-row justify-between items-center w-full">
+                <SubTitle>
+                    {lastMatches ? t('lastMatch') : t('nextMatch')}
+                </SubTitle>
+                <SubTitle>{bestOf ? `Bo${bestOf}` : ''}</SubTitle>
+            </div>
+        )
+    }
 
     /**
      * Renders a single match with consistent styling
@@ -142,7 +163,7 @@ export const NextMatchesClient = ({
                         match,
                         team1,
                         team2,
-                        teamImages[idx],
+                        teamImages[idx] || { team1Image: null, team2Image: null },
                         idx,
                         matchesToShow.length
                     )

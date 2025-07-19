@@ -6,6 +6,7 @@ import {
     getTournamentPlayersStatsByTournamentOverviewPage,
 } from '@/lib/api/tournaments'
 import { fetchEnrichedStandingsData } from '@/lib/api/standings'
+import { getPlayerImage } from '@/lib/api/image'
 import { LeagueDescription } from '@/components/leagues/components/LeagueDescription'
 import { NextMatches } from '@/components/leagues/Matches/NextMatches'
 import { StandingsOverviewClient } from '@/components/leagues/Standings/views/StandingsOverviewClient'
@@ -13,6 +14,7 @@ import { StandingsWithTabsClient } from '@/components/leagues/Standings/views/St
 import PlayersKda from '@/components/leagues/Stats/views/playersKda'
 
 import { TournamentProvider } from '@/contexts/TournamentContext'
+import { getPlayerImages } from '@/lib/api/player'
 
 interface LeaguePageProps {
     params: Promise<{ leagueName: string }>
@@ -39,6 +41,7 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
         }
 
         const tournamentName = 'LEC/2025 Season/Spring Season'
+        const tournamentId = '5165'
 
         const playerStats =
             await getTournamentPlayersStatsByTournamentOverviewPage(
@@ -65,10 +68,24 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
             tournamentName
         )
 
+        // Fetch player images server-side
+        const playerImages = await Promise.all(
+            playerStats.data?.players.map(async (player) => {
+                const playerImage = await getPlayerImages(player.name)
+                return playerImage.data || null
+            }) || []
+        )
+
+        console.log('playerImages', playerImages)
+
         return (
             <div className="pt-24 body-container">
                 {league.data && <LeagueDescription league={league.data} />}
-                {league.data && <NextMatches league={league.data} />}
+                {league.data && (
+                    <>
+                        <NextMatches lastMatches={false} tournamentId={tournamentId} />
+                    </>
+                )}
                 {standings.data &&
                     standings.data.length > 0 &&
                     playerStats.data?.players && (
@@ -80,6 +97,7 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
                                 enrichedStandingsData.processedData
                             }
                             enrichedGamesData={enrichedStandingsData.gamesData}
+                            playerImages={playerImages}
                         >
                             {playerStats.data.players.length > 0 && (
                                 <PlayersKda />
@@ -120,7 +138,8 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
                 <div className="text-red-500">
                     <h1>Erreur inattendue</h1>
                     <p>
-                        Une erreur s'est produite lors du chargement de la page.
+                        Une erreur s&apos;est produite lors du chargement de la
+                        page.
                     </p>
                     <p>
                         Détails:{' '}

@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { CardProps, useCard } from './Card'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 
 // Components
 
@@ -77,7 +77,7 @@ export const CardHeaderBase = ({ children, style, className = '' }: { children: 
  *
  * @see useCard
  */
-export const CardHeaderSelector = ({ children, className }: CardProps) => {
+export const CardHeaderSelector = ({ children }: CardProps) => {
     const { activeIndex, setActiveIndex } = useCard()
 
     return (

@@ -49,4 +49,12 @@ async function getTeamImage(
     return { data: imageUrl }
 }
 
-export { getLeagueImage, getTeamImage }
+async function getPlayerImage(
+    image: string
+): Promise<ApiResponse<string | null>> {
+    const API_BASE_URL = getApiBaseUrl()
+    const imageUrl = `${API_BASE_URL}/static/playerPng/${image}.webp`
+    return { data: imageUrl }
+}
+
+export { getLeagueImage, getTeamImage, getPlayerImage }

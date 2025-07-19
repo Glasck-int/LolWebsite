@@ -4,12 +4,6 @@ import { ChartNoAxesGantt, PiggyBank } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect } from 'react'
 import { useTranslate } from '@/lib/hooks/useTranslate'
-import {
-    DropdownMenuDesktop,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from './DropdownMenuDesktop'
 import LocaleSwitcher from '../../layout/LocaleSwitcher/LocaleSwitcher'
 
 interface DropdownMenuProps {

@@ -1,13 +1,14 @@
-import { Standings as StandingsType } from '../../../backend/src/generated/prisma'
+import { MatchScheduleGame, Standings as StandingsType } from '@/generated/prisma'
 import { getTeamsByNames, getTeamsRecentGames, getTeamsRecentMatches } from './teams'
 import { getTeamImage } from './image'
 import { getTournamentsGamesByTournamentOverviewPage } from './tournaments'
 import { processStandingsData, ProcessedStanding } from '@/components/leagues/Standings/utils/StandingsDataProcessor'
-import { Team } from '../../../backend/src/generated/prisma'
+import { Team } from '@/generated/prisma'
 
 export interface EnrichedStandingsData {
   processedData: ProcessedStanding[]
-  gamesData: any[]
+  
+  gamesData: MatchScheduleGame[]
 }
 
 export async function fetchEnrichedStandingsData(

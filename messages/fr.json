@@ -37,5 +37,9 @@
 	"playersKda": {
 		"title": "Meilleurs KDA",
 		"tooltip": "Les joueurs avec le meilleur KDA sur le tournoi"
+	},
+	"Tournaments": {
+		"lastMatch": "Derniers Match",
+		"nextMatch": "Prochains Match"
 	}
 }

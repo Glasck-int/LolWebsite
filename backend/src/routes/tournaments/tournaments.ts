@@ -9,6 +9,7 @@ import prisma from '../../services/prisma'
 import { MatchScheduleGameListResponse } from '../../schemas/matchScheduleGame'
 import { ScoreboardPlayersListResponse, PlayerStatsListResponse } from '../../schemas/scoreboardPlayers'
 import { TournamentLeagueNameParamSchema, TournamentIdParamSchema, OverviewPageParamSchema, TournamentOverviewPageParamSchema } from '../../schemas/params'
+import { MatchScheduleListResponse } from '../../schemas/matchShedule'
 
 export default async function tournamentsRoutes(fastify: FastifyInstance) {
     const redis = fastify.redis
@@ -169,11 +170,6 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
                 // Decode the overviewPage parameter to handle URL encoding
                 const decodedOverviewPage = decodeURIComponent(overviewPage)
                 const cacheKey = `tournament_standings_overview:${decodedOverviewPage}`
-
-                console.log(
-                    'Looking for tournament with overviewPage:',
-                    decodedOverviewPage
-                )
 
                 // Check cache first
                 const cached = await redis.get(cacheKey)
@@ -542,6 +538,130 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
                 return result
             } catch (error) {
                 console.error('Error in tournament player stats route:', error)
+                return reply
+                    .status(500)
+                    .send({ error: 'Internal server error' })
+            }
+        }
+    )
+
+    fastify.get<{ Params: { tournamentId: string } }>(
+        '/tournaments/:tournamentId/next-matches',
+        {
+            schema: {
+                description: 'Get the next three matches for a tournament by overview page',
+                tags: ['tournaments'],
+                params: TournamentIdParamSchema,
+                response: {
+                    200: MatchScheduleListResponse,
+                    404: ErrorResponseSchema,
+                    500: ErrorResponseSchema,
+                },
+            },
+        },
+        async (request, reply) => {
+            try {
+                const { tournamentId } = request.params
+                const cacheKey = `tournament_next_matches:${tournamentId}`
+
+                // Check cache first
+                const cached = await redis.get(cacheKey)
+                if (cached) {
+                    return JSON.parse(cached)
+                }
+
+                const today = new Date()
+
+                // Get next three matches
+                const nextMatches = await prisma.matchSchedule.findMany({
+                    where: {
+                        Tournament: {
+                            id: parseInt(tournamentId)
+                        },
+                        dateTime_UTC: {
+                            gte: today
+                        }
+                    },
+                    orderBy: {
+                        dateTime_UTC: 'asc'
+                    },
+                    take: 3
+                })
+
+                if (nextMatches.length === 0) {
+                    return reply.status(404).send({
+                        error: 'No next matches found for this tournament',
+                    })
+                }
+
+                // Cache for 1 hour (3600 seconds)
+                await redis.setex(cacheKey, 3600, JSON.stringify(nextMatches))
+                return nextMatches || []
+
+            } catch (error) {
+                console.error('Error in tournament next matches route:', error)
+                return reply
+                    .status(500)
+                    .send({ error: 'Internal server error' })
+            }
+        }
+    )
+
+    fastify.get<{ Params: { tournamentId: string } }>(
+        '/tournaments/:tournamentId/last-matches',
+        {
+            schema: {
+                description:
+                    'Get the last three matches for a tournament by overview page',
+                tags: ['tournaments'],
+                params: TournamentIdParamSchema,
+                response: {
+                    200: MatchScheduleListResponse,
+                    404: ErrorResponseSchema,
+                    500: ErrorResponseSchema,
+                },
+            },
+        },
+        async (request, reply) => {
+            try {
+                const { tournamentId } = request.params
+                const cacheKey = `tournament_last_matches:${tournamentId}`
+
+                // Check cache first
+                const cached = await redis.get(cacheKey)
+                if (cached) {
+                    return JSON.parse(cached)
+                }
+
+                const today = new Date()
+
+                // Get last three matches
+                const lastMatches = await prisma.matchSchedule.findMany({
+                    where: {
+                        Tournament: {
+                            id: parseInt(tournamentId),
+                        },
+                        dateTime_UTC: {
+                            lte: today,
+                        },
+                    },
+                    orderBy: {
+                        dateTime_UTC: 'desc',
+                    },
+                    take: 3,
+                })
+
+                if (lastMatches.length === 0) {
+                    return reply.status(404).send({
+                        error: 'No last matches found for this tournament',
+                    })
+                }
+
+                // Cache for 1 hour (3600 seconds)
+                await redis.setex(cacheKey, 3600, JSON.stringify(lastMatches))
+                return lastMatches || []
+            } catch (error) {
+                console.error('Error in tournament next matches route:', error)
                 return reply
                     .status(500)
                     .send({ error: 'Internal server error' })

@@ -29,7 +29,6 @@ export default function PlayersKda() {
                     </FlexColumn>
                 </CardBody>
             </Card>
-            // Avec imbrication
             <Card>
                 <CardHeader>
                     <CardHeaderBase>Player Stats</CardHeaderBase>

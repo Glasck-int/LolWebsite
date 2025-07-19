@@ -1,0 +1,612 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Game {
+  name        String
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+  id          Int      @id @default(autoincrement())
+}
+
+model GameTimeline {
+  id                 Int            @id @default(autoincrement())
+  riotPlatformGameId String         @unique
+  timeline           Json
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime
+  ScoreboardGame     ScoreboardGame @relation(fields: [riotPlatformGameId], references: [riotPlatformGameId])
+}
+
+model Item {
+  id               Int      @id @default(autoincrement())
+  name             String   @unique
+  tier             String?
+  riotId           Int?
+  recipe           String[]
+  cost             Int?
+  totalCost        Int?
+  ad               Int?
+  lifeSteal        Int?
+  health           Int?
+  hpRegen          Int?
+  armor            Int?
+  mr               Int?
+  attackDamage     Int?
+  crit             Int?
+  attackSpeed      Int?
+  armorPen         Int?
+  lethality        Int?
+  attackRange      Int?
+  mana             Int?
+  manaRegen        Int?
+  energy           Int?
+  energyRegen      Int?
+  ap               Int?
+  cdr              Int?
+  abilityHaste     Int?
+  omnivamp         Int?
+  physVamp         Int?
+  spellVamp        Int?
+  mPen             Int?
+  movespeedFlat    Int?
+  movespeedPercent Int?
+  tenacity         Int?
+  goldGen          Int?
+  onHit            Int?
+  bonusHP          Int?
+  healing          Int?
+  hsPower          Int?
+  slowResist       Int?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime
+}
+
+model League {
+  id         Int          @id @default(autoincrement())
+  name       String       @unique
+  short      String
+  slug       String?
+  region     String
+  level      String
+  isOfficial Boolean      @default(false)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime
+  isMajor    Boolean      @default(false)
+  Tournament Tournament[]
+}
+
+model MatchSchedule {
+  id                          Int                 @id @default(autoincrement())
+  team1                       String?
+  team2                       String?
+  dst                         String?
+  round                       String?
+  winner                      String?
+  team1Points                 Int?
+  team2Points                 Int?
+  team1Score                  Int?
+  team2Score                  Int?
+  tab                         String?
+  groupName                   String?
+  castersPBP                  String?
+  castersColor                String?
+  mvp                         String?
+  overviewPage                String?
+  createdAt                   DateTime            @default(now())
+  updatedAt                   DateTime
+  bestOf                      Int?
+  casters                     String[]
+  dateTime_UTC                DateTime?
+  disabledChampions           String[]
+  ff                          Int?
+  footnote                    String?
+  hasTime                     Boolean?
+  hotfix                      String?
+  initialPageAndTab           String?
+  interviewWith               String[]
+  isFlexibleStart             Boolean?            @default(false)
+  isNullified                 Boolean?            @default(false)
+  isReschedulable             Boolean?
+  isTiebreaker                Boolean?            @default(false)
+  legacyPatch                 String?
+  matchDay                    Int?
+  matchId                     String?             @unique
+  mvpPoints                   Int?
+  overrideAllowPredictions    Boolean?            @default(false)
+  overrideDisallowPredictions Boolean?            @default(false)
+  pageAndTeam1                String?
+  pageAndTeam2                String?
+  patch                       String?
+  patchFootnote               String?
+  patchPage                   String?
+  phase                       String?
+  player1                     String?
+  player2                     String?
+  qq                          Int?
+  recap                       String?
+  reddit                      String?
+  shownName                   String?
+  shownRound                  String?
+  stream                      String?
+  streamDisplay               String?
+  tags                        String[]
+  team1Advantage              Int?
+  team1Final                  String?
+  team1Footnote               String?
+  team1PointsTB               Int?
+  team1Poster                 String?
+  team2Advantage              Int?
+  team2Final                  String?
+  team2Footnote               String?
+  team2PointsTB               Int?
+  team2Poster                 String?
+  uniqueMatch                 String?             @unique
+  venue                       String?
+  vodHighlights               String?
+  vodInterview                String?
+  wanplus                     String?
+  wanplusId                   Int?
+  nMatchInPage                Int?
+  nMatchInTab                 Int?
+  nPage                       Int?
+  nTabInPage                  Int?
+  initialNMatchInTab          Int?
+  Tournament                  Tournament?         @relation(fields: [overviewPage], references: [overviewPage])
+  MatchScheduleGame           MatchScheduleGame[]
+}
+
+model MatchScheduleGame {
+  id                 Int                 @id @default(autoincrement())
+  overviewPage       String?
+  uniqueLine         String?             @unique
+  blue               String?
+  red                String?
+  winner             Int?
+  vod                String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime
+  blueFinal          String?
+  blueFootnote       String?
+  blueScore          Int?
+  ff                 Int?
+  footnote           String?
+  gameId             String?             @unique
+  hasRpgidInput      Boolean?
+  hasSelection       Boolean?
+  ignoreRpgid        Boolean?
+  interviewWith      String[]
+  isChronobreak      Boolean?
+  isRemake           Boolean?
+  matchHistory       String?
+  matchId            String?
+  mvp                String?
+  mvpPoints          Int?
+  nGameInMatch       Int?
+  nMatchInTab        Int?
+  nPage              Int?
+  nTabInPage         Int?
+  recap              String?
+  redFinal           String?
+  redFootnote        String?
+  redScore           Int?
+  reddit             String?
+  riotGameId         String?
+  riotHash           String?
+  riotPlatformGameId String?
+  riotPlatformId     String?
+  riotVersion        Int?
+  selection          String?
+  versionedRpgid     String?
+  vodGameStart       String?
+  vodHighlights      String?
+  vodInterview       String?
+  vodPB              String?
+  vodPostgame        String?
+  writtenSummary     String?
+  MatchSchedule      MatchSchedule?      @relation(fields: [matchId], references: [matchId])
+  ScoreboardGame     ScoreboardGame[]
+  ScoreboardPlayers  ScoreboardPlayers[]
+  ScoreboardTeam     ScoreboardTeam[]
+}
+
+model Player {
+  id                 Int              @id @default(autoincrement())
+  name               String
+  nativeName         String?
+  nameAlphabet       String?
+  nameFull           String?
+  country            String?
+  nationality        String?
+  nationalityPrimary String?
+  age                String?
+  birthdate          DateTime?
+  deathdate          DateTime?
+  image              String?
+  overviewPage       String           @unique
+  residency          String?
+  role               String?
+  team               String?
+  team2              String?
+  teamSystem         String?
+  team2System        String?
+  teamLast           String?
+  roleLast           String?
+  isRetired          Boolean?
+  isLowercase        Boolean?
+  isSubstitute       Boolean?
+  isPersonality      Boolean?
+  toWildrift         Boolean?
+  toValorant         Boolean?
+  twitter            String?
+  facebook           String?
+  instagram          String?
+  discord            String?
+  stream             String?
+  youtube            String?
+  bluesky            String?
+  askfm              String?
+  reddit             String?
+  snapchat           String?
+  threads            String?
+  linkedin           String?
+  vk                 String?
+  website            String?
+  weibo              String?
+  updatedAt          DateTime
+  residencyFormer    String?
+  favChamps          String[]
+  lolPros            String?
+  soloQueueIds       String[]
+  birthdatePrecision DateTime?
+  deathdatePrecision DateTime?
+  playerId           String?
+  PlayerRedirect     PlayerRedirect[]
+}
+
+model PlayerImage {
+  fileName       String         @unique
+  link           String
+  team           String?
+  tournament     String?
+  imageType      String?
+  caption        String?
+  isProfileImage Boolean?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime
+  PlayerRedirect PlayerRedirect @relation(fields: [link], references: [name])
+  Team           Team?          @relation(fields: [team], references: [overviewPage])
+  Tournament     Tournament?    @relation(fields: [tournament], references: [overviewPage])
+}
+
+model PlayerRedirect {
+  id               Int                @id @default(autoincrement())
+  name             String             @unique
+  overviewPage     String
+  PlayerImage      PlayerImage[]
+  Player           Player             @relation(fields: [overviewPage], references: [overviewPage])
+  TournamentPlayer TournamentPlayer[]
+
+  @@unique([name, overviewPage])
+}
+
+model ScoreboardGame {
+  id                 Int                @id @default(autoincrement())
+  overviewPage       String?
+  tournament         String?
+  team1              String?
+  team2              String?
+  winTeam            String?
+  lossTeam           String?
+  dateTimeUtc        DateTime?
+  dst                String?
+  team1Score         Int?
+  team2Score         Int?
+  winner             Int?
+  gamelength         String?
+  gamelengthNumber   Float?
+  team1Bans          String[]
+  team2Bans          String[]
+  team1Picks         String[]
+  team2Picks         String[]
+  team1Players       String[]
+  team2Players       String[]
+  team1Dragons       Int?
+  team2Dragons       Int?
+  team1Barons        Int?
+  team2Barons        Int?
+  team1Towers        Int?
+  team2Towers        Int?
+  team1Gold          Float?
+  team2Gold          Float?
+  team1Kills         Int?
+  team2Kills         Int?
+  team1RiftHeralds   Int?
+  team2RiftHeralds   Int?
+  team1VoidGrubs     Int?
+  team2VoidGrubs     Int?
+  team1Atakhans      Int?
+  team2Atakhans      Int?
+  team1Inhibitors    Int?
+  team2Inhibitors    Int?
+  patch              String?
+  legacyPatch        String?
+  patchSort          String?
+  matchHistory       String?
+  vod                String?
+  nPage              Int?
+  nMatchInTab        Int?
+  nMatchInPage       Int?
+  nGameInMatch       Int?
+  gamename           String?
+  uniqueLine         String?            @unique
+  gameId             String?
+  matchId            String?
+  riotPlatformGameId String?            @unique
+  riotPlatformId     String?
+  riotGameId         String?
+  riotHash           String?
+  riotVersion        Int?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime
+  GameTimeline       GameTimeline?
+  MatchScheduleGame  MatchScheduleGame? @relation(fields: [gameId], references: [gameId])
+}
+
+model ScoreboardPlayers {
+  id                Int                @id @default(autoincrement())
+  overviewPage      String?
+  name              String?
+  link              String?
+  champion          String?
+  kills             Int?
+  deaths            Int?
+  assists           Int?
+  summonerSpells    String[]
+  gold              Int?
+  cs                Int?
+  damageToChampions Int?
+  visionScore       Int?
+  items             String[]
+  trinket           String?
+  keystoneMastery   String?
+  keystoneRune      String?
+  primaryTree       String?
+  secondaryTree     String?
+  runes             String?
+  teamKills         Int?
+  teamGold          Int?
+  team              String?
+  teamVs            String?
+  time              DateTime?
+  playerWin         String?
+  dateTime_UTC      DateTime?
+  dst               String?
+  tournament        String?
+  role              String?
+  role_Number       Int?
+  ingameRole        String?
+  side              Int?
+  uniqueLine        String?            @unique
+  uniqueLineVs      String?            @unique
+  uniqueRole        String?            @unique
+  uniqueRoleVs      String?            @unique
+  gameId            String?
+  matchId           String?
+  gameTeamId        String?
+  gameRoleId        String?
+  gameRoleIdVs      String?
+  statsPage         String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime
+  MatchScheduleGame MatchScheduleGame? @relation(fields: [gameId], references: [gameId])
+}
+
+model ScoreboardTeam {
+  id                Int                @id @default(autoincrement())
+  overviewPage      String?
+  team              String?
+  kills             Int?
+  gold              Int?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime
+  atakhans          Int?
+  bans              String[]
+  barons            Int?
+  dragons           Int?
+  gameId            String?
+  gameTeamId        String?
+  inhibitors        Int?
+  isWinner          Boolean?
+  matchId           String?
+  number            Int?
+  picks             String[]
+  riftHeralds       Int?
+  roster            String[]
+  score             Int?
+  side              String?
+  statsPage         String?
+  towers            Int?
+  uniqueGame        String?
+  uniqueTeam        String?            @unique
+  voidGrubs         Int?
+  MatchScheduleGame MatchScheduleGame? @relation(fields: [gameId], references: [gameId])
+  Team              Team?              @relation(fields: [team], references: [overviewPage])
+}
+
+model Standings {
+  id               Int         @id @default(autoincrement())
+  overviewPage     String?
+  team             String?
+  pageAndTeam      String?     @unique
+  n                Int?
+  place            Int?
+  winSeries        Int?
+  lossSeries       Int?
+  tieSeries        Int?
+  winGames         Int?
+  lossGames        Int?
+  points           Int?
+  pointsTiebreaker Float?
+  streak           Int?
+  streakDirection  String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime
+  Tournament       Tournament? @relation(fields: [overviewPage], references: [overviewPage])
+  Team             Team?       @relation(fields: [team], references: [overviewPage])
+}
+
+model Team {
+  id             Int              @id @default(autoincrement())
+  name           String
+  short          String?
+  location       String?
+  region         String?
+  image          String?
+  isDisbanded    Boolean          @default(false)
+  youtube        String?
+  twitter        String?
+  instagram      String?
+  facebook       String?
+  vk             String?
+  bluesky        String?
+  discord        String?
+  subreddit      String?
+  snapchat       String?
+  rosterPhoto    String?
+  renamedTo      String?
+  isLowercase    Boolean          @default(false)
+  overviewPage   String?          @unique
+  updatedAt      DateTime
+  PlayerImage    PlayerImage[]
+  ScoreboardTeam ScoreboardTeam[]
+  Standings      Standings[]
+}
+
+model Tournament {
+  id                      Int                 @id @default(autoincrement())
+  name                    String
+  overviewPage            String              @unique
+  dateStart               DateTime?
+  dateEnd                 DateTime?
+  dateStartFuzzy          DateTime?
+  league                  String?
+  region                  String?
+  prizePool               String?
+  prizePoolCurrency       String?
+  country                 String?
+  closestTimezone         String?
+  rulebook                String?
+  eventType               String?
+  links                   String?
+  sponsors                String?
+  organizer               String?
+  organizers              String?
+  standardName            String?
+  standardNameRedirect    String?
+  basePage                String?
+  split                   String?
+  splitNumber             Int?
+  splitMainPage           String?
+  tournamentLevel         String?
+  isQualifier             Boolean?
+  isPlayoffs              Boolean?
+  isOfficial              Boolean?
+  year                    String?
+  leagueIconKey           String?
+  alternativeNamesFull    String?
+  scrapeLink              String?
+  tagsFull                String?
+  suppressTopSchedule     Boolean?
+  dateStartPrecision      Int?
+  dateEndPrecision        Int?
+  dateStartFuzzyPrecision Int?
+  createdAt               DateTime            @default(now())
+  updatedAt               DateTime
+  MatchSchedule           MatchSchedule[]
+  PlayerImage             PlayerImage[]
+  Standings               Standings[]
+  League                  League?             @relation(fields: [league], references: [name])
+  TournamentPlayer        TournamentPlayer[]
+  TournamentResult        TournamentResult[]
+  TournamentRosters       TournamentRosters[]
+}
+
+model TournamentPlayer {
+  id             Int             @id @default(autoincrement())
+  team           String?
+  nPlayerInTeam  Int?
+  teamOrder      Int?
+  link           String?
+  player         String?
+  role           String?
+  flag           String?
+  footnote       String?
+  overviewPage   String?
+  pageAndTeam    String?
+  isDistribution Boolean?
+  PlayerRedirect PlayerRedirect? @relation(fields: [link], references: [name])
+  Tournament     Tournament?     @relation(fields: [overviewPage], references: [overviewPage])
+}
+
+model TournamentResult {
+  id                 Int         @id @default(autoincrement())
+  event              String?
+  tier               String?
+  date               DateTime?
+  showmatch          Boolean     @default(false)
+  rosterPage         String?
+  place              String?
+  forceNewPlace      Boolean     @default(false)
+  placeNumber        Int?
+  qualified          Boolean     @default(false)
+  prize              Int?
+  prizeUSD           Float?
+  prizeEuro          Float?
+  prizeUnit          String?
+  prizeMarkup        String?
+  prizeOther         String?
+  totalPrize         Int?
+  phase              String?
+  team               String?
+  isAchievement      Boolean?
+  lastResult         String?
+  lastTeam           String?
+  lastOpponentMarkup String?
+  groupName          String?
+  lastOutcome        String?
+  pageAndTeam        String?
+  overviewPage       String?
+  uniqueLine         String?     @unique
+  datePrecision      Int?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime
+  Tournament         Tournament? @relation(fields: [overviewPage], references: [overviewPage])
+}
+
+model TournamentRosters {
+  id             Int        @id @default(autoincrement())
+  teamName       String
+  overviewPage   String
+  region         String?
+  roles          String[]
+  flags          String[]
+  footnotes      String[]
+  isUsed         String?
+  short          String?
+  isComplete     Boolean    @default(false)
+  pageAndTeam    String?
+  uniqueLine     String?    @unique
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime
+  tournamentName String?
+  rosterLinks    String[]
+  Tournament     Tournament @relation(fields: [overviewPage], references: [overviewPage])
+}

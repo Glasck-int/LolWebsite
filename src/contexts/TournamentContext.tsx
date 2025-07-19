@@ -2,38 +2,18 @@
 
 import React, { createContext, useContext } from 'react'
 import { ProcessedStanding } from '@/components/leagues/Standings/utils/StandingsDataProcessor'
+import { MatchScheduleGame, Standings } from '@/generated/prisma'
+import { PlayerStatsType, PlayerImageType } from '@Galsck-int/glasck-types'
 
-// Types (tu peux les importer depuis tes types existants)
-interface StandingsData {
-    // Définis tes types de standings ici
-    [key: string]: any
-}
-
-interface PlayerStats {
-    name: string
-    team: string
-    role: string
-    gamesPlayed: number
-    avgKills: number
-    avgDeaths: number
-    avgAssists: number
-    kda: number
-    totalKills: number
-    totalDeaths: number
-    totalAssists: number
-    avgDamage: number
-    avgGold: number
-    avgCS: number
-    avgVisionScore: number
-    winRate: number
-}
+// Types flexibles pour accepter les données de l'API
 
 interface TournamentContextType {
-    standings: StandingsData[]
-    playerStats: PlayerStats[]
+    standings: Standings[]
+    playerStats: PlayerStatsType[]
     tournamentName: string
     enrichedStandingsData?: ProcessedStanding[]
-    enrichedGamesData?: any[]
+    enrichedGamesData?: MatchScheduleGame[]
+    playerImages?: PlayerImageType[]
 }
 
 // Créer le context
@@ -43,7 +23,9 @@ const TournamentContext = createContext<TournamentContextType | null>(null)
 export const useTournament = () => {
     const context = useContext(TournamentContext)
     if (!context) {
-        throw new Error('useTournament doit être utilisé dans un TournamentProvider')
+        throw new Error(
+            'useTournament doit être utilisé dans un TournamentProvider'
+        )
     }
     return context
 }
@@ -51,11 +33,12 @@ export const useTournament = () => {
 // Provider component
 interface TournamentProviderProps {
     children: React.ReactNode
-    standings: StandingsData[]
-    playerStats: PlayerStats[]
+    standings: Standings[]
+    playerStats: PlayerStatsType[]
     tournamentName: string
     enrichedStandingsData?: ProcessedStanding[]
-    enrichedGamesData?: any[]
+    enrichedGamesData?: MatchScheduleGame[]
+    playerImages?: PlayerImageType[]
 }
 
 export const TournamentProvider = ({
@@ -64,14 +47,16 @@ export const TournamentProvider = ({
     playerStats,
     tournamentName,
     enrichedStandingsData,
-    enrichedGamesData
+    enrichedGamesData,
+    playerImages,
 }: TournamentProviderProps) => {
     const value: TournamentContextType = {
         standings,
         playerStats,
         tournamentName,
         enrichedStandingsData,
-        enrichedGamesData
+        enrichedGamesData,
+        playerImages,
     }
 
     return (

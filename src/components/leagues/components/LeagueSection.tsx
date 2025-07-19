@@ -1,10 +1,10 @@
 import React from 'react'
 import { LeagueGrid } from './LeagueGrid'
-import { League as LeagueType } from '../../../backend/src/generated/prisma'
+import { League } from '@/generated/prisma'
 
 interface LeagueSectionProps {
     title?: string[]
-    leagues: LeagueType[]
+    leagues: League[]
     images?: (string | undefined)[]
     square?: boolean
     className?: string

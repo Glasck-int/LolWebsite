@@ -90,7 +90,7 @@ export const SortedMixedRows = ({
     className?: string
 }) => {
     const { activeSort } = useSort()
-    const { containerRef, isAnimating } = useFlipAnimation([activeSort, processedData])
+    const { containerRef } = useFlipAnimation(activeSort, processedData)
     
     /**
      * Memoized sorted data based on active sort state.

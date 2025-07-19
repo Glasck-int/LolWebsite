@@ -368,6 +368,25 @@ export const PlayerStatsSchema = Type.Object({
     }),
 })
 
+export interface PlayerStatsType {
+    name: string
+    team: string
+    role: string
+    gamesPlayed: number
+    avgKills: number
+    avgDeaths: number
+    avgAssists: number
+    kda: number
+    totalKills: number
+    totalDeaths: number
+    totalAssists: number
+    avgDamage: number
+    avgGold: number
+    avgCS: number
+    avgVisionScore: number
+    winRate: number
+}
+
 /**
  * Response arrays
  */

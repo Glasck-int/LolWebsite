@@ -1,4 +1,4 @@
-import { PlayerWithRedirectsListResponse as PlayerWithRedirectsListResponseType } from '../../../backend/src/schemas/players'
+import { PlayerImageType, PlayerWithRedirectsListResponse as PlayerWithRedirectsListResponseType } from '../../../backend/src/schemas/players'
 import { apiRequest, ApiResponse } from './utils'
 
 
@@ -17,4 +17,10 @@ async function getPlayerByLink(
     )
 }
 
-export { getPlayerByLink }
+async function getPlayerImages(
+    name: string
+): Promise<ApiResponse<PlayerImageType[]>> {
+    return apiRequest<PlayerImageType[]>(`/api/players/name/${name}/images`)
+}
+
+export { getPlayerByLink, getPlayerImages }

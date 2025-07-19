@@ -10,12 +10,10 @@ export const generateMetadata = async () => {
         ])
     return {
         title: {
-            default:
-                `Leagues (${allLeaguesResponse.data?.length} leagues, ${majorLeaguesResponse.data?.length} major leagues)`,
+            default: `Leagues (${allLeaguesResponse.data?.length} leagues, ${majorLeaguesResponse.data?.length} major leagues)`,
             template: `%s - Leagues (${allLeaguesResponse.data?.length} leagues, ${majorLeaguesResponse.data?.length} major leagues)`,
         },
-        description:
-            'Glasck.com is a website that provides information about League of Legends Esport scene.',
+        description: `All ${allLeaguesResponse.data?.length} leagues from League of Legends Esport scene.`,
         icons: {
             icon: '/favicon.ico',
         },
@@ -23,8 +21,7 @@ export const generateMetadata = async () => {
         openGraph: {
             type: 'website',
             title: 'Glasck.com',
-            description:
-                'Glasck.com is a website that provides information about League of Legends Esport scene.',
+            description: `All ${allLeaguesResponse.data?.length} leagues from League of Legends Esport scene.`,
             images: ['/favicon.ico'],
             siteName: 'Glasck.com',
         },

@@ -9,6 +9,7 @@ import {
 	useRef,
 	useEffect,
 } from "react";
+import Image from "next/image";
 
 interface LocaleSwitcherSelectProps {
 	children: ReactNode;
@@ -48,7 +49,6 @@ export default function LocaleSwitcherSelect({
 	defaultValue,
 	label,
 	className,
-	showOnMobile = false,
 }: LocaleSwitcherSelectProps) {
 	const router = useRouter();
 	const pathname = usePathname();
@@ -78,7 +78,6 @@ export default function LocaleSwitcherSelect({
 		setIsOpen(false);
 		startTransition(() => {
 			router.replace(
-				// @ts-ignore
 				{ pathname },
 				{ locale: value }
 			);
@@ -140,10 +139,12 @@ export default function LocaleSwitcherSelect({
 			>
 				<span className="flex items-center gap-2">
 					{getDisplayText(selectedValue)}
-					<img
+					<Image
 						src={getFlagPath(selectedValue)}
 						alt={`${selectedValue} flag`}
-						className="w-4 h-4"
+						className="w-4 h-4 object-contain"
+						width={16}
+						height={16}
 					/>
 				</span>
 
@@ -213,10 +214,12 @@ export default function LocaleSwitcherSelect({
 								>
 									<span className="flex items-center gap-2">
 										{getDisplayText(value)}
-										<img
+										<Image
 											src={getFlagPath(value)}
 											alt={`${value} flag`}
-											className="w-4 h-4"
+											className="w-4 h-4 object-contain"
+											width={16}
+											height={16}
 										/>
 									</span>
 								</button>

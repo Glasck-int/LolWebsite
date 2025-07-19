@@ -1,5 +1,5 @@
-import { League as LeagueType } from '../../../backend/src/generated/prisma'
-import { MatchSchedule as MatchScheduleType } from '../../../backend/src/generated/prisma'
+import { League as LeagueType } from '@/generated/prisma'
+import { MatchSchedule as MatchScheduleType } from '@/generated/prisma'
 import { apiRequest, ApiResponse } from './utils'
 
 /**
@@ -57,6 +57,8 @@ async function getNextThreeMatchesForLeague(
         `/api/leagues/id/${leagueId}/next-matches`
     )
 }
+
+
 
 export {
     getAllLeagues,

@@ -82,7 +82,7 @@ export const SortedRows = ({
     className?: string
 }) => {
     const { activeSort } = useSort()
-    const { containerRef, isAnimating } = useFlipAnimation([activeSort, processedData])
+    const { containerRef } = useFlipAnimation(activeSort, processedData)
     
     // Sort data based on activeSort
     const sortedData = React.useMemo(() => {

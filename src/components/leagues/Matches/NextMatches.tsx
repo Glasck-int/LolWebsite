@@ -5,15 +5,20 @@ import {
     CardHeader,
     CardHeaderBase,
 } from '@/components/ui/card/index'
-import { getNextThreeMatchesForLeague } from '@/lib/api/league'
-import { League as LeagueType } from '../../../../backend/src/generated/prisma'
-import { MatchSchedule as MatchScheduleType } from '../../../../backend/src/generated/prisma'
+import { MatchSchedule } from '../../../../backend/src/generated/prisma'
 import { getTeamsByNames } from '@/lib/api/teams'
 import { getTeamImage } from '@/lib/api/image'
-import { TimeDisplay } from '@/lib/hooks/timeDisplay'
 import { NextMatchesClient } from './NextMatchesClient'
-import { SubTitle } from '@/components/ui/text/SubTitle'
-import Image from 'next/image'
+import {
+    getLastThreeMatchesForTournament,
+    getNextThreeMatchesForTournament,
+} from '@/lib/api/tournaments'
+
+interface NextMatchesProps {
+    showSingleMatchOnDesktop?: boolean
+    lastMatches?: boolean
+    tournamentId?: string
+}
 
 /**
  * NextMatches component displays upcoming matches for a league
@@ -21,25 +26,51 @@ import Image from 'next/image'
  *
  * @param league - The league object containing match data
  * @param showSingleMatchOnDesktop - Optional parameter to show only one match on desktop instead of three
- * @returns JSX element displaying the next matches
+ * @param lastMatches - Optional parameter to show last matches instead of next matches
+ * @param tournamentId - Optional tournament ID for fetching last matches
+ * @returns JSX element displaying the next matches or null if no matches are available
+ *
+ * @example
+ * ```tsx
+ * <NextMatches league={leagueData} showSingleMatchOnDesktop={true} />
+ * ```
+ *
+ * @remarks
+ * This component fetches the next three matches for a league and displays them in a card format.
+ * The actual rendering is delegated to the NextMatchesClient component.
  */
 export const NextMatches = async ({
-    league,
     showSingleMatchOnDesktop = false,
-}: {
-    league: LeagueType
-    showSingleMatchOnDesktop?: boolean
-}) => {
-    const nextMatches = await getNextThreeMatchesForLeague(Number(league.id))
+    lastMatches = false,
+    tournamentId,
+}: NextMatchesProps) => {
+    let matches: MatchSchedule[] = []
 
-    // Don't render the component if there are no matches
-    if (!nextMatches.data || nextMatches.data.length === 0) {
+    // Fallback to last matches if no next matches are found
+    try {
+        const nextMatchesResponse = await getNextThreeMatchesForTournament(
+            tournamentId || ''
+        )
+        if (nextMatchesResponse.data && nextMatchesResponse.data.length > 0) {
+            matches = nextMatchesResponse.data
+        } else {
+            const lastMatchesResponse = await getLastThreeMatchesForTournament(
+                tournamentId || ''
+            )
+            matches = lastMatchesResponse.data || []
+            lastMatches = true
+        }
+    } catch (error) {
+        console.error('Error fetching matches:', error)
         return null
     }
 
-    // Extract unique team names from matches
+    if (!matches || matches.length === 0) {
+        return null
+    }
+
     const teamNames = new Set<string>()
-    nextMatches.data?.forEach((match) => {
+    matches?.forEach((match) => {
         if (match.team1) teamNames.add(match.team1)
         if (match.team2) teamNames.add(match.team2)
     })
@@ -48,7 +79,7 @@ export const NextMatches = async ({
 
     // Get team images for all possible matches
     const teamImages = await Promise.all(
-        (nextMatches.data || []).map(async (match) => {
+        (matches || []).map(async (match) => {
             const team1 = teamsData.data?.find(
                 (team) => team.overviewPage === match.team1
             )
@@ -68,100 +99,31 @@ export const NextMatches = async ({
         })
     )
 
-    const hover =
-        'hover:opacity-70 transition-opacity duration-200 cursor-pointer'
-
-    /**
-     * Renders a single match with consistent styling
-     */
-    const renderMatch = (
-        match: MatchScheduleType,
-        team1: { short?: string | null; image?: string | null } | undefined,
-        team2: { short?: string | null; image?: string | null } | undefined,
-        images: { team1Image?: string | null; team2Image?: string | null },
-        index: number,
-        totalMatches: number
-    ) => {
-        const isMiddleMatch = totalMatches > 1 && index === 1
-
-        // Determine border classes based on position
-        let borderClasses = ''
-        if (totalMatches > 1) {
-            if (totalMatches === 2) {
-                // Two matches: border only on second match
-                borderClasses =
-                    index === 1
-                        ? 'border-l border-l-neutral-600 border-t-0 border-b-0'
-                        : ''
-            } else if (totalMatches === 3) {
-                // Three matches: border only on middle match
-                borderClasses = isMiddleMatch
-                    ? 'border-l border-r border-l-neutral-600 border-r-neutral-600 border-t-0 border-b-0'
-                    : ''
-            }
-        }
-
-        return (
-            <div
-                key={match.id}
-                className={`flex flex-row items-center justify-center bg-transparent px-4 py-2 h-[125px] flex-1 rounded-none transition-colors duration-200 ${borderClasses} ${hover}`}
-            >
-                {/* Team 1 */}
-                <div className="flex flex-col items-center w-16">
-                    {team1?.image && (
-                        <Image
-                            src={images.team1Image || ''}
-                            alt={team1.short || ''}
-                            className="w-12 h-12 object-contain mb-2"
-                        />
-                    )}
-                    <span className="font-bold text-white text-xl">
-                        {team1?.short || match.team1}
-                    </span>
-                </div>
-
-                {/* Match info */}
-                <div className="flex flex-col items-center flex-1">
-                    <TimeDisplay dateTime_UTC={match.dateTime_UTC || null} />
-                </div>
-
-                {/* Team 2 */}
-                <div className="flex flex-col items-center w-16">
-                    {team2?.image && (
-                        <Image
-                            src={images.team2Image || ''}
-                            alt={team2.short || ''}
-                            className="w-12 h-12 object-contain mb-2"
-                        />
-                    )}
-                    <span className="font-bold text-white text-xl">
-                        {team2?.short || match.team2}
-                    </span>
-                </div>
-            </div>
-        )
-    }
-
     return (
         <Card>
             <CardHeader>
                 <CardHeaderBase>
                     <div className="flex flex-row justify-between items-center w-full">
-                        <SubTitle>Next Match</SubTitle>
-                        <SubTitle>
-                            {nextMatches.data?.[0]?.bestOf
-                                ? `Bo${nextMatches.data[0].bestOf}`
-                                : ''}
-                        </SubTitle>
+                        <NextMatchesClient
+                            matches={matches || []}
+                            teamsData={teamsData?.data || []}
+                            teamImages={teamImages || []}
+                            showSingleMatchOnDesktop={showSingleMatchOnDesktop}
+                            lastMatches={lastMatches}
+                            isHeader={true}
+                            bestOf={matches?.[0]?.bestOf}
+                        />
                     </div>
                 </CardHeaderBase>
             </CardHeader>
             <CardBody>
                 <NextMatchesClient
-                    matches={nextMatches.data || []}
-                    teamsData={teamsData.data || []}
+                    matches={matches || []}
+                    teamsData={teamsData?.data || []}
                     teamImages={teamImages || []}
                     showSingleMatchOnDesktop={showSingleMatchOnDesktop}
+                    lastMatches={lastMatches}
+                    isHeader={false}
                 />
             </CardBody>
         </Card>
