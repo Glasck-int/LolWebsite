@@ -36,7 +36,7 @@ export const CardFooter = ({ children, className = '' }: CardProps) => {
         <div className={`w-full default-bot-border-radius text-sm color-grey bg-white-04 h-[45px] md:h-[50px] ${className}`}>
             <div
                 ref={containerRef}
-                className="relative flex items-center justify-between px-[15px] h-full"
+                className="relative flex items-center justify-between md:justify-start px-[15px] h-full gap-2"
             >
                 <motion.div
                     className="absolute bottom-0 h-[3px] bg-clear-violet rounded-t-md"
@@ -54,7 +54,7 @@ export const CardFooter = ({ children, className = '' }: CardProps) => {
                     if (React.isValidElement(child)) {
                         return (
                             <div
-                                className={`z-10 flex-1 text-center cursor-pointer select-none px-2 py-2 transition-colors duration-100 ${
+                                className={`z-10 flex-1 md:flex-0 text-center cursor-pointer select-none px-2 py-2 transition-colors duration-100 md:min-w-[150px] ${
                                     activeIndex === index
                                         ? 'text-white'
                                         : 'text-grey hover:text-clear-grey'

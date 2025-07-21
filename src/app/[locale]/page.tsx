@@ -192,6 +192,13 @@ export default function Home() {
                     {/* header */}
                     <Card>
                         <CardBody>
+                            <div className='hidden md:flex p-[15px] h-[130px] gap-3 w-[250px]' >
+                                <img src="https://content.imageresizer.com/images/memes/SLAY-ALL-DAY-meme-7fequ2.jpg" className='rounded-full'/>
+                                <div className='py-[15px]'>
+                                    <h2>Shreckus</h2>
+                                    <SubTitle>BGteams</SubTitle>
+                                </div>
+                            </div>
                             <TabbleEntityHeader seasons={seasons} />
                         </CardBody>
                         <CardFooter>

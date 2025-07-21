@@ -3,6 +3,11 @@
 import React from 'react'
 import { useLayout } from '../TabbebEntityLayout'
 
+const formatIdList = (ids: number[] | number): string => {
+    if (Array.isArray(ids)) return ids.join(', ')
+    return `${ids}`
+}
+
 export const Left = () => {
     const { activeSplit, activeTournament, activeId } = useLayout()
 
@@ -11,7 +16,7 @@ export const Left = () => {
             <p className="font-semibold">[Left]</p>
             <p>Split actif : {activeSplit}</p>
             <p>Tournament actif : {activeTournament}</p>
-            <p>Id actif: {activeId}</p>
+            <p>Id actif: {formatIdList(activeId)}</p>
         </div>
     )
 }
@@ -28,7 +33,7 @@ export const Mid = () => {
                 <p>Split courant : {activeSplit}</p>
             )}
             <p>Tournoi : {activeTournament}</p>
-            <p>Id actif: {activeId}</p>
+            <p>Id actif: {formatIdList(activeId)}</p>
         </div>
     )
 }
@@ -46,7 +51,7 @@ export const Right = () => {
                 <p>Tournoi courant : {activeTournament}</p>
             )}
             <p>Split : {activeSplit}</p>
-            <p>Id actif: {activeId}</p>
+            <p>Id actif: {formatIdList(activeId)}</p>
         </div>
     )
 }

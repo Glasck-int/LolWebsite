@@ -27,6 +27,7 @@ export interface MainProps {
 export interface Tournament {
     tournament: string
     id: number
+    allId?: number[]
 }
 
 export interface Split {
@@ -42,11 +43,18 @@ export interface SeasonData {
 interface HeaderProps {
     seasons: SeasonData[]
     className?: string
+    all?: number[]
 }
 
 interface RawProps {
     className?: string
     data: string[]
+    isAllActive: boolean
+    allId: number[]
+}
+
+interface RawSplitProps extends RawProps {
+    seasons: SeasonData[]
 }
 
 interface RawTournamentProps {
@@ -55,8 +63,6 @@ interface RawTournamentProps {
 }
 
 const LayoutContext = createContext<{
-    activeAll: boolean
-    setActiveAll : (all: boolean) => void
     activeIndex: number
     setActiveIndex: (index: number) => void
     activeId: number[]
@@ -65,6 +71,10 @@ const LayoutContext = createContext<{
     setActiveSplit: (split: string) => void
     activeTournament: string
     setActiveTournament: (tournament: string) => void
+    activeAllSeason: boolean
+    setActiveAllSeason: (all: boolean) => void
+    activeAllSplit: boolean
+    setActiveAllSplit: (all: boolean) => void
 } | null>(null)
 
 const HeaderContext = createContext<{
@@ -103,20 +113,72 @@ const getSplits = (seasonKey: string, seasons: SeasonData[]): string[] => {
 const getTournaments = (
     seasonKey: string,
     splitKey: string,
-    seasons: SeasonData[]
-): Tournament[] => {
+    seasons: SeasonData[],
+    isAllActive: boolean
+): (Tournament & { allId?: number[] })[] => {
     const season = seasons.find((s) => s.season === seasonKey)
     if (!season || !season.data) return []
 
+    let tournaments: (Tournament & { allId?: number[] })[] = []
+
     if (!splitKey) {
         const fallbackData = season.data.find((d) => !d.split && d.tournaments)
-        return fallbackData?.tournaments || []
+        if (!fallbackData) return []
+        tournaments = [...(fallbackData.tournaments || [])]
+    } else {
+        const splitData = season.data.find((d) => d.split === splitKey)
+        if (!splitData) return []
+        tournaments = [...(splitData.tournaments || [])]
     }
 
-    const splitData = season.data.find((d) => d.split === splitKey)
-    if (!splitData) return []
+    if (isAllActive && !tournaments.some((t) => t.tournament === 'All')) {
+        const allId = tournaments.map((t) => t.id)
+        tournaments.push({
+            tournament: 'All',
+            id: -1,
+            allId,
+        })
+    }
 
-    return splitData.tournaments || []
+    return tournaments
+}
+
+const getAllIds = (seasons: SeasonData[]): number[] => {
+    return seasons.flatMap((season) =>
+        season.data.flatMap(
+            (split) => split.tournaments?.map((t) => t.id) || []
+        )
+    )
+}
+
+const getIdsBySeason = (seasonKey: string, seasons: SeasonData[]): number[] => {
+    const season = seasons.find((s) => s.season === seasonKey)
+    if (!season) return []
+
+    return season.data.flatMap(
+        (split) => split.tournaments?.map((t) => t.id) || []
+    )
+}
+
+const getTournamentId = (
+    seasons: SeasonData[],
+    seasonKey: string,
+    splitKey: string | null,
+    tournamentName: string
+): number | undefined => {
+    const season = seasons.find((s) => s.season === seasonKey)
+    if (!season) return undefined
+
+    const splitData = season.data.find((split) =>
+        splitKey ? split.split === splitKey : !split.split
+    )
+
+    if (!splitData || !splitData.tournaments) return undefined
+
+    const tournament = splitData.tournaments.find(
+        (t) => t.tournament === tournamentName
+    )
+    return tournament?.id
 }
 
 export const TabbleEntityLayout = ({ children, className = '' }: MainProps) => {
@@ -124,13 +186,12 @@ export const TabbleEntityLayout = ({ children, className = '' }: MainProps) => {
     const [activeSplit, setActiveSplit] = useState('')
     const [activeTournament, setActiveTournament] = useState('')
     const [activeId, setActiveId] = useState<number[]>([])
-    const [activeAll, setActiveAll] = useState(true)
+    const [activeAllSeason, setActiveAllSeason] = useState(false)
+    const [activeAllSplit, setActiveAllSplit] = useState(false)
 
     return (
         <LayoutContext.Provider
             value={{
-                activeAll,
-                setActiveAll,
                 activeIndex,
                 setActiveIndex,
                 activeId,
@@ -139,6 +200,10 @@ export const TabbleEntityLayout = ({ children, className = '' }: MainProps) => {
                 setActiveSplit,
                 activeTournament,
                 setActiveTournament,
+                activeAllSeason,
+                setActiveAllSeason,
+                activeAllSplit,
+                setActiveAllSplit,
             }}
         >
             <div className={`flex flex-col gap-4 ${className}`}>{children}</div>
@@ -149,19 +214,30 @@ export const TabbleEntityLayout = ({ children, className = '' }: MainProps) => {
 export const TabbleEntityHeader = ({
     seasons,
     className = '',
+    all = [],
 }: HeaderProps) => {
     const [active, setActive] = useState(seasons[seasons.length - 1].season)
     const {
         activeSplit,
         setActiveId,
-        activeTournament,
         setActiveSplit,
         setActiveTournament,
+        activeIndex,
     } = useLayout()
 
     const seasonTab = getSeason(seasons)
     const splitTab = getSplits(active, seasons)
-    const tournamentTab = getTournaments(active, activeSplit, seasons)
+    const isAllActive = !(
+        typeof activeIndex === 'number' && all.includes(activeIndex)
+    )
+    const tournamentTab = getTournaments(
+        active,
+        activeSplit,
+        seasons,
+        isAllActive
+    )
+    const allId = getAllIds(seasons)
+    const splitIds = getIdsBySeason(active, seasons)
 
     useEffect(() => {
         const splitTab = getSplits(active, seasons)
@@ -171,23 +247,37 @@ export const TabbleEntityHeader = ({
     }, [active])
 
     useEffect(() => {
-        const tournamentTab = getTournaments(active, activeSplit, seasons)
+        const tournamentTab = getTournaments(
+            active,
+            activeSplit,
+            seasons,
+            isAllActive
+        )
         if (tournamentTab.length > 0) {
+            const index = isAllActive ? 2 : 1
             setActiveTournament(
-                tournamentTab[tournamentTab.length - 1].tournament
+                tournamentTab[tournamentTab.length - index].tournament
             )
-            setActiveId([tournamentTab[tournamentTab.length - 1].id])
+            setActiveId([tournamentTab[tournamentTab.length - index].id])
         }
     }, [activeSplit, active])
 
     return (
         <HeaderContext.Provider value={{ active, setActive }}>
             <div className={`flex flex-col w-full ${className}`}>
-                <TabbleEntityRawSelect data={seasonTab} />
+                <TabbleEntityRawSelect
+                    data={seasonTab}
+                    isAllActive={isAllActive}
+                    allId={allId}
+                />
                 {splitTab.length > 0 && (
-                    <TabbleEntityRawSplit data={splitTab} />
+                    <TabbleEntityRawSplit
+                        data={splitTab}
+                        isAllActive={isAllActive}
+                        allId={splitIds}
+                        seasons={seasons}
+                    />
                 )}
-
                 {tournamentTab.length > 0 && (
                     <TabbleEntityRawTournament data={tournamentTab} />
                 )}
@@ -199,23 +289,43 @@ export const TabbleEntityHeader = ({
 const TabbleEntityRawSelect = ({
     className = '',
     data,
+    isAllActive,
+    allId,
 }: RawProps) => {
-    const {setActiveSplit} = useLayout()
+    const {
+        setActiveSplit,
+        activeAllSeason,
+        setActiveAllSeason,
+        setActiveId,
+        setActiveAllSplit,
+    } = useLayout()
     const { active, setActive } = useHeader()
 
-    const onClickAction = (value:string) => {
+    const onClickAction = (value: string) => {
         setActive(value)
-        setActiveSplit("")
+        setActiveSplit('')
+        setActiveAllSeason(false)
+        setActiveAllSplit(false)
+    }
+
+    const onClickAll = (value: boolean) => {
+        setActiveAllSeason(value)
+        setActiveAllSplit(!value)
+        setActiveId(allId)
     }
 
     return (
         <div className={`flex justify-end h-[43px] ${className}`}>
-            <div className="px-[15px]">
+            <div className="px-[15px] flex flex-row justify-around items-center gap-3">
                 <Select
                     defaultValue={active}
                     onValueChange={(value) => onClickAction(value)}
                 >
-                    <SelectTrigger className="border-none p-0 !ring-0 !focus-visible:ring-0 !focus-visible:border-none text-clear-grey font-semibold text-sm md:text-base select-none hover:text-white data-[state=open]:text-white [&_svg]:transition-colors cursor-pointer">
+                    <SelectTrigger
+                        className={`border-none p-0 !ring-0 !focus-visible:ring-0 !focus-visible:border-none font-semibold text-sm md:text-base select-none hover:text-white data-[state=open]:text-white [&_svg]:transition-colors cursor-pointer ${
+                            activeAllSeason ? 'text-clear-grey' : 'text-white'
+                        }`}
+                    >
                         <SelectValue placeholder={active} />
                     </SelectTrigger>
                     <SelectContent className="bg-white-04 backdrop-blur text-clear-grey font-semibold text-sm md:text-base border-white/20">
@@ -230,6 +340,16 @@ const TabbleEntityRawSelect = ({
                         ))}
                     </SelectContent>
                 </Select>
+                {isAllActive && (
+                    <SubTitle
+                        className={`hover:text-white cursor-pointer select-none ${
+                            activeAllSeason ? 'text-white' : 'text-grey'
+                        }`}
+                        onClick={() => onClickAll(true)}
+                    >
+                        All
+                    </SubTitle>
+                )}
             </div>
         </div>
     )
@@ -238,8 +358,55 @@ const TabbleEntityRawSelect = ({
 const TabbleEntityRawSplit = ({
     className = '',
     data,
-}: RawProps) => {
-    const { activeSplit, setActiveSplit } = useLayout()
+    isAllActive,
+    allId,
+    seasons,
+}: RawSplitProps) => {
+    const {
+        activeSplit,
+        setActiveSplit,
+        activeAllSplit,
+        activeAllSeason,
+        setActiveAllSplit,
+        setActiveId,
+        setActiveAllSeason,
+        activeTournament,
+        setActiveTournament,
+    } = useLayout()
+    const { active } = useHeader()
+
+    const onClickAll = (value: boolean) => {
+        setActiveAllSplit(value)
+        setActiveAllSeason(!value)
+        setActiveId(allId)
+    }
+
+    const onClickSplit = (value: string) => {
+        if ((activeAllSeason || activeAllSplit) && value === activeSplit) {
+            var id = getTournamentId(
+                seasons,
+                active,
+                activeSplit,
+                activeTournament
+            )
+            if (id) {
+                setActiveId([id])
+            } else {
+                const tournamentTab = getTournaments(
+                    active,
+                    activeSplit,
+                    seasons,
+                    isAllActive
+                )
+                const tournament = tournamentTab[tournamentTab.length - 1]
+                setActiveTournament(tournament.tournament)
+                if (tournament.allId) setActiveId(tournament.allId)
+            }
+        }
+        setActiveSplit(value)
+        setActiveAllSplit(false)
+        setActiveAllSeason(false)
+    }
 
     return (
         <div className={`flex justify-end h-[43px] ${className}`}>
@@ -248,9 +415,11 @@ const TabbleEntityRawSplit = ({
                     {data.map((item, index) => (
                         <SubTitle
                             key={index}
-                            onClick={() => setActiveSplit(item)}
+                            onClick={() => onClickSplit(item)}
                             className={` cursor-pointer select-none ${
-                                activeSplit === item
+                                activeSplit === item &&
+                                !activeAllSplit &&
+                                !activeAllSeason
                                     ? 'text-white'
                                     : 'text-grey hover:text-clear-grey'
                             }`}
@@ -258,6 +427,16 @@ const TabbleEntityRawSplit = ({
                             {item}
                         </SubTitle>
                     ))}
+                    {isAllActive && (
+                        <SubTitle
+                            className={`hover:text-white cursor-pointer select-none ${
+                                activeAllSplit ? 'text-white' : 'text-grey'
+                            }`}
+                            onClick={() => onClickAll(true)}
+                        >
+                            All
+                        </SubTitle>
+                    )}
                 </div>
             </div>
         </div>
@@ -268,11 +447,23 @@ const TabbleEntityRawTournament = ({
     className = '',
     data,
 }: RawTournamentProps) => {
-    const { activeTournament, setActiveTournament, setActiveId } = useLayout()
+    const {
+        activeTournament,
+        setActiveTournament,
+        setActiveId,
+        setActiveAllSeason,
+        setActiveAllSplit,
+        activeAllSplit,
+        activeAllSeason,
+    } = useLayout()
 
     const setActive = (item: Tournament) => {
         setActiveTournament(item.tournament)
-        setActiveId([item.id])
+        if (item.id == -1 && item.allId) {
+            setActiveId(item.allId)
+            setActiveAllSeason(false)
+            setActiveAllSplit(false)
+        } else setActiveId([item.id])
     }
 
     return (
@@ -284,7 +475,9 @@ const TabbleEntityRawTournament = ({
                             key={index}
                             onClick={() => setActive(item)}
                             className={` cursor-pointer select-none ${
-                                activeTournament === item.tournament
+                                activeTournament === item.tournament &&
+                                !activeAllSeason &&
+                                !activeAllSplit
                                     ? 'text-white'
                                     : 'text-grey hover:text-clear-grey'
                             }`}
