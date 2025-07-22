@@ -31,6 +31,7 @@ import {
     TableEntityBody,
     TableEntityContent,
 } from '@/components/layout/TableEntityLayout/TableEntityLayout'
+import { Switch, SwitchContent, SwitchContext,SwitchBodyMultiple, SwitchBodyMultipleContent } from '@/components/utils/Switch'
 
 const seasons = [
     {
@@ -146,7 +147,7 @@ const seasons = [
 export default function Home() {
     return (
         <div className="body-container">
-            <div className=" h-[200px]">
+            <div className="">
                 <Card>
                     <CardHeader>
                         <CardHeaderColumn>
@@ -172,6 +173,13 @@ export default function Home() {
                                 <div className="flex flex-col justify-center items-center h-full">
                                     <p>TODO Pouvoir fermer les cartes</p>
                                     <p>TODO switch context</p>
+                                    <p>
+                                        Quand on passe de all a pas all, mais
+                                        qu'on avait select all, fait fait de la
+                                        merde
+                                    </p>
+                                    <p>modifier le nom de card pour creer un cardContext</p>
+                                    <p>ajouter un context pour annotion sans utiliser celui de card</p>
                                 </div>
                             </CardBodyMultipleContent>
                             <CardBodyMultipleContent>
@@ -182,6 +190,36 @@ export default function Home() {
                             </CardBodyMultipleContent>
                         </CardBodyMultiple>
                     </CardBody>
+                </Card>
+            </div>
+            ---
+            <div>
+                <Card>
+					<SwitchContext>
+                    <CardHeader>
+						<CardHeaderBase  className="px-[15px] justify-between">
+							<SubTitle>Header</SubTitle>
+							<Switch>
+								<SwitchContent>
+									<p className='text-inherit'>15min</p>
+								</SwitchContent>
+								<SwitchContent>
+									<p className='text-inherit'>Tout</p>
+								</SwitchContent>
+							</Switch>
+						</CardHeaderBase>
+                    </CardHeader>
+						<CardBody className='px-[15px]'>
+							<SwitchBodyMultiple>
+								<SwitchBodyMultipleContent>
+									<p>BODY 1</p>
+								</SwitchBodyMultipleContent>
+								<SwitchBodyMultipleContent>
+									<p>BODY 2</p>
+								</SwitchBodyMultipleContent>
+							</SwitchBodyMultiple>
+						</CardBody>
+					</SwitchContext>
                 </Card>
             </div>
             ---
