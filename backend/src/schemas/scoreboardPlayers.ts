@@ -292,6 +292,10 @@ export const PlayerStatsSchema = Type.Object({
         description: 'Player name',
         examples: ['Caps', 'Faker', 'Jankos'],
     }),
+    link: Type.String({
+        description: 'Player profile link/identifier',
+        examples: ['Caps', 'Faker', 'Jankos'],
+    }),
     team: Type.String({
         description: 'Team name',
         examples: ['G2 Esports', 'T1', 'Fnatic'],
@@ -370,6 +374,7 @@ export const PlayerStatsSchema = Type.Object({
 
 export interface PlayerStatsType {
     name: string
+    link: string
     team: string
     role: string
     gamesPlayed: number

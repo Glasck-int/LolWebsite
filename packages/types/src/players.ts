@@ -1,6 +1,7 @@
 // Types liés aux joueurs
 export interface PlayerStatsType {
     name: string
+    link: string
     team: string
     role: string
     gamesPlayed: number
@@ -19,6 +20,20 @@ export interface PlayerStatsType {
 }
 
 export interface PlayerImageType {
+    fileName: string
+    link: string
+    team: string | null
+    tournament: string | null
+    imageType: string | null
+    caption: string | null
+    isProfileImage: boolean | null
+    createdAt: string
+    updatedAt: string
+}
+
+export interface PlayerRedirectType {
+    id: number
     name: string
-    imageUrl: string | null
+    overviewPage: string
+    images: PlayerImageType[] | null
 }

@@ -4,12 +4,11 @@ import {
     ScoreboardPlayers,
 } from '@/generated/prisma'
 import { apiRequest, ApiResponse } from './utils'
-import { PlayerStatsType } from '../../../backend/src/schemas/scoreboardPlayers'
+import { PlayerStatsType } from '@Glasck-int/glasck-types'
 
 async function getLastThreeMatchesForTournament(
     tournamentId: string
 ): Promise<ApiResponse<MatchSchedule[]>> {
-    console.log('tournamentId', tournamentId)
     return apiRequest<MatchSchedule[]>(
         `/api/tournaments/${tournamentId}/last-matches`
     )
@@ -65,7 +64,6 @@ async function getTournamentsGamesByTournamentOverviewPage(
 ): Promise<ApiResponse<MatchScheduleGame[]>> {
     // Encode the overviewPage to handle special characters in URLs
     const encodedOverviewPage = encodeURIComponent(tournamentOverviewPage)
-    console.log('encodedOverviewPage', encodedOverviewPage)
     return apiRequest<MatchScheduleGame[]>(
         `/api/tournaments/${encodedOverviewPage}/games`
     )

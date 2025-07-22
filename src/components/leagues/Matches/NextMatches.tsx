@@ -87,10 +87,10 @@ export const NextMatches = async ({
                 (team) => team.overviewPage === match.team2
             )
             const team1Image = await getTeamImage(
-                team1?.image?.replace('.png', '') || ''
+                team1?.image?.replace('.png', '.webp') || ''
             )
             const team2Image = await getTeamImage(
-                team2?.image?.replace('.png', '') || ''
+                team2?.image?.replace('.png', '.webp') || ''
             )
             return {
                 team1Image: team1Image.data,

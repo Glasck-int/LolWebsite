@@ -1,6 +1,6 @@
 {
-    "name": "@Galsck-int/glasck-types",
-    "version": "1.4.0",
+    "name": "@Glasck-int/glasck-types",
+    "version": "1.7.0",
     "description": "Types partagés pour Glasck",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",

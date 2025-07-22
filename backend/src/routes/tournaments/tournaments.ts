@@ -437,6 +437,7 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
                         playerWin: true
                     }
                 })
+ 
 
                 if (players.length === 0) {
                     return reply.status(404).send({
@@ -449,7 +450,6 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
 
                 players.forEach(player => {
                     const key = `${player.name}-${player.team}-${player.role}`
-                    
                     if (!playerStatsMap.has(key)) {
                         playerStatsMap.set(key, {
                             name: player.name,
@@ -457,7 +457,7 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
                             team: player.team,
                             role: player.role,
                             gamesPlayed: 0,
-                            totalKills: 0,
+                            totalKills: 0, 
                             totalDeaths: 0,
                             totalAssists: 0,
                             totalDamage: 0,
@@ -466,6 +466,7 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
                             totalVisionScore: 0,
                             wins: 0
                         })
+
                     }
 
                     const stats = playerStatsMap.get(key)!

@@ -41,7 +41,7 @@ export async function fetchEnrichedStandingsData(
 
     const teamImagePromises = teamsData.map(async (team: Team) => {
       const teamImageResponse = await getTeamImage(
-        team.image?.replace('.png', '') || ''
+        team.image?.replace('.png', '.webp') || ''
       )
       return {
         teamName: team.overviewPage,
@@ -50,7 +50,6 @@ export async function fetchEnrichedStandingsData(
     })
 
     const teamImageResults = await Promise.all(teamImagePromises)
-
     const teamsImages: Record<string, string> = teamImageResults.reduce(
       (acc, result) => {
         if (result.teamName) {

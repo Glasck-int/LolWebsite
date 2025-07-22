@@ -63,17 +63,6 @@ export const PlayerImageSchema = Type.Object({
     }),
 })
 
-export interface PlayerImageType {
-    fileName: string
-    link: string
-    team: string | null
-    tournament: string | null
-    imageType: string | null
-    caption: string | null
-    isProfileImage: boolean | null
-    createdAt: string
-    updatedAt: string
-}
 
 /**
  * Player Redirect schema for name-to-player mapping
@@ -446,6 +435,7 @@ export const PlayerWithRedirectsSchema = Type.Object({
         description: 'All images associated with this player',
     }),
 })
+
 
 /**
  * Response arrays

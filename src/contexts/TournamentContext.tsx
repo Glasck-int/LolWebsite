@@ -3,7 +3,7 @@
 import React, { createContext, useContext } from 'react'
 import { ProcessedStanding } from '@/components/leagues/Standings/utils/StandingsDataProcessor'
 import { MatchScheduleGame, Standings } from '@/generated/prisma'
-import { PlayerStatsType, PlayerImageType } from '@Galsck-int/glasck-types'
+import { PlayerStatsType } from '@Glasck-int/glasck-types'
 
 // Types flexibles pour accepter les données de l'API
 
@@ -13,7 +13,7 @@ interface TournamentContextType {
     tournamentName: string
     enrichedStandingsData?: ProcessedStanding[]
     enrichedGamesData?: MatchScheduleGame[]
-    playerImages?: PlayerImageType[]
+    Images?: Record<string, { playerImage: string, teamImage: string }>
 }
 
 // Créer le context
@@ -38,7 +38,7 @@ interface TournamentProviderProps {
     tournamentName: string
     enrichedStandingsData?: ProcessedStanding[]
     enrichedGamesData?: MatchScheduleGame[]
-    playerImages?: PlayerImageType[]
+    Images?: Record<string, { playerImage: string, teamImage: string }>
 }
 
 export const TournamentProvider = ({
@@ -48,7 +48,7 @@ export const TournamentProvider = ({
     tournamentName,
     enrichedStandingsData,
     enrichedGamesData,
-    playerImages,
+    Images,
 }: TournamentProviderProps) => {
     const value: TournamentContextType = {
         standings,
@@ -56,7 +56,7 @@ export const TournamentProvider = ({
         tournamentName,
         enrichedStandingsData,
         enrichedGamesData,
-        playerImages,
+        Images,
     }
 
     return (

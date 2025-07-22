@@ -23,7 +23,7 @@ Glasck is a full-stack esports application for League of Legends data visualizat
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/Galsck-int/LolWebsite.git
+git clone https://github.com/Glasck-int/LolWebsite.git
 cd LolWebsite
 ```
 
@@ -38,7 +38,7 @@ This project uses a private package for shared types.
 ```bash
 # Global (recommended)
 echo //npm.pkg.github.com/:_authToken=YOUR_TOKEN >> %USERPROFILE%\.npmrc
-echo @Galsck-int:registry=https://npm.pkg.github.com >> %USERPROFILE%\.npmrc
+echo @Glasck-int:registry=https://npm.pkg.github.com >> %USERPROFILE%\.npmrc
 
 # Or environment variable
 set NPM_TOKEN=YOUR_TOKEN
@@ -122,12 +122,17 @@ The Prisma schema includes comprehensive League of Legends esports data:
 
 ## Shared Types
 
-Types are managed via `@Galsck-int/glasck-types`.
+Types are managed via `@Glasck-int/glasck-types`.
 
 To update types:
 ```bash
 cd packages/types
 npm run release:patch
+```
+
+To install or update types
+```bash
+ $env:NPM_TOKEN="YOUT_TOKEN"; npm (update || install) @glasck-int/glasck-types
 ```
 
 ## Configuration

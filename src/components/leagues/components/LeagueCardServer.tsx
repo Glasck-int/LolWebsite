@@ -1,6 +1,5 @@
 import React from 'react'
 import { League as LeagueType } from '@/generated/prisma'
-import { getLeagueImage } from '@/lib/api/image'
 import { LeagueCardClient } from './LeagueCardClient'
 
 interface LeagueCardServerProps {
@@ -11,23 +10,19 @@ interface LeagueCardServerProps {
 }
 
 /**
- * Server component wrapper for LeagueCard that pre-loads images for SEO
+ * Wrapper for LeagueCard that can be used in both server and client contexts
  */
-export const LeagueCardServer: React.FC<LeagueCardServerProps> = async ({
+export const LeagueCardServer: React.FC<LeagueCardServerProps> = ({
     league,
     imageUrl,
     square = false,
     className = '',
 }) => {
-    // Pre-load league image on server for SEO
-    const leagueImageResponse = await getLeagueImage(league.name)
-    const preloadedImageUrl = leagueImageResponse.data || undefined
-
     return (
         <LeagueCardClient
             league={league}
             imageUrl={imageUrl}
-            preloadedImageUrl={preloadedImageUrl}
+            preloadedImageUrl={imageUrl}
             square={square}
             className={className}
         />

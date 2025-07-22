@@ -6,7 +6,7 @@ import {
     getTournamentPlayersStatsByTournamentOverviewPage,
 } from '@/lib/api/tournaments'
 import { fetchEnrichedStandingsData } from '@/lib/api/standings'
-import { getPlayerImage } from '@/lib/api/image'
+import { getPlayerImage } from '@/lib/api/player'
 import { LeagueDescription } from '@/components/leagues/components/LeagueDescription'
 import { NextMatches } from '@/components/leagues/Matches/NextMatches'
 import { StandingsOverviewClient } from '@/components/leagues/Standings/views/StandingsOverviewClient'
@@ -14,7 +14,8 @@ import { StandingsWithTabsClient } from '@/components/leagues/Standings/views/St
 import PlayersKda from '@/components/leagues/Stats/views/playersKda'
 
 import { TournamentProvider } from '@/contexts/TournamentContext'
-import { getPlayerImages } from '@/lib/api/player'
+import { getTeamImage } from '@/lib/api/image'
+import { getTeamsByNames } from '@/lib/api/teams'
 
 interface LeaguePageProps {
     params: Promise<{ leagueName: string }>
@@ -69,14 +70,29 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
         )
 
         // Fetch player images server-side
-        const playerImages = await Promise.all(
+        const playerImagesArray = await Promise.all(
             playerStats.data?.players.map(async (player) => {
-                const playerImage = await getPlayerImages(player.name)
-                return playerImage.data || null
+                const playerImage = await getPlayerImage(player.link, tournamentName)
+                const teams = await getTeamsByNames([player.team])
+                const teamImage = await getTeamImage(teams.data?.[0]?.image?.replace('.png', '.webp') || '')
+                return {
+                    link: player.link,
+                    playerImage: playerImage.data || '',
+                    teamImage: teamImage.data || ''
+                }
             }) || []
         )
+        
+        // Convert to object with player link as key
+        const playerImages = playerImagesArray.reduce((acc, { link, playerImage, teamImage }) => {
+            acc[link] = {
+                playerImage: playerImage,
+                teamImage: teamImage
+            }
+            return acc
+        }, {} as Record<string, { playerImage: string, teamImage: string }>)
 
-        console.log('playerImages', playerImages)
+        // console.log('playerImages', playerImages)
 
         return (
             <div className="pt-24 body-container">
@@ -97,7 +113,7 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
                                 enrichedStandingsData.processedData
                             }
                             enrichedGamesData={enrichedStandingsData.gamesData}
-                            playerImages={playerImages}
+                            Images={playerImages}
                         >
                             {playerStats.data.players.length > 0 && (
                                 <PlayersKda />
