@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 import React from "react";
 import { usePathname, useRouter } from "@/i18n/navigation";
@@ -11,10 +11,10 @@ import {
 } from "react";
 
 interface LocaleSwitcherSelectProps {
-	children: ReactNode;
-	defaultValue: string;
-	label: string;
-	showOnMobile?: boolean;
+    children: ReactNode
+    defaultValue: string
+    label: string
+    showOnMobile?: boolean
 }
 
 /**
@@ -43,70 +43,70 @@ interface LocaleSwitcherSelectProps {
  * Displays SVG flags from public/flags/svg/ directory.
  */
 export default function LocaleSwitcherSelect({
-	children,
-	defaultValue,
-	label,
-	showOnMobile = false,
+    children,
+    defaultValue,
+    label,
+    showOnMobile = false,
 }: LocaleSwitcherSelectProps) {
-	const router = useRouter();
-	const pathname = usePathname();
-	const [isPending, startTransition] = useTransition();
-	const [isOpen, setIsOpen] = useState(false);
-	const [selectedValue, setSelectedValue] = useState(defaultValue);
-	const dropdownRef = useRef<HTMLDivElement>(null);
+    const router = useRouter()
+    const pathname = usePathname()
+    const [isPending, startTransition] = useTransition()
+    const [isOpen, setIsOpen] = useState(false)
+    const [selectedValue, setSelectedValue] = useState(defaultValue)
+    const dropdownRef = useRef<HTMLDivElement>(null)
 
-	// Close dropdown when clicking outside
-	useEffect(() => {
-		function handleClickOutside(event: MouseEvent) {
-			if (
-				dropdownRef.current &&
-				!dropdownRef.current.contains(event.target as Node)
-			) {
-				setIsOpen(false);
-			}
-		}
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (
+                dropdownRef.current &&
+                !dropdownRef.current.contains(event.target as Node)
+            ) {
+                setIsOpen(false)
+            }
+        }
 
-		document.addEventListener("mousedown", handleClickOutside);
-		return () =>
-			document.removeEventListener("mousedown", handleClickOutside);
-	}, []);
+        document.addEventListener('mousedown', handleClickOutside)
+        return () =>
+            document.removeEventListener('mousedown', handleClickOutside)
+    }, [])
 
-	function onSelectChange(value: string) {
-		setSelectedValue(value);
-		setIsOpen(false);
-		startTransition(() => {
-			router.replace(
-				// @ts-ignore
-				{ pathname },
-				{ locale: value }
-			);
-		});
-	}
+    function onSelectChange(value: string) {
+        setSelectedValue(value)
+        setIsOpen(false)
+        startTransition(() => {
+            router.replace(
+                // @ts-ignore
+                { pathname },
+                { locale: value }
+            )
+        })
+    }
 
-	// Get flag path for locale
-	const getFlagPath = (locale: string) => {
-		if (locale === "en") return "/flags/svg/us.svg";
-		if (locale === "fr") return "/flags/svg/fr.svg";
-		return "/flags/svg/us.svg"; // fallback
-	};
+    // Get flag path for locale
+    const getFlagPath = (locale: string) => {
+        if (locale === 'en') return '/flags/svg/us.svg'
+        if (locale === 'fr') return '/flags/svg/fr.svg'
+        return '/flags/svg/us.svg' // fallback
+    }
 
-	// Get display text for locale
-	const getDisplayText = (locale: string) => {
-		if (locale === "en") return "En";
-		if (locale === "fr") return "Fr";
-		return locale;
-	};
+    // Get display text for locale
+    const getDisplayText = (locale: string) => {
+        if (locale === 'en') return 'En'
+        if (locale === 'fr') return 'Fr'
+        return locale
+    }
 
-	return (
-		<div
-			className={`relative ${showOnMobile ? "hidden" : "block"} md:block`}
-			ref={dropdownRef}
-		>
-			<p className="sr-only">{label}</p>
+    return (
+        <div
+            className={`relative ${showOnMobile ? 'hidden' : 'block'} md:block`}
+            ref={dropdownRef}
+        >
+            <p className="sr-only">{label}</p>
 
-			{/* Custom select button */}
-			<button
-				className="
+            {/* Custom select button */}
+            <button
+                className="
 					appearance-none 
 					bg-white/10 
 					backdrop-blur-md 
@@ -133,40 +133,40 @@ export default function LocaleSwitcherSelect({
 					items-center
 					justify-between
 				"
-				disabled={isPending}
-				onClick={() => setIsOpen(!isOpen)}
-			>
-				<span className="flex items-center gap-2">
-					{getDisplayText(selectedValue)}
-					<img
-						src={getFlagPath(selectedValue)}
-						alt={`${selectedValue} flag`}
-						className="w-4 h-4"
-					/>
-				</span>
+                disabled={isPending}
+                onClick={() => setIsOpen(!isOpen)}
+            >
+                <span className="flex items-center gap-2">
+                    {getDisplayText(selectedValue)}
+                    <img
+                        src={getFlagPath(selectedValue)}
+                        alt={`${selectedValue} flag`}
+                        className="w-4 h-4"
+                    />
+                </span>
 
-				{/* Custom dropdown arrow */}
-				<svg
-					className={`w-4 h-4 text-white/70 transition-transform duration-200 ${
-						isOpen ? "rotate-180" : ""
-					}`}
-					fill="none"
-					stroke="currentColor"
-					viewBox="0 0 24 24"
-				>
-					<path
-						strokeLinecap="round"
-						strokeLinejoin="round"
-						strokeWidth={2}
-						d="M19 9l-7 7-7-7"
-					/>
-				</svg>
-			</button>
+                {/* Custom dropdown arrow */}
+                <svg
+                    className={`w-4 h-4 text-white/70 transition-transform duration-200 ${
+                        isOpen ? 'rotate-180' : ''
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                    />
+                </svg>
+            </button>
 
-			{/* Dropdown options */}
-			{isOpen && (
-				<div
-					className="
+            {/* Dropdown options */}
+            {isOpen && (
+                <div
+                    className="
 					absolute 
 					top-full 
 					left-0 
@@ -180,19 +180,19 @@ export default function LocaleSwitcherSelect({
 					overflow-hidden
 					z-50
 				"
-				>
-					{React.Children.map(children, (child) => {
-						if (
-							React.isValidElement(child) &&
-							child.type === "option"
-						) {
-							const value = (
-								child as React.ReactElement<{ value: string }>
-							).props.value;
-							return (
-								<button
-									key={value}
-									className="
+                >
+                    {React.Children.map(children, (child) => {
+                        if (
+                            React.isValidElement(child) &&
+                            child.type === 'option'
+                        ) {
+                            const value = (
+                                child as React.ReactElement<{ value: string }>
+                            ).props.value
+                            return (
+                                <button
+                                    key={value}
+                                    className="
 										w-full 
 										px-3 
 										py-2 
@@ -207,23 +207,23 @@ export default function LocaleSwitcherSelect({
 										items-center 
 										justify-between
 									"
-									onClick={() => onSelectChange(value)}
-								>
-									<span className="flex items-center gap-2">
-										{getDisplayText(value)}
-										<img
-											src={getFlagPath(value)}
-											alt={`${value} flag`}
-											className="w-4 h-4"
-										/>
-									</span>
-								</button>
-							);
-						}
-						return null;
-					})}
-				</div>
-			)}
-		</div>
-	);
+                                    onClick={() => onSelectChange(value)}
+                                >
+                                    <span className="flex items-center gap-2">
+                                        {getDisplayText(value)}
+                                        <img
+                                            src={getFlagPath(value)}
+                                            alt={`${value} flag`}
+                                            className="w-4 h-4"
+                                        />
+                                    </span>
+                                </button>
+                            )
+                        }
+                        return null
+                    })}
+                </div>
+            )}
+        </div>
+    )
 }

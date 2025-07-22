@@ -104,6 +104,10 @@
         border-top-left-radius: 8px;
         border-top-right-radius: 8px;
     }
+    .default-bot-border-radius {
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
 }
 
 @layer base {
@@ -209,3 +213,9 @@ body {
         @apply bg-background text-foreground;
     }
 }
+
+/* global.css */
+  html body[data-scroll-locked] {
+    overflow: visible !important;
+    margin-right: 0 !important;
+  } 

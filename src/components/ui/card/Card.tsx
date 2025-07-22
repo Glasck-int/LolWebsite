@@ -22,6 +22,23 @@ const CardContext = createContext<{
 
 // Fonctions
 
+/**
+ * Custom React hook to access the CardContext state.
+ *
+ * Allows components nested within a <Card> to access and modify the current active index.
+ * Throws an error if used outside of a Card context provider, enforcing proper usage hierarchy.
+ *
+ * @function useCard
+ *
+ * @throws {Error} Throws if the hook is used outside of a <Card> component.
+ *
+ * @returns {Object} The context object containing:
+ * @returns {number} return.activeIndex - The currently active index.
+ * @returns {Function} return.setActiveIndex - Function to update the active index.
+ *
+ * @example
+ * const { activeIndex, setActiveIndex } = useCard()
+ */
 export const useCard = () => {
     const context = useContext(CardContext)
     if (!context) {
@@ -32,6 +49,26 @@ export const useCard = () => {
 
 // Components
 
+/**
+ * Card component that provides a UI container with shared state.
+ *
+ * Wraps its children inside a stylized container and exposes a context
+ * (activeIndex and setActiveIndex) for nested components to use.
+ * Commonly used as a layout element where internal state or tabs are needed.
+ *
+ * @function Card
+ *
+ * @param {CardProps} props - Props object.
+ * @param {React.ReactNode} props.children - React children to render inside the card.
+ * @param {string} [props.className] - Optional. Additional Tailwind classes for styling.
+ *
+ * @returns {JSX.Element} A styled div wrapped in a CardContext.Provider.
+ *
+ * @example
+ * <Card className="p-4">
+ *   <TabComponent />
+ * </Card>
+ */
 export const Card = ({ children, className = '' }: CardProps) => {
     const [activeIndex, setActiveIndex] = useState(0)
 
@@ -49,16 +86,3 @@ export const Card = ({ children, className = '' }: CardProps) => {
     )
 }
 
-// super css pour faire des slide undertab (regarder sur gpt)
-// <motion.div
-//     className="absolute bottom-0 h-[2px] bg-blue-500"
-//     animate={{
-//         width: `${tabWidth}%`,
-//         left: `${tabWidth * activeIndex}%`,
-//     }}
-//     transition={{
-//         type: "spring",
-//         stiffness: 300,
-//         damping: 30,
-//     }}
-// />

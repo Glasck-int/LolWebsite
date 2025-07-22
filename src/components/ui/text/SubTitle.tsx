@@ -6,6 +6,8 @@ interface SubTitleProps {
     children?: React.ReactNode
     className?: string
     tooltip?: string
+    onClick?: () => void;
+
 }
 
 /**
@@ -38,9 +40,10 @@ interface SubTitleProps {
  * The component uses a paragraph element by default with predefined styling.
  * Tooltip is only rendered if the tooltip prop is provided.
  */
-export const SubTitle = ({ children, className, tooltip }: SubTitleProps) => {
+export const SubTitle = ({ children, className, tooltip, onClick }: SubTitleProps) => {
     const content = (
         <p
+            onClick={onClick}
             className={cn(
                 'text-clear-grey font-semibold text-sm md:text-base',
                 className
