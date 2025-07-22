@@ -21,126 +21,126 @@ import {
     Left,
     Right,
     Mid,
-} from '@/components/layout/TabbebEntityLayout/exemple/exemple'
+} from '@/components/layout/TableEntityLayout/exemple/exemple'
 import { Annoyed } from 'lucide-react'
 import { SubTitle } from '@/components/ui/text/SubTitle'
 import { SortedList } from '@/components/ui/card/exemple/BodySort'
 import {
-    TabbleEntityLayout,
-    TabbleEntityHeader,
-    TabbleEntityBody,
-    TabbleEntityContent,
-} from '@/components/layout/TabbebEntityLayout/TabbebEntityLayout'
+    TableEntityLayout,
+    TableEntityHeader,
+    TableEntityBody,
+    TableEntityContent,
+} from '@/components/layout/TableEntityLayout/TableEntityLayout'
 
 const seasons = [
-  {
-    season: "s8",
-    data: [
-      {
-        split: "winter",
-        tournaments: [
-          { tournament: "Regular", id: 11 },
-          { tournament: "PlayOff", id: 12 }
-        ]
-      },
-      {
-        split: "spring",
-        tournaments: [
-          { tournament: "MainEvent", id: 13 },
-          { tournament: "PlayOff", id: 14 }
-        ]
-      }
-    ]
-  },
-  {
-    season: "s9",
-    data: [
-      {
-        split: "winter",
-        tournaments: [
-          { tournament: "Qualifiers", id: 21 },
-          { tournament: "Knockout", id: 22 }
-        ]
-      },
-      {
-        split: "spring",
-        tournaments: [
-          { tournament: "Championship", id: 23 },
-          { tournament: "Finale", id: 24 }
-        ]
-      },
-      {
-        split: "summer",
-        tournaments: [
-          { tournament: "Warmup", id: 25 },
-          { tournament: "GrandFinal", id: 26 }
-        ]
-      }
-    ]
-  },
-  {
-    season: "s10",
-    data: [
-      {
-        split: "winter",
-        tournaments: [
-          { tournament: "OpenBracket", id: 31 },
-          { tournament: "Elimination", id: 32 }
-        ]
-      },
-      {
-        split: "group",
-        tournaments: [
-          { tournament: "UpperGroup", id: 33 },
-          { tournament: "LowerGroup", id: 34 }
-        ]
-      }
-    ]
-  },
-  {
-    season: "s11",
-    data: [
-      {
-        tournaments: [
-          { tournament: "Winter Start", id: 51 },
-          { tournament: "MidWinter", id: 52 }
-        ]
-      }
-    ]
-  },
-  {
-    season: "s12",
-    data: [
-      {
-        split: "winter",
-        tournaments: [
-          { tournament: "Winter Start", id: 51 },
-          { tournament: "MidWinter", id: 52 }
-        ]
-      },
-      {
-        split: "spring",
-        tournaments: [
-          { tournament: "Spring Open", id: 53 },
-          { tournament: "Spring Showdown", id: 54 }
-        ]
-      },
-      {
-        split: "summer",
-        tournaments: [
-          { tournament: "Beach Brawl", id: 55 },
-          { tournament: "Heatwave Finals", id: 56 }
-        ]
-      },
-      {
-        split: "group",
-        tournaments: [
-          { tournament: "Group Stage Alpha", id: 57 },
-          { tournament: "Group Stage Omega", id: 58 }
-        ]
-      }
-    ]
-  }
+    {
+        season: 's8',
+        data: [
+            {
+                split: 'winter',
+                tournaments: [
+                    { tournament: 'Regular', id: 11 },
+                    { tournament: 'PlayOff', id: 12 },
+                ],
+            },
+            {
+                split: 'spring',
+                tournaments: [
+                    { tournament: 'MainEvent', id: 13 },
+                    { tournament: 'PlayOff', id: 14 },
+                ],
+            },
+        ],
+    },
+    {
+        season: 's9',
+        data: [
+            {
+                split: 'winter',
+                tournaments: [
+                    { tournament: 'Qualifiers', id: 21 },
+                    { tournament: 'Knockout', id: 22 },
+                ],
+            },
+            {
+                split: 'spring',
+                tournaments: [
+                    { tournament: 'Championship', id: 23 },
+                    { tournament: 'Finale', id: 24 },
+                ],
+            },
+            {
+                split: 'summer',
+                tournaments: [
+                    { tournament: 'Warmup', id: 25 },
+                    { tournament: 'GrandFinal', id: 26 },
+                ],
+            },
+        ],
+    },
+    {
+        season: 's10',
+        data: [
+            {
+                split: 'winter',
+                tournaments: [
+                    { tournament: 'OpenBracket', id: 31 },
+                    { tournament: 'Elimination', id: 32 },
+                ],
+            },
+            {
+                split: 'group',
+                tournaments: [
+                    { tournament: 'UpperGroup', id: 33 },
+                    { tournament: 'LowerGroup', id: 34 },
+                ],
+            },
+        ],
+    },
+    {
+        season: 's11',
+        data: [
+            {
+                tournaments: [
+                    { tournament: 'Winter Start', id: 51 },
+                    { tournament: 'MidWinter', id: 52 },
+                ],
+            },
+        ],
+    },
+    {
+        season: 's12',
+        data: [
+            {
+                split: 'winter',
+                tournaments: [
+                    { tournament: 'Winter Start', id: 51 },
+                    { tournament: 'MidWinter', id: 52 },
+                ],
+            },
+            {
+                split: 'spring',
+                tournaments: [
+                    { tournament: 'Spring Open', id: 53 },
+                    { tournament: 'Spring Showdown', id: 54 },
+                ],
+            },
+            {
+                split: 'summer',
+                tournaments: [
+                    { tournament: 'Beach Brawl', id: 55 },
+                    { tournament: 'Heatwave Finals', id: 56 },
+                ],
+            },
+            {
+                split: 'group',
+                tournaments: [
+                    { tournament: 'Group Stage Alpha', id: 57 },
+                    { tournament: 'Group Stage Omega', id: 58 },
+                ],
+            },
+        ],
+    },
 ]
 
 export default function Home() {
@@ -172,8 +172,6 @@ export default function Home() {
                                 <div className="flex flex-col justify-center items-center h-full">
                                     <p>TODO Pouvoir fermer les cartes</p>
                                     <p>TODO switch context</p>
-                                    <p>gerer le all + classname</p>
-                                    <p>faire la version ordi du component</p>
                                 </div>
                             </CardBodyMultipleContent>
                             <CardBodyMultipleContent>
@@ -188,22 +186,25 @@ export default function Home() {
             </div>
             ---
             <div>
-                <TabbleEntityLayout>
+                <TableEntityLayout>
                     {/* header */}
                     <Card>
                         <CardBody>
-                            <div className='hidden md:flex p-[15px] h-[130px] gap-3 w-[250px]' >
-                                <img src="https://content.imageresizer.com/images/memes/SLAY-ALL-DAY-meme-7fequ2.jpg" className='rounded-full'/>
-                                <div className='py-[15px]'>
+                            <div className="hidden md:flex p-[15px] h-[130px] gap-3 w-[250px]">
+                                <img
+                                    src="https://content.imageresizer.com/images/memes/SLAY-ALL-DAY-meme-7fequ2.jpg"
+                                    className="rounded-full"
+                                />
+                                <div className="py-[15px]">
                                     <h2>Shreckus</h2>
                                     <SubTitle>BGteams</SubTitle>
                                 </div>
                             </div>
-                            <TabbleEntityHeader seasons={seasons} />
+                            <TableEntityHeader seasons={seasons} all={[2]} />
                         </CardBody>
                         <CardFooter>
                             <CardFooterContent>
-                                <p className="text-inherit">left</p>
+                                <p className="text-inherit">left super long</p>
                             </CardFooterContent>
                             <CardFooterContent>
                                 <p className="text-inherit">mid</p>
@@ -214,18 +215,18 @@ export default function Home() {
                         </CardFooter>
                     </Card>
                     {/* body */}
-                    <TabbleEntityBody>
-                        <TabbleEntityContent>
+                    <TableEntityBody>
+                        <TableEntityContent>
                             <Left />
-                        </TabbleEntityContent>
-                        <TabbleEntityContent>
+                        </TableEntityContent>
+                        <TableEntityContent>
                             <Mid />
-                        </TabbleEntityContent>
-                        <TabbleEntityContent>
+                        </TableEntityContent>
+                        <TableEntityContent>
                             <Right />
-                        </TabbleEntityContent>
-                    </TabbleEntityBody>
-                </TabbleEntityLayout>
+                        </TableEntityContent>
+                    </TableEntityBody>
+                </TableEntityLayout>
             </div>
             ---
             <div className="h-[200px]">

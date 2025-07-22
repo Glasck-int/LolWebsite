@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { useLayout } from '../TabbebEntityLayout'
+import { useLayout } from '../TableEntityLayout'
 
 const formatIdList = (ids: number[] | number): string => {
     if (Array.isArray(ids)) return ids.join(', ')
@@ -40,7 +40,9 @@ export const Mid = () => {
 
 export const Right = () => {
     const { activeSplit, activeTournament, activeId } = useLayout()
-    const isFinalPhase = ['Finals', 'Playoff', 'FinalMatch'].includes(activeTournament)
+    const isFinalPhase = ['Finals', 'Playoff', 'FinalMatch'].includes(
+        activeTournament
+    )
 
     return (
         <div className="bg-white-04 w-full h-full p-2 text-sm text-white">
