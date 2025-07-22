@@ -9,12 +9,14 @@ import {
 	useRef,
 	useEffect,
 } from "react";
+import Image from "next/image";
 
 interface LocaleSwitcherSelectProps {
-    children: ReactNode
-    defaultValue: string
-    label: string
-    showOnMobile?: boolean
+	children: ReactNode;
+	defaultValue: string;
+	label: string;
+	showOnMobile?: boolean;
+	className?: string;
 }
 
 /**
@@ -43,10 +45,10 @@ interface LocaleSwitcherSelectProps {
  * Displays SVG flags from public/flags/svg/ directory.
  */
 export default function LocaleSwitcherSelect({
-    children,
-    defaultValue,
-    label,
-    showOnMobile = false,
+	children,
+	defaultValue,
+	label,
+	className,
 }: LocaleSwitcherSelectProps) {
     const router = useRouter()
     const pathname = usePathname()
@@ -71,17 +73,16 @@ export default function LocaleSwitcherSelect({
             document.removeEventListener('mousedown', handleClickOutside)
     }, [])
 
-    function onSelectChange(value: string) {
-        setSelectedValue(value)
-        setIsOpen(false)
-        startTransition(() => {
-            router.replace(
-                // @ts-ignore
-                { pathname },
-                { locale: value }
-            )
-        })
-    }
+	function onSelectChange(value: string) {
+		setSelectedValue(value);
+		setIsOpen(false);
+		startTransition(() => {
+			router.replace(
+				{ pathname },
+				{ locale: value }
+			);
+		});
+	}
 
     // Get flag path for locale
     const getFlagPath = (locale: string) => {
@@ -97,12 +98,12 @@ export default function LocaleSwitcherSelect({
         return locale
     }
 
-    return (
-        <div
-            className={`relative ${showOnMobile ? 'hidden' : 'block'} md:block`}
-            ref={dropdownRef}
-        >
-            <p className="sr-only">{label}</p>
+	return (
+		<div
+			className={`relative md:block ${className}`}
+			ref={dropdownRef}
+		>
+			<p className="sr-only">{label}</p>
 
             {/* Custom select button */}
             <button
@@ -133,17 +134,19 @@ export default function LocaleSwitcherSelect({
 					items-center
 					justify-between
 				"
-                disabled={isPending}
-                onClick={() => setIsOpen(!isOpen)}
-            >
-                <span className="flex items-center gap-2">
-                    {getDisplayText(selectedValue)}
-                    <img
-                        src={getFlagPath(selectedValue)}
-                        alt={`${selectedValue} flag`}
-                        className="w-4 h-4"
-                    />
-                </span>
+				disabled={isPending}
+				onClick={() => setIsOpen(!isOpen)}
+			>
+				<span className="flex items-center gap-2">
+					{getDisplayText(selectedValue)}
+					<Image
+						src={getFlagPath(selectedValue)}
+						alt={`${selectedValue} flag`}
+						className="w-4 h-4 object-contain"
+						width={16}
+						height={16}
+					/>
+				</span>
 
                 {/* Custom dropdown arrow */}
                 <svg
@@ -207,23 +210,25 @@ export default function LocaleSwitcherSelect({
 										items-center 
 										justify-between
 									"
-                                    onClick={() => onSelectChange(value)}
-                                >
-                                    <span className="flex items-center gap-2">
-                                        {getDisplayText(value)}
-                                        <img
-                                            src={getFlagPath(value)}
-                                            alt={`${value} flag`}
-                                            className="w-4 h-4"
-                                        />
-                                    </span>
-                                </button>
-                            )
-                        }
-                        return null
-                    })}
-                </div>
-            )}
-        </div>
-    )
+									onClick={() => onSelectChange(value)}
+								>
+									<span className="flex items-center gap-2">
+										{getDisplayText(value)}
+										<Image
+											src={getFlagPath(value)}
+											alt={`${value} flag`}
+											className="w-4 h-4 object-contain"
+											width={16}
+											height={16}
+										/>
+									</span>
+								</button>
+							);
+						}
+						return null;
+					})}
+				</div>
+			)}
+		</div>
+	);
 }

@@ -1,9 +1,9 @@
 import React from 'react'
-import { League as LeagueType } from '../../../backend/src/generated/prisma'
-import { LeagueCard } from './LeagueCard'
+import { League } from '@/generated/prisma'
+import { LeagueCardServer } from './LeagueCardServer'
 
 interface LeagueGridProps {
-    leagues: LeagueType[]
+    leagues: League[]
     images?: (string | undefined)[]
     square?: boolean
     className?: string
@@ -37,7 +37,7 @@ export const LeagueGrid: React.FC<LeagueGridProps> = ({
     return (
         <div className={`grid ${gridCols} ${gap} ${className} `}>
             {leagues.map((league, index) => (
-                <LeagueCard
+                <LeagueCardServer
                     key={league.id}
                     league={league}
                     imageUrl={images[index]}

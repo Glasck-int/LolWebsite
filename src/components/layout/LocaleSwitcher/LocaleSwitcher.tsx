@@ -1,9 +1,9 @@
-"use client";
+'use client'
 
-import { useLocale } from "next-intl";
-import LocaleSwitcherSelect from "./LocaleSwitcherSelect";
-import { locales } from "@/i18n/routing";
-import { useTranslate } from "@/lib/hooks/useTranslate";
+import { useLocale } from 'next-intl'
+import LocaleSwitcherSelect from './LocaleSwitcherSelect'
+import { locales } from '@/i18n/routing'
+import { useTranslate } from '@/lib/hooks/useTranslate'
 
 /**
  * Locale switcher component
@@ -22,21 +22,22 @@ import { useTranslate } from "@/lib/hooks/useTranslate";
  * Automatically detects the current locale and provides options for
  * English and French. Uses the glass-morphism design pattern.
  */
-export default function LocaleSwitcher() {
-	const t = useTranslate("LocaleSwitcher");
-	const locale = useLocale();
+export default function LocaleSwitcher({ className }: { className?: string }) {
+    const t = useTranslate('LocaleSwitcher')
+    const locale = useLocale()
 
-	return (
-		<LocaleSwitcherSelect
-			defaultValue={locale}
-			label={t("label")}
-			showOnMobile
-		>
-			{locales.map((currentLocale) => (
-				<option key={currentLocale} value={currentLocale}>
-					{t("locale", { params: { locale: currentLocale } })}
-				</option>
-			))}
-		</LocaleSwitcherSelect>
-	);
+    return (
+        <LocaleSwitcherSelect
+            defaultValue={locale}
+            label={t('label')}
+            showOnMobile={true}
+            className={className}
+        >
+            {locales.map((currentLocale) => (
+                <option key={currentLocale} value={currentLocale}>
+                    {t('locale', { params: { locale: currentLocale } })}
+                </option>
+            ))}
+        </LocaleSwitcherSelect>
+    )
 }

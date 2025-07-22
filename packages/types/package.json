@@ -1,0 +1,30 @@
+{
+    "name": "@Glasck-int/glasck-types",
+    "version": "1.12.0",
+    "description": "Types partagés pour Glasck",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist/**/*"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "publish:win": "for /f \"tokens=*\" %i in (.env) do set %i && npm publish",
+        "publish:unix": "export $(cat .env | xargs) && npm publish",
+        "prepublishOnly": "npm run build",
+        "release:patch": "npm version patch && npm publish",
+        "release:minor": "npm version minor && npm publish",
+        "release:major": "npm version major && npm publish"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Glasck-int/LolWebsite.git",
+        "directory": "packages/types"
+    },
+    "publishConfig": {
+        "registry": "https://npm.pkg.github.com"
+    },
+    "devDependencies": {
+        "typescript": "^5.8.3"
+    }
+}

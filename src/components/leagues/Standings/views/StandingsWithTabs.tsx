@@ -1,14 +1,14 @@
 import React from 'react'
-import { Standings as StandingsType } from '../../../../../backend/src/generated/prisma'
+import { Standings as StandingsType } from '@/generated/prisma'
 import {
     getTeamsByNames,
     getTeamsRecentGames,
     getTeamsRecentMatches,
 } from '@/lib/api/teams'
-import { getTeamImage } from '@/lib/api/image'
+import { getTeamImage, getTeamImageByName } from '@/lib/api/image'
 import { getTournamentsGamesByTournamentOverviewPage } from '@/lib/api/tournaments'
 import { processStandingsData } from '../utils/StandingsDataProcessor'
-import { Team } from '../../../../../backend/src/generated/prisma'
+import { Team } from '@/generated/prisma'
 import { StandingsWithTabsClient } from '../clients/StandingsWithTabsClient'
 
 /**
@@ -78,9 +78,16 @@ export const StandingsWithTabs = async ({
     const games = gamesResponse.data || []
 
     const teamImagePromises = teamsData.map(async (team: Team) => {
-        const teamImageResponse = await getTeamImage(
-            team.image?.replace('.png', '') || ''
+        // Essayer d'abord avec l'image de l'équipe si elle existe
+        let teamImageResponse = await getTeamImage(
+            team.image?.replace('.png', '.webp') || ''
         )
+
+        // Si ça ne marche pas, essayer avec le nom de l'équipe
+        if (!teamImageResponse.data && team.overviewPage) {
+            teamImageResponse = await getTeamImageByName(team.overviewPage)
+        }
+
         return {
             teamName: team.overviewPage,
             imageUrl: teamImageResponse.data || '',

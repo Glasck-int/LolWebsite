@@ -6,6 +6,44 @@ export interface ApiResponse<T> {
     error?: string
 }
 
+interface CacheStrategy {
+    type: 'static' | 'dynamic' | 'live'
+    revalidate?: number
+}
+
+const CACHE_STRATEGIES: Record<string, CacheStrategy> = {
+    // Données statiques (cache long)
+    '/api/leagues': { type: 'static', revalidate: 24 * 60 * 60 },
+    '/api/leagues/major': { type: 'static', revalidate: 24 * 60 * 60 },
+    '/api/teams': { type: 'static', revalidate: 12 * 60 * 60 },
+
+    // Données dynamiques (cache court)
+    '/api/standings': { type: 'dynamic', revalidate: 5 * 60 },
+    '/api/player-stats': { type: 'dynamic', revalidate: 10 * 60 },
+
+    // Données temps réel (pas de cache)
+    '/api/live-matches': { type: 'live' },
+    '/api/current-scores': { type: 'live' },
+}
+
+function getCacheConfig(endpoint: string): RequestInit {
+    const strategy = CACHE_STRATEGIES[endpoint] || {
+        type: 'dynamic',
+        revalidate: 60 * 60,
+    }
+    // console.log('🔄 [CACHE] Strategy:', strategy)
+    switch (strategy.type) {
+        case 'static':
+            return { next: { revalidate: strategy.revalidate } }
+        case 'dynamic':
+            return { next: { revalidate: strategy.revalidate } }
+        case 'live':
+            return { cache: 'no-store' }
+        default:
+            return { next: { revalidate: 60 * 60 } }
+    }
+}
+
 /**
  * Make HTTP request with proper error handling
  *
@@ -20,19 +58,21 @@ async function apiRequest<T>(
     try {
         const API_BASE_URL = getApiBaseUrl()
 
-        console.log(`Making request to: ${API_BASE_URL}${endpoint}`)
+        const cacheConfig = getCacheConfig(endpoint)
 
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             headers: {
                 'Content-Type': 'application/json',
                 ...options.headers,
             },
-            // Important: disable cache for server-side requests
-            cache: 'no-store',
+            ...cacheConfig,
             ...options,
         })
 
         if (!response.ok) {
+            if (response.status === 404) {
+                return { data: undefined, error: `Not found: ${endpoint}` }
+            }
             throw new Error(`HTTP error! status: ${response.status}`)
         }
 
@@ -45,8 +85,6 @@ async function apiRequest<T>(
         }
     }
 }
-
-
 
 /**
  * API client configuration and utilities

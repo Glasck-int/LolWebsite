@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useCallback } from 'react'
-import { League as LeagueType } from '../../../backend/src/generated/prisma'
+import { League as LeagueType } from '@/generated/prisma'
 
 interface UseLeagueSearchProps {
     leagues: LeagueType[]

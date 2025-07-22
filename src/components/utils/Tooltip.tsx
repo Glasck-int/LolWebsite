@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { Info } from 'lucide-react'
+import { InfoIcon } from 'lucide-react'
 
 interface TooltipProps {
     content: React.ReactNode
@@ -102,7 +102,7 @@ export const Tooltip = ({
         visible && content ? (
             <div
                 ref={tooltipRef}
-                className={`fixed bg-dark-grey border border-clear-grey text-white text-xs px-2 py-1 z-[9999] shadow-lg pointer-events-none default-border-radius transition-all duration-100 ease-out ${
+                className={`fixed bg-white/10 backdrop-blur-md rounded-md border border-white/20 text-white text-sm px-2 py-1 z-[9999] shadow-lg pointer-events-none transition-all duration-100 ease-out ${
                     showTooltip ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
                 }`}
                 style={{
@@ -125,7 +125,7 @@ export const Tooltip = ({
             onMouseLeave={handleMouseLeave}
             onMouseMove={handleMouseMove}
         >
-            {children ? children : <Info color='#bab9b9'/>}
+            {children ? children : <InfoIcon className="w-5 h-5 text-clear-grey" />}
             {mounted &&
                 tooltipElement &&
                 createPortal(tooltipElement, document.body)}

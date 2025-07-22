@@ -90,7 +90,7 @@ export const SortedMixedRows = ({
     className?: string
 }) => {
     const { activeSort } = useSort()
-    const { containerRef, isAnimating } = useFlipAnimation([activeSort, processedData])
+    const { containerRef } = useFlipAnimation(activeSort, processedData)
     
     /**
      * Memoized sorted data based on active sort state.
@@ -98,6 +98,11 @@ export const SortedMixedRows = ({
      * Supports multiple data types and statistics for comprehensive sorting options.
      */
     const sortedData = React.useMemo(() => {
+        // Early return with empty array if processedData is null/undefined
+        if (!processedData || !Array.isArray(processedData)) {
+            return []
+        }
+
         /**
          * Default sorting: When no sort is active, sort by original place/position.
          * This maintains the tournament's official standings order.

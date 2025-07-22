@@ -1,25 +1,26 @@
 import React from 'react'
-import { getLeagueBySlug } from '@/lib/api/league'
+import { getLeagueByName } from '@/lib/api/league'
 import {
     getTournamentsByLeagueName,
     getTournamentsStandingsByTournamentOverviewPage,
+    getTournamentPlayersStatsByTournamentId,
 } from '@/lib/api/tournaments'
+import { fetchEnrichedStandingsData } from '@/lib/api/standings'
+import { getPlayerImage } from '@/lib/api/player'
 import { LeagueDescription } from '@/components/leagues/components/LeagueDescription'
-import {
-    Card,
-    CardBody,
-    CardBodyMultiple,
-    CardBodyMultipleContent,
-    CardHeader,
-    CardHeaderBase,
-    CardHeaderColumn,
-    CardHeaderTab,
-    CardHeaderContent,
-} from '@/components/ui/card/index'
 import { NextMatches } from '@/components/leagues/Matches/NextMatches'
-import { StandingsOverview } from '@/components/leagues/Standings/views/StandingsOverview'
-import { SubTitle } from '@/components/ui/text/SubTitle'
-import { StandingsWithTabs } from '@/components/leagues/Standings/views/StandingsWithTabs'
+import { StandingsOverviewClient } from '@/components/leagues/Standings/views/StandingsOverviewClient'
+import { StandingsWithTabsClient } from '@/components/leagues/Standings/views/StandingsWithTabsClient'
+import PlayersKda from '@/components/leagues/Stats/views/playersKda'
+
+import { TournamentProvider } from '@/contexts/TournamentContext'
+import { getTeamImage, getLeagueImage } from '@/lib/api/image'
+import { getTeamsByNames } from '@/lib/api/teams'
+import { LeagueTableEntityClient } from '@/components/leagues/components/LeagueTableEntityClient'
+import {
+    getLastThreeMatchesForTournament,
+    getNextThreeMatchesForTournament,
+} from '@/lib/api/tournaments'
 
 interface LeaguePageProps {
     params: Promise<{ leagueName: string }>
@@ -29,7 +30,7 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
     const { leagueName } = await params
 
     try {
-        const league = await getLeagueBySlug(leagueName)
+        const league = await getLeagueByName(leagueName)
 
         if (league.error) {
             console.error('League error:', league.error)
@@ -45,11 +46,18 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
             return <div>Error loading tournaments: {tournaments.error}</div>
         }
 
-        // Use specifically the Spring Split tournament
         const tournamentName = 'LEC/2025 Season/Spring Season'
+        const tournamentId = '5165'
 
+        const playerStats =
+            await getTournamentPlayersStatsByTournamentId(
+                tournamentId
+            )
 
-        console.log('Selected tournament for standings:', tournamentName)
+        if (playerStats.error) {
+            console.error('Player stats error:', playerStats.error)
+            return <div>Error loading player stats: {playerStats.error}</div>
+        }
 
         const standings = await getTournamentsStandingsByTournamentOverviewPage(
             tournamentName
@@ -60,73 +68,131 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
             return <div>Error loading standings: {standings.error}</div>
         }
 
-        console.log('Ligue cliquée:', league.data?.name)
-        console.log('Tournament used for standings:', tournamentName)
-        console.log('Standings data:', standings.data?.length || 0, 'teams')
+        // Fetch enriched standings data server-side
+        const enrichedStandingsData = await fetchEnrichedStandingsData(
+            standings.data || [],
+            tournamentName
+        )
+
+        // Fetch player images server-side
+        const playerImagesArray = await Promise.all(
+            playerStats.data?.players.map(async (player) => {
+                const playerImage = await getPlayerImage(
+                    player.link,
+                    tournamentName
+                )
+                const teams = await getTeamsByNames([player.team])
+                const teamImage = await getTeamImage(
+                    teams.data?.[0]?.image?.replace('.png', '.webp') || ''
+                )
+                return {
+                    link: player.link,
+                    playerImage: playerImage.data || '',
+                    teamImage: teamImage.data || '',
+                }
+            }) || []
+        )
+
+        // Convert to object with player link as key
+        const playerImages = playerImagesArray.reduce(
+            (acc, { link, playerImage, teamImage }) => {
+                acc[link] = {
+                    playerImage: playerImage,
+                    teamImage: teamImage,
+                }
+                return acc
+            },
+            {} as Record<string, { playerImage: string; teamImage: string }>
+        )
+
+        // Fetch matches data for NextMatches component
+        const nextMatches = await getNextThreeMatchesForTournament(tournamentId)
+        const matches = nextMatches.data || []
+        
+        // Fetch teams data for matches
+        const teamNames = [...new Set(matches.flatMap(match => [match.team1, match.team2]))]
+        const teamsForMatches = await getTeamsByNames(teamNames as string[])
+        const teamsData = teamsForMatches.data || []
+        
+        // Fetch team images for matches
+        const teamImagesArray = await Promise.all(
+            matches.map(async (match) => {
+                const team1Data = teamsData.find(team => team.overviewPage === match.team1)
+                const team2Data = teamsData.find(team => team.overviewPage === match.team2)
+                
+                const [team1Image, team2Image] = await Promise.all([
+                    team1Data?.image ? getTeamImage(team1Data.image.replace('.png', '.webp')) : null,
+                    team2Data?.image ? getTeamImage(team2Data.image.replace('.png', '.webp')) : null,
+                ])
+                
+                return {
+                    team1Image: team1Image?.data || null,
+                    team2Image: team2Image?.data || null,
+                }
+            })
+        )
+        
+        // Fetch league image
+        const leagueImage = await getLeagueImage(league.data?.name || '')
+
 
         return (
             <div className="pt-24 body-container">
-                {league.data && <LeagueDescription league={league.data} />}
-                {league.data && <NextMatches league={league.data} />}
+                <div className="block md:hidden">
+                    {league.data && <LeagueDescription league={league.data} imageData={leagueImage.data || ''} />}
+                </div>
 
-                {standings.data && standings.data.length > 0 && (
-                    <StandingsOverview
+                {/* Nouveau composant TableEntityLayout */}
+                {league.data && (
+                    <LeagueTableEntityClient 
+                        leagueId={league.data.id}
+                        league={league.data}
                         standings={standings.data}
+                        playerStats={playerStats.data}
                         tournamentName={tournamentName}
-                        maxRows={3}
+                        enrichedStandingsData={enrichedStandingsData.processedData}
+                        enrichedGamesData={enrichedStandingsData.gamesData}
+                        playerImages={playerImages}
+                        matches={matches}
+                        teamsData={teamsData}
+                        teamImages={teamImagesArray}
+                        imageData={leagueImage.data || ''}
                     />
                 )}
-
-                {standings.data && standings.data.length > 0 && (
-                    <StandingsWithTabs
-                        standings={standings.data}
-                        tournamentName={tournamentName}
-                        maxRows={null}
-                    />
-                )}
-
-                <Card>
-                    <CardHeader>
-                        <CardHeaderColumn>
-                            <CardHeaderTab>
-                                <CardHeaderContent>
-                                    <p className="text-inherit text-semibold">
-                                        BO/SERIE
-                                    </p>
-                                </CardHeaderContent>
-                                <CardHeaderContent>
-                                    <p className="text-inherit text-semibold">
-                                        GAMES
-                                    </p>
-                                </CardHeaderContent>
-                            </CardHeaderTab>
-                            <CardHeaderBase>
-                                <SubTitle>header</SubTitle>
-                            </CardHeaderBase>
-                        </CardHeaderColumn>
-                    </CardHeader>
-                    <CardBody>
-                        <CardBodyMultiple>
-                            <CardBodyMultipleContent>
-                                
-                            <div className="flex justify-center items-center h-full">
-                                <p>body 1</p>
+{/* 
+                {league.data && (
+                    <>
+                        <NextMatches
+                            lastMatches={false}
+                            tournamentId={tournamentId}
+                        />
+                    </>
+                )} */}
+                {/* {standings.data &&
+                    standings.data.length > 0 &&
+                    playerStats.data?.players && (
+                        <TournamentProvider
+                            standings={standings.data}
+                            playerStats={playerStats.data.players}
+                            tournamentName={tournamentName}
+                            enrichedStandingsData={
+                                enrichedStandingsData.processedData
+                            }
+                            enrichedGamesData={enrichedStandingsData.gamesData}
+                            Images={playerImages}
+                        >
+                            {playerStats.data.players.length > 0 && (
+                                <PlayersKda />
+                            )}
+                            <div className="flex flex-row gap-4">
+                                <StandingsOverviewClient maxRows={3} />
                             </div>
-                            </CardBodyMultipleContent>
-                            <CardBodyMultipleContent>
-                                <p>body 2</p>
-                            </CardBodyMultipleContent>
-                            <CardBodyMultipleContent>
-                                <p>body 3</p>
-                            </CardBodyMultipleContent>
-                            <CardBodyMultipleContent>
-                                <p>test</p>
-                            </CardBodyMultipleContent>
-                        </CardBodyMultiple>
-                    </CardBody>
-                </Card>
 
-                <h1>Page de la ligue: {league.data?.name}</h1>
+                            <StandingsWithTabsClient maxRows={null} />
+                        </TournamentProvider>
+                    )} */}
+
+                {/* <h1>Page de la ligue: {league.data?.name}</h1>
                 <p>Slug: {league.data?.slug}</p>
                 <p>ID: {league.data?.id}</p>
                 <p>Short: {league.data?.short}</p>
@@ -144,7 +210,7 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
                             {tournament.dateStartFuzzy?.toString() || 'N/A'}
                         </li>
                     ))}
-                </ul>
+                </ul> */}
             </div>
         )
     } catch (error) {
@@ -154,7 +220,8 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
                 <div className="text-red-500">
                     <h1>Erreur inattendue</h1>
                     <p>
-                        Une erreur s'est produite lors du chargement de la page.
+                        Une erreur s&apos;est produite lors du chargement de la
+                        page.
                     </p>
                     <p>
                         Détails:{' '}

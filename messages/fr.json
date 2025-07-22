@@ -31,6 +31,15 @@
 		"WinsTooltip": "Matchs gagnés",
 		"LossesTooltip": "Matchs perdus",
 		"WRTooltip": "Ratio victoires/matchs",
-		"FormTooltip": "Forme de L'équipe sur les 5 derniers matchs"
+		"FormTooltip": "Forme de L'équipe sur les 5 derniers matchs",
+		"GamesPlayedTooltip": "Nombre de Games joués"
+	},
+	"playersKda": {
+		"title": "Meilleurs KDA",
+		"tooltip": "Les joueurs avec le meilleur KDA sur le tournoi"
+	},
+	"Tournaments": {
+		"lastMatch": "Derniers Match",
+		"nextMatch": "Prochains Match"
 	}
 }

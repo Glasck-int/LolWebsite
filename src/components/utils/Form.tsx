@@ -3,7 +3,7 @@ import { TeamRecentMatchesResponse } from '@/lib/api/teams'
 import {
     MatchScheduleGame as MatchScheduleGameType,
     Standings as StandingsType,
-} from '../../../backend/src/generated/prisma'
+} from '@/generated/prisma'
 import { Tooltip } from './Tooltip'
 
 export const Form = ({

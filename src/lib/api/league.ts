@@ -1,5 +1,5 @@
-import { League as LeagueType } from '../../../backend/src/generated/prisma'
-import { MatchSchedule as MatchScheduleType } from '../../../backend/src/generated/prisma'
+import { League as LeagueType } from '@/generated/prisma'
+import { MatchSchedule as MatchScheduleType } from '@/generated/prisma'
 import { apiRequest, ApiResponse } from './utils'
 
 /**
@@ -20,6 +20,10 @@ async function getLeagueById(id: number): Promise<ApiResponse<LeagueType>> {
  */
 async function getLeagueBySlug(slug: string): Promise<ApiResponse<LeagueType>> {
     return apiRequest<LeagueType>(`/api/leagues/slug/${slug}`)
+}
+
+async function getLeagueByName(name: string): Promise<ApiResponse<LeagueType>> {
+    return apiRequest<LeagueType>(`/api/leagues/name/${name}`)
 }
 
 /**
@@ -54,10 +58,13 @@ async function getNextThreeMatchesForLeague(
     )
 }
 
+
+
 export {
     getAllLeagues,
     getMajorLeagues,
     getLeagueById,
     getLeagueBySlug,
     getNextThreeMatchesForLeague,
+    getLeagueByName,
 }

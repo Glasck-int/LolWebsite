@@ -1,53 +1,39 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Card } from '@/components/ui/card/Card'
-import { League as LeagueType } from '../../../backend/src/generated/prisma'
-import { createLeagueSlug } from '@/lib/utils'
-import { getLeagueImage } from '@/lib/api/image'
+import { League as LeagueType } from '@/generated/prisma'
 
-interface LeagueCardProps {
+interface LeagueCardClientProps {
     league: LeagueType
     imageUrl?: string
+    preloadedImageUrl?: string
     square?: boolean
     className?: string
 }
 
 /**
- * League card component
- *
- * Displays a single league with optional image in a card format
- *
- * @param league - The league data to display
- * @param imageUrl - Optional image URL for the league
- * @param square - Whether to display the image in a square format
- * @param className - Additional CSS classes
- * @returns A card component displaying league information
+ * Client component for LeagueCard - handles only client-side interactions
  */
-export const LeagueCard: React.FC<LeagueCardProps> = ({
+export const LeagueCardClient: React.FC<LeagueCardClientProps> = ({
     league,
     imageUrl,
+    preloadedImageUrl,
     square = false,
     className = '',
 }) => {
     const [imageError, setImageError] = useState(false)
-    const [leagueImageUrl, setLeagueImageUrl] = useState<string | null>(null)
 
-    useEffect(() => {
-        getLeagueImage(league.name).then((response) => {
-            setLeagueImageUrl(response.data || null)
-        })
-    }, [league.name])
-
-    // Check if image URL is valid
-    const isValidImageUrl = imageUrl && imageUrl.trim() !== ''
+    // Use provided imageUrl first, then preloaded, then fallback
+    const finalImageUrl = imageUrl || preloadedImageUrl
+    const isValidImageUrl = finalImageUrl && finalImageUrl.trim() !== ''
 
     const renderImageOrFallback = () => {
         if (isValidImageUrl && !imageError) {
             return (
                 <Image
-                    src={imageUrl}
+                    src={finalImageUrl}
                     alt={league.name}
                     width={120}
                     height={120}
@@ -56,7 +42,7 @@ export const LeagueCard: React.FC<LeagueCardProps> = ({
                     onError={() => {
                         console.error(
                             `Image failed to load for ${league.name}:`,
-                            imageUrl
+                            finalImageUrl
                         )
                         setImageError(true)
                     }}
@@ -79,11 +65,9 @@ export const LeagueCard: React.FC<LeagueCardProps> = ({
         )
     }
 
-    const slug = createLeagueSlug(league.name)
-
     if (square) {
         return (
-            <Link href={`/leagues/${slug}`}>
+            <Link href={`/leagues/${league.name}`}>
                 <div
                     className={`w-full aspect-square cursor-pointer ${className}`}
                 >
@@ -100,13 +84,15 @@ export const LeagueCard: React.FC<LeagueCardProps> = ({
         )
     }
 
+    const encodedName = encodeURIComponent(league.name)
+
     return (
-        <Link href={`/leagues/${slug}`}>
+        <Link href={`/leagues/${encodedName}`}>
             <div className={`w-full h-10 cursor-pointer ${className}`}>
                 <Card className=" backdrop-blur p-5 shadow-md h-full flex flex-row items-center justify-start cursor-pointer hover:bg-white/10 active:bg-white/5 transition-all duration-200">
-                    {leagueImageUrl && (
+                    {preloadedImageUrl && (
                         <Image
-                            src={leagueImageUrl}
+                            src={preloadedImageUrl}
                             alt={league.name}
                             width={20}
                             height={20}

@@ -1,7 +1,7 @@
-import { Team as TeamType } from '../../../backend/src/generated/prisma'
+import { Team as TeamType } from '@/generated/prisma'
 import { apiRequest, ApiResponse } from './utils'
-import { MatchSchedule as MatchScheduleType } from '../../../backend/src/generated/prisma'
-import { MatchScheduleGame as MatchScheduleGameType } from '../../../backend/src/generated/prisma'
+import { MatchSchedule as MatchScheduleType } from '@/generated/prisma'
+import { MatchScheduleGame as MatchScheduleGameType } from '@/generated/prisma'
 
 /**
  * Team recent matches response structure

@@ -1,9 +1,26 @@
+import { Standings, Tournament, MatchSchedule } from '@/generated/prisma'
 import {
-    Standings as StandingsType,
-    Tournament as TournamentType,
-} from '../../../backend/src/generated/prisma'
-import { MatchScheduleGameType } from '../../../backend/src/schemas/matchScheduleGame'
+    MatchScheduleGame,
+    ScoreboardPlayers,
+} from '@/generated/prisma'
 import { apiRequest, ApiResponse } from './utils'
+import { PlayerStatsType } from '@Glasck-int/glasck-types'
+
+async function getLastThreeMatchesForTournament(
+    tournamentId: string
+): Promise<ApiResponse<MatchSchedule[]>> {
+    return apiRequest<MatchSchedule[]>(
+        `/api/tournaments/${tournamentId}/last-matches`
+    )
+}
+
+async function getNextThreeMatchesForTournament(
+    tournamentId: string
+): Promise<ApiResponse<MatchSchedule[]>> {
+    return apiRequest<MatchSchedule[]>(
+        `/api/tournaments/${tournamentId}/next-matches`
+    )
+}
 
 /**
  * Get tournaments by league ID
@@ -13,8 +30,11 @@ import { apiRequest, ApiResponse } from './utils'
  */
 async function getTournamentsByLeagueName(
     leagueName: string
-): Promise<ApiResponse<TournamentType[]>> {
-    return apiRequest<TournamentType[]>(`/api/tournaments/league/${leagueName}`)
+): Promise<ApiResponse<Tournament[]>> {
+    const encodedLeagueName = encodeURIComponent(leagueName)
+    return apiRequest<Tournament[]>(
+        `/api/tournaments/league/${encodedLeagueName}`
+    )
 }
 
 /**
@@ -25,10 +45,10 @@ async function getTournamentsByLeagueName(
  */
 async function getTournamentsStandingsByTournamentOverviewPage(
     tournamentOverviewPage: string
-): Promise<ApiResponse<StandingsType[]>> {
+): Promise<ApiResponse<Standings[]>> {
     // Encode the overviewPage to handle special characters in URLs
     const encodedOverviewPage = encodeURIComponent(tournamentOverviewPage)
-    return apiRequest<StandingsType[]>(
+    return apiRequest<Standings[]>(
         `/api/tournaments/${encodedOverviewPage}/standings`
     )
 }
@@ -41,12 +61,34 @@ async function getTournamentsStandingsByTournamentOverviewPage(
  */
 async function getTournamentsGamesByTournamentOverviewPage(
     tournamentOverviewPage: string
-): Promise<ApiResponse<MatchScheduleGameType[]>> {
+): Promise<ApiResponse<MatchScheduleGame[]>> {
     // Encode the overviewPage to handle special characters in URLs
     const encodedOverviewPage = encodeURIComponent(tournamentOverviewPage)
-    console.log('encodedOverviewPage', encodedOverviewPage)
-    return apiRequest<MatchScheduleGameType[]>(
+    return apiRequest<MatchScheduleGame[]>(
         `/api/tournaments/${encodedOverviewPage}/games`
+    )
+}
+
+/**
+ * Get scoreboard players by tournament overview page
+ *
+ * @param tournamentOverviewPage - The overview page of the tournament to fetch scoreboard players for
+ * @returns Promise with array of scoreboard players or error
+ */
+async function getTournamentsScoreboardPlayersByTournamentOverviewPage(
+    tournamentOverviewPage: string
+): Promise<ApiResponse<ScoreboardPlayers[]>> {
+    const encodedOverviewPage = encodeURIComponent(tournamentOverviewPage)
+    return apiRequest<ScoreboardPlayers[]>(
+        `/api/tournaments/${encodedOverviewPage}/scoreboardplayers`
+    )
+}
+
+async function getTournamentPlayersStatsByTournamentId(
+    tournamentId: string
+): Promise<ApiResponse<{ players: PlayerStatsType[] }>> {
+    return apiRequest<{ players: PlayerStatsType[] }>(
+        `/api/tournaments/id/${tournamentId}/player-stats`
     )
 }
 
@@ -54,4 +96,8 @@ export {
     getTournamentsByLeagueName,
     getTournamentsStandingsByTournamentOverviewPage,
     getTournamentsGamesByTournamentOverviewPage,
+    getTournamentsScoreboardPlayersByTournamentOverviewPage,
+    getTournamentPlayersStatsByTournamentId,
+    getLastThreeMatchesForTournament,
+    getNextThreeMatchesForTournament,
 }

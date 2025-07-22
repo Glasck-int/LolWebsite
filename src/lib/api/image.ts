@@ -35,7 +35,17 @@ async function getLeagueImage(
     if (AVAILABLE_LEAGUE_IMAGES.has(leagueName)) {
         const API_BASE_URL = getApiBaseUrl()
         const imageUrl = `${API_BASE_URL}/static/leagues/${leagueName}.webp`
-        return { data: imageUrl }
+
+        try {
+            const response = await fetch(imageUrl, { method: 'HEAD' })
+            if (response.ok) {
+
+                return { data: response.url }
+            }
+        } catch (error) {
+            return { data: null }
+        }
+        return { data: null }
     }
 
     return { data: null }
@@ -44,9 +54,74 @@ async function getLeagueImage(
 async function getTeamImage(
     image: string
 ): Promise<ApiResponse<string | null>> {
+    if (!image || image.trim() === '') {
+        return { data: null }
+    }
+    // console.log('image', image)
+    
     const API_BASE_URL = getApiBaseUrl()
-    const imageUrl = `${API_BASE_URL}/static/teamPng/${image}.webp`
-    return { data: imageUrl }
+    const imageUrl = `${API_BASE_URL}/static/teamPng/${image}`
+    
+    try {
+        const response = await fetch(imageUrl, { method: 'HEAD' })
+        if (response.ok) {
+            return { data: imageUrl }
+        }
+    } catch (error) {
+        return { data: null }
+    }
+    return { data: null }
 }
 
-export { getLeagueImage, getTeamImage }
+async function getPublicPlayerImage(
+    image: string
+): Promise<ApiResponse<string | null>> {
+    const API_BASE_URL = getApiBaseUrl()
+    const imageUrl = `${API_BASE_URL}/static/playerWebp/${image}`
+    
+    try {
+        const response = await fetch(imageUrl, { method: 'HEAD' })
+        if (response.ok) {
+            return { data: response.url }
+        }
+        console.log('imageUrl', imageUrl, 'response', response)
+        return { data: null }
+    } catch (error) {
+        return { data: null }
+    }
+}
+
+async function getTeamImageByName(
+    teamName: string
+): Promise<ApiResponse<string | null>> {
+    if (!teamName || teamName.trim() === '') {
+        return { data: null }
+    }
+    // console.log('teamName', teamName)
+    const API_BASE_URL = getApiBaseUrl()
+    // Essayer différents formats de noms d'images
+    const possibleNames = [
+        `${teamName}.webp`,
+        `${teamName}.png`,
+        `${teamName.replace(/ /g, '_')}.webp`,
+        `${teamName.replace(/ /g, '_')}.png`,
+        `${teamName.replace(/[^a-zA-Z0-9]/g, '')}.webp`,
+        `${teamName.replace(/[^a-zA-Z0-9]/g, '')}.png`
+    ]
+    
+    for (const imageName of possibleNames) {
+        const imageUrl = `${API_BASE_URL}/static/teamPng/${imageName}`
+        try {
+            const response = await fetch(imageUrl, { method: 'HEAD' })
+            if (response.ok) {
+                return { data: imageUrl }
+            }
+        } catch (error) {
+            // Continue to next possibility
+        }
+    }
+    
+    return { data: null }
+}
+
+export { getLeagueImage, getTeamImage, getPublicPlayerImage, getTeamImageByName }

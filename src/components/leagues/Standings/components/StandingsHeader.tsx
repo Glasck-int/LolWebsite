@@ -109,7 +109,7 @@ export const StandingsHeader = <T,>({
     /**
      * Helper function to render individual header cells.
      * Chooses between sortable and non-sortable header components based on column configuration.
-     * 
+     *
      * @param col - Column configuration to render
      * @returns Appropriate header component (CardHeaderSortContent or SubTitle)
      */
@@ -130,10 +130,10 @@ export const StandingsHeader = <T,>({
                 <SubTitle
                     key={col.key}
                     className={col.headerClassName}
-                    children={col.header as string}
                     tooltip={col.tooltip}
-                />
-                
+                >
+                    {col.header as string}
+                </SubTitle>
             )
         }
     }

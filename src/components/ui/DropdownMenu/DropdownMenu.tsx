@@ -4,12 +4,6 @@ import { ChartNoAxesGantt, PiggyBank } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect } from 'react'
 import { useTranslate } from '@/lib/hooks/useTranslate'
-import {
-    DropdownMenuDesktop,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from './DropdownMenuDesktop'
 import LocaleSwitcher from '../../layout/LocaleSwitcher/LocaleSwitcher'
 
 interface DropdownMenuProps {
@@ -69,10 +63,10 @@ export const DropdownMenu = ({
             {/* Mobile menu - full width */}
             <div
                 onClick={() => setIsMenuOpen(false)}
-                className={`w-full border-t border-white/10 transition-all duration-100 ease-in relative overflow-hidden md:hidden ${
+                className={`w-full border-t border-white/10 transition-all duration-100 ease-in relative md:hidden ${
                     isMenuOpen
-                        ? 'max-h-[210px] opacity-100'
-                        : 'max-h-0 opacity-0'
+                        ? 'max-h-[300px] opacity-100 overflow-visible'
+                        : 'max-h-0 opacity-0 overflow-hidden'
                 }`}
                 style={{
                     background:
@@ -107,62 +101,14 @@ export const DropdownMenu = ({
                                 <PiggyBank className="w-4 h-4 ml-3 text-yellow" />
                             </div>
                         </Link>
+                        {/* Locale switcher for mobile */}
+                        <div className="mt-6 flex justify-end" onClick={(e) => e.stopPropagation()}>
+                            <LocaleSwitcher />
+                        </div>
                     </nav>
-                    {/* Locale switcher for mobile */}
-                    <div className="mt-6 flex justify-end">
-                        <LocaleSwitcher />
-                    </div>
                 </div>
             </div>
 
-            {/* Desktop/Tablet menu */}
-            <div className="hidden md:block">
-                <div className="relative body-container hidden">
-                    <div className="absolute right-24 hidden md:block">
-                        <DropdownMenuDesktop open={isMenuOpen} modal={false}>
-                            <DropdownMenuTrigger asChild>
-                                <div className="opacity-0 w-0 h-0" />
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                                className="border-white/10 bg-white/10 backdrop-blur-md focus:outline-none text-right hidden md:block min-w-fit"
-                                align="end"
-                                alignOffset={0}
-                                sideOffset={0}
-                                onClick={() => setIsMenuOpen(false)}
-                            >
-                                <DropdownMenuItem
-                                    asChild
-                                    className="text-right hover:bg-white/20"
-                                >
-                                    <Link
-                                        href="/en"
-                                        className="dropdown-menu-item"
-                                    >
-                                        <div className="flex items-center justify-end">
-                                            {translate('Roadmap')}
-                                            <ChartNoAxesGantt className="w-4 h-4 ml-3 text-clear-violet" />
-                                        </div>
-                                    </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    asChild
-                                    className="text-right hover:bg-white/20"
-                                >
-                                    <Link
-                                        href="/about"
-                                        className="dropdown-menu-item"
-                                    >
-                                        <div className="flex items-center justify-end">
-                                            {translate('Description')}
-                                            <PiggyBank className="w-4 h-4 ml-3 text-yellow" />
-                                        </div>
-                                    </Link>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenuDesktop>
-                    </div>
-                </div>
-            </div>
         </div>
     )
 }

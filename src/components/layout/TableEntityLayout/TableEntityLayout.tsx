@@ -613,7 +613,7 @@ const TableEntityRawSplit = ({
  * @function TableEntityRawTournament
  *
  * @param {Tournament[]} data - List of tournaments to display as options.
- * @param {string} [className=''] - Optional. Additional class names for styling.
+ * @param {string} [className = ''] - Optional. Additional class names for styling.
  *
  * @returns {JSX.Element} A horizontal list of clickable tournament tabs.
  *

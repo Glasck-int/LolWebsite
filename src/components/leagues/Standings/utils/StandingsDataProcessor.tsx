@@ -2,7 +2,7 @@ import {
     Standings as StandingsType,
     MatchScheduleGame as MatchScheduleGameType,
     Team,
-} from '../../../../../backend/src/generated/prisma'
+} from '@/generated/prisma'
 import {
     TeamRecentMatchesResponse,
     TeamRecentGamesResponse,
