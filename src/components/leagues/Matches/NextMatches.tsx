@@ -17,7 +17,7 @@ import {
 interface NextMatchesProps {
     showSingleMatchOnDesktop?: boolean
     lastMatches?: boolean
-    tournamentId?: string
+    tournamentId?: number
 }
 
 /**

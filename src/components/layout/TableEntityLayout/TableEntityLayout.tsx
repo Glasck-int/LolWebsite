@@ -368,7 +368,7 @@ export const TableEntityHeader = ({
         if (splitTab.length > 0) {
             setActiveSplit(splitTab[splitTab.length - 1])
         }
-    }, [active])
+    }, [active, seasons])
 
     useEffect(() => {
         const tournamentTab = getTournaments(
@@ -384,7 +384,7 @@ export const TableEntityHeader = ({
             )
             setActiveId([tournamentTab[tournamentTab.length - index].id])
         }
-    }, [activeSplit, active])
+    }, [activeSplit, active, seasons, isAllActive])
 
     return (
         <HeaderContext.Provider value={{ active, setActive }}>

@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/card'
 import {
     LeagueDescription,
+    NextMatches,
     NextMatchesClient,
     StandingsOverviewClient,
     StandingsWithTabsClient,
@@ -123,11 +124,9 @@ const LeagueTableEntityContent = ({
                 <TableEntityContent>
                     <div className="space-y-4">
                         {/* Next Matches */}
-                        {matches && teamsData && teamImages ? (
-                            <NextMatchesClient
-                                matches={matches}
-                                teamsData={teamsData}
-                                teamImages={teamImages}
+                        {matches ? (
+                            <NextMatches
+                                tournamentId={5165}
                                 showSingleMatchOnDesktop={true}
                                 lastMatches={false}
                             />
