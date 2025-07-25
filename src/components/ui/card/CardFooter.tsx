@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { CardProps } from './Card'
+import { ChildAndClassname } from './Card'
 import { motion } from 'framer-motion'
 import { useLayout } from '@/components/layout/TableEntityLayout/TableEntityLayout'
 
@@ -15,8 +15,8 @@ import { useLayout } from '@/components/layout/TableEntityLayout/TableEntityLayo
  * Uses ResizeObserver and window resize events to adapt to layout changes.
  *
  * @function CardFooter
- * 
- * @param {CardProps} props - React component props.
+ *
+ * @param {ChildAndClassname} props - React component props.
  * @param {ReactNode} props.children - Tab elements rendered as children.
  * @param {string} [props.className] - Optional class name for additional styling.
  *
@@ -28,7 +28,7 @@ import { useLayout } from '@/components/layout/TableEntityLayout/TableEntityLayo
  *   <div>Stats</div>
  * </CardFooter>
  */
-export const CardFooter = ({ children, className = '' }: CardProps) => {
+export const CardFooter = ({ children, className = '' }: ChildAndClassname) => {
     const { activeIndex, setActiveIndex } = useLayout()
     const containerRef = useRef<HTMLDivElement>(null)
     const [tabRects, setTabRects] = useState<{ width: number; left: number }[]>(
@@ -126,8 +126,8 @@ export const CardFooter = ({ children, className = '' }: CardProps) => {
  * It accepts an optional class name for additional customization.
  *
  * @function CardFooterContent
- * 
- * @param {CardProps} props - React component props.
+ *
+ * @param {ChildAndClassname} props - React component props.
  * @param {ReactNode} props.children - Content inside the footer.
  * @param {string} [props.className] - Optional class name for additional styling.
  *
@@ -136,6 +136,9 @@ export const CardFooter = ({ children, className = '' }: CardProps) => {
  * @example
  * <CardFooterContent className="p-4">Some extra info</CardFooterContent>
  */
-export const CardFooterContent = ({ children, className = '' }: CardProps) => {
+export const CardFooterContent = ({
+    children,
+    className = '',
+}: ChildAndClassname) => {
     return <div className={'w-full h-full' + ' ' + className}>{children}</div>
 }

@@ -1,14 +1,14 @@
 'use client'
 
 import React, { useContext, createContext, useState, ReactNode } from 'react'
-import { CardProps } from './Card'
+import { ChildAndClassname } from './Card'
 import { ArrowUp } from 'lucide-react'
 import { Tooltip } from '@/components/utils/Tooltip'
 
 interface CardSortProps {
     children: ReactNode
     className?: string
-    sortName:  string
+    sortName: string
     tooltip?: string
 }
 
@@ -52,13 +52,13 @@ export const useSort = () => {
  * @returns A context provider wrapping the children.
  *
  * @example
- * 
+ *
  * <CardSort>
  *   <CardHeaderSortContent sortName="alpha">Sort A-Z</CardHeaderSortContent>
  *   <CardBody>...</CardBody>
  * </CardSort>
  */
-export const CardSort = ({ children, className = '' }: CardProps) => {
+export const CardSort = ({ children, className = '' }: ChildAndClassname) => {
     const [activeSort, setSortState] = useState<SortState>({
         key: null,
         direction: null,
@@ -92,7 +92,7 @@ export const CardSort = ({ children, className = '' }: CardProps) => {
  * @returns A styled div with an interactive sort label and optional direction icon.
  *
  * @example
- * 
+ *
  * <CardHeaderSortContent sortName="numb">By Number</CardHeaderSortContent>
  */
 export const CardHeaderSortContent = ({
@@ -104,7 +104,7 @@ export const CardHeaderSortContent = ({
     const { activeSort, setActiveSort } = useSort()
 
     const isActive = activeSort.key === sortName
-    
+
     const content = (
         <div
             className={`relative cursor-pointer hover:text-white  ${
@@ -138,7 +138,9 @@ export const CardHeaderSortContent = ({
                 <Tooltip content={tooltip}>
                     <div
                         className={`relative cursor-pointer hover:text-white  text-center ${
-                            activeSort.key === sortName ? 'text-white' : 'text-clear-grey'
+                            activeSort.key === sortName
+                                ? 'text-white'
+                                : 'text-clear-grey'
                         }`}
                         onClick={() => setActiveSort(sortName)}
                     >
@@ -166,4 +168,3 @@ export const CardHeaderSortContent = ({
 
     return content
 }
-

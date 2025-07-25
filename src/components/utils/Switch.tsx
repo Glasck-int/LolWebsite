@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useContext } from 'react'
-import { CardProps, useCard } from '../ui/card/Card'
+import { ChildAndClassname, useCard } from '../ui/card/Card'
 import { createContext } from 'react'
 
 const SwitchContextP = createContext<{
@@ -14,9 +14,9 @@ interface SwitchProps {
     isRight: number
 }
 
-interface ChildrenProps{
+interface ChildrenProps {
     children: React.ReactNode
-    className?:string
+    className?: string
 }
 
 export const useSwitch = () => {
@@ -27,7 +27,7 @@ export const useSwitch = () => {
     return context
 }
 
-export const SwitchContext = ({ children }: CardProps) => {
+export const SwitchContext = ({ children }: ChildAndClassname) => {
     const [activeIndex, setActiveIndex] = useState(0)
 
     return (
@@ -37,7 +37,7 @@ export const SwitchContext = ({ children }: CardProps) => {
     )
 }
 
-export const Switch = ({ children, className = '' }: CardProps) => {
+export const Switch = ({ children, className = '' }: ChildAndClassname) => {
     const { activeIndex } = useSwitch()
 
     if (React.Children.count(children) !== 2)
@@ -105,10 +105,12 @@ const SwitchButton = ({ children, isRight }: SwitchProps) => {
     )
 }
 
-export const SwitchContent = ({ children, className = '' }: CardProps) => {
+export const SwitchContent = ({
+    children,
+    className = '',
+}: ChildAndClassname) => {
     return <div className={` ${className}`}>{children}</div>
 }
-
 
 export const SwitchBodyMultiple = ({ children }: ChildrenProps) => {
     const { activeIndex } = useSwitch()
@@ -118,7 +120,9 @@ export const SwitchBodyMultiple = ({ children }: ChildrenProps) => {
                 if (React.isValidElement(child)) {
                     if (index == activeIndex) {
                         return (
-                            <SwitchBodyMultipleDiv>{child}</SwitchBodyMultipleDiv>
+                            <SwitchBodyMultipleDiv>
+                                {child}
+                            </SwitchBodyMultipleDiv>
                         )
                     } else {
                         return null
@@ -145,6 +149,6 @@ const SwitchBodyMultipleDiv = ({ children }: ChildrenProps) => {
 export const SwitchBodyMultipleContent = ({
     children,
     className = '',
-}: CardProps) => {
+}: ChildAndClassname) => {
     return <div className={'w-full h-full' + ' ' + className}>{children}</div>
 }
