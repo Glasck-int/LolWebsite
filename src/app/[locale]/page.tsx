@@ -9,7 +9,6 @@ import {
     CardHeaderBase,
     CardHeaderColumn,
     CardHeaderContent,
-    CardHeaderSelector,
     CardHeaderTab,
     CardBody,
     CardBodyMultiple,
@@ -197,19 +196,6 @@ export default function Home() {
                                             mais qu'on avait select all, fait
                                             fait de la merde
                                         </p>
-                                        <p>
-                                            modifier le nom de card pour creer
-                                            un cardContext
-                                        </p>
-                                        <p>
-                                            ajouter un context pour annotion
-                                            sans utiliser celui de card
-                                        </p>
-                                        <p>
-                                            patcher : quand tu utilises all
-                                            season tu peux plus selec un
-                                            tournois
-                                        </p>
                                         <p>enlever le context du switch pour le gerer comme selector</p>
                                     </div>
                                 </CardBodyMultipleContent>
@@ -299,41 +285,6 @@ export default function Home() {
                 </TableEntityLayout>
             </div>
             ---
-            {/* <div className="h-[200px]">
-                <Card>
-                    <CardHeader>
-                        <CardHeaderBase className="justify-between">
-                            <SubTitle>header</SubTitle>
-                            <CardHeaderSelector>
-                                <CardHeaderContent>
-                                    <Annoyed></Annoyed>
-                                </CardHeaderContent>
-                                <CardHeaderContent>
-                                    <Annoyed></Annoyed>
-                                </CardHeaderContent>
-                                <CardHeaderContent>
-                                    <Annoyed></Annoyed>
-                                </CardHeaderContent>
-                            </CardHeaderSelector>
-                        </CardHeaderBase>
-                    </CardHeader>
-                    <CardBody>
-                        <CardBodyMultiple>
-                            <CardBodyMultipleContent>
-                                <div className="flex justify-center items-center h-full">
-                                    <p>body 1</p>
-                                </div>
-                            </CardBodyMultipleContent>
-                            <CardBodyMultipleContent>
-                                <p>body 2</p>
-                            </CardBodyMultipleContent>
-                            <CardBodyMultipleContent>
-                                <p>body 3</p>
-                            </CardBodyMultipleContent>
-                        </CardBodyMultiple>
-                    </CardBody>
-                </Card>
-            </div> */}
             <div>
                 <Card>
                     <CardHeader>

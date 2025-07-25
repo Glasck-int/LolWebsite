@@ -3,7 +3,7 @@
 	"version": "0.1.0",
 	"private": true,
 	"scripts": {
-		"oui": "concurrently \"run dev --prefix backend\" \"next dev --turbopack\"",
+		"oui": "concurrently \"npm run dev --prefix backend\" \"next dev --turbopack\"",
 		"dev": "npx prisma db pull && npx prisma generate && concurrently \"npm run dev --prefix backend\" \"next dev --turbopack\"",
 		"build": "next build",
 		"start": "next start",
