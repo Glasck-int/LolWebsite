@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { useLayout } from '../TableEntityLayout'
+import { useTableEntityStore } from '@/store/tableEntityStore'
 
 const formatIdList = (ids: number[] | number): string => {
     if (Array.isArray(ids)) return ids.join(', ')
@@ -9,7 +9,7 @@ const formatIdList = (ids: number[] | number): string => {
 }
 
 export const Left = () => {
-    const { activeSplit, activeTournament, activeId } = useLayout()
+    const { activeSplit, activeTournament, activeId } = useTableEntityStore()
 
     return (
         <div className="bg-white-04 w-full h-full p-2 text-sm text-white">
@@ -22,7 +22,7 @@ export const Left = () => {
 }
 
 export const Mid = () => {
-    const { activeSplit, activeTournament, activeId } = useLayout()
+    const { activeSplit, activeTournament, activeId } = useTableEntityStore()
 
     return (
         <div className="bg-white-04 w-full h-full p-2 text-sm text-white">
@@ -39,7 +39,7 @@ export const Mid = () => {
 }
 
 export const Right = () => {
-    const { activeSplit, activeTournament, activeId } = useLayout()
+    const { activeSplit, activeTournament, activeId } = useTableEntityStore()
     const isFinalPhase = ['Finals', 'Playoff', 'FinalMatch'].includes(
         activeTournament
     )

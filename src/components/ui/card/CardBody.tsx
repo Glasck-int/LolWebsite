@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { CardProps, useCard } from './Card'
+import { ChildAndClassname, useCard } from './Card'
 
 /**
  * Main body container for a Card.
@@ -19,7 +19,7 @@ import { CardProps, useCard } from './Card'
  * </CardBody>
  * ```
  */
-export const CardBody = ({ children, className = '' }: CardProps) => {
+export const CardBody = ({ children, className = '' }: ChildAndClassname) => {
     return <div className={`flex grow-1 ${className ?? ''}`}>{children}</div>
 }
 
@@ -48,7 +48,7 @@ export const CardBody = ({ children, className = '' }: CardProps) => {
  *
  * @see useCard
  */
-export const CardBodyMultiple = ({ children }: CardProps) => {
+export const CardBodyMultiple = ({ children }: ChildAndClassname) => {
     const { activeIndex } = useCard()
     return (
         <div className="h-full w-full">
@@ -76,7 +76,7 @@ export const CardBodyMultiple = ({ children }: CardProps) => {
  * @param children - The active content
  * @returns A full-width, full-height container
  */
-const CardBodyMultipleDiv = ({ children }: CardProps) => {
+const CardBodyMultipleDiv = ({ children }: ChildAndClassname) => {
     return <div className="h-full w-full">{children}</div>
 }
 
@@ -99,6 +99,6 @@ const CardBodyMultipleDiv = ({ children }: CardProps) => {
 export const CardBodyMultipleContent = ({
     children,
     className = '',
-}: CardProps) => {
+}: ChildAndClassname) => {
     return <div className={'w-full h-full' + ' ' + className}>{children}</div>
 }

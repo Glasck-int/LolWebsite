@@ -1,22 +1,22 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { CardProps } from './Card'
+import { ChildAndClassname } from './Card'
 import { motion } from 'framer-motion'
-import { useLayout } from '@/components/layout/TableEntityLayout/TableEntityLayout'
+import { useTableEntityStore } from '@/store/tableEntityStore'
 
 /**
  * Renders a tabbed footer with an animated underline indicating the active tab.
  *
  * This component is used as a dynamic footer for cards, with tab-like clickable areas that
- * trigger an index update in shared layout state (`useLayout`). It calculates dimensions and
+ * trigger an index update in shared layout state (`useTableEntityStore`). It calculates dimensions and
  * positions of tabs in order to animate an underline to reflect the currently active one.
  *
  * Uses ResizeObserver and window resize events to adapt to layout changes.
  *
  * @function CardFooter
- * 
- * @param {CardProps} props - React component props.
+ *
+ * @param {ChildAndClassname} props - React component props.
  * @param {ReactNode} props.children - Tab elements rendered as children.
  * @param {string} [props.className] - Optional class name for additional styling.
  *
@@ -28,8 +28,8 @@ import { useLayout } from '@/components/layout/TableEntityLayout/TableEntityLayo
  *   <div>Stats</div>
  * </CardFooter>
  */
-export const CardFooter = ({ children, className = '' }: CardProps) => {
-    const { activeIndex, setActiveIndex } = useLayout()
+export const CardFooter = ({ children, className = '' }: ChildAndClassname) => {
+    const { activeIndex, setActiveIndex } = useTableEntityStore()
     const containerRef = useRef<HTMLDivElement>(null)
     const [tabRects, setTabRects] = useState<{ width: number; left: number }[]>(
         []
@@ -126,8 +126,8 @@ export const CardFooter = ({ children, className = '' }: CardProps) => {
  * It accepts an optional class name for additional customization.
  *
  * @function CardFooterContent
- * 
- * @param {CardProps} props - React component props.
+ *
+ * @param {ChildAndClassname} props - React component props.
  * @param {ReactNode} props.children - Content inside the footer.
  * @param {string} [props.className] - Optional class name for additional styling.
  *
@@ -136,6 +136,9 @@ export const CardFooter = ({ children, className = '' }: CardProps) => {
  * @example
  * <CardFooterContent className="p-4">Some extra info</CardFooterContent>
  */
-export const CardFooterContent = ({ children, className = '' }: CardProps) => {
+export const CardFooterContent = ({
+    children,
+    className = '',
+}: ChildAndClassname) => {
     return <div className={'w-full h-full' + ' ' + className}>{children}</div>
 }

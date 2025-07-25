@@ -1,8 +1,8 @@
 'use client'
 
 import React from 'react'
-import { CardProps, useCard } from './Card'
-import { motion } from 'framer-motion'
+import { ChildAndClassname, useCard } from './Card'
+import { motion, AnimatePresence } from 'framer-motion'
 
 // Components
 
@@ -18,7 +18,7 @@ import { motion } from 'framer-motion'
  *
  * @see CardHeaderBase
  */
-export const CardHeader = ({ children, className = '' }: CardProps) => {
+export const CardHeader = ({ children, className = '' }: ChildAndClassname) => {
     return (
         <div
             className={`w-full default-top-border-radius text-sm color-grey flex items-center ${className}`}
@@ -40,65 +40,25 @@ export const CardHeader = ({ children, className = '' }: CardProps) => {
  * <CardHeaderBase>Title</CardHeaderBase>
  * ```
  */
-export const CardHeaderBase = ({ children, style, className = '' }: { children: React.ReactNode, style?: React.CSSProperties, className?: string }) => {
+export const CardHeaderBase = ({
+    children,
+    style,
+    className = '',
+}: {
+    children: React.ReactNode
+    style?: React.CSSProperties
+    className?: string
+}) => {
     return (
         <div
             className={
-                'content-center min-h-[35px] md:min-h-[40px] w-full flex items-center px-[14px] h-full bg-white-04' +
+                'content-center min-h-[40px] md:min-h-[45px] w-full flex items-center px-[14px] h-full bg-white-04' +
                 ' ' +
                 className
             }
             style={style}
         >
             {children}
-        </div>
-    )
-}
-
-/**
- * Header component to display and control tab-like selection.
- *
- * Each child element becomes a clickable selector. Active item is highlighted using color.
- * Requires to be used inside a `Card` that provides `useCard()` context.
- *
- * @param children - Selector items (usually text or icons)
- * @param className - Optional class names
- * @returns A clickable row of selectable items
- *
- * @throws Error - If `useCard` context is not available
- *
- * @example
- * ```tsx
- * <CardHeaderSelector>
- *   <div>Tab 1</div>
- *   <div>Tab 2</div>
- * </CardHeaderSelector>
- * ```
- *
- * @see useCard
- */
-export const CardHeaderSelector = ({ children }: CardProps) => {
-    const { activeIndex, setActiveIndex } = useCard()
-
-    return (
-        <div className="flex ">
-            {React.Children.map(children, (child, index) => {
-                if (React.isValidElement(child)) {
-                    return (
-                        <div
-                            className={` cursor-pointer select-none ${
-                                activeIndex === index
-                                    ? 'text-white'
-                                    : 'text-grey hover:text-clear-grey'
-                            }`}
-                            onClick={() => setActiveIndex(index)}
-                        >
-                            {child}
-                        </div>
-                    )
-                }
-                return <div>ERROR IN CardHeaderTab</div>
-            })}
         </div>
     )
 }
@@ -120,7 +80,10 @@ export const CardHeaderSelector = ({ children }: CardProps) => {
  * </CardHeaderColumn>
  * ```
  */
-export const CardHeaderColumn = ({ children, className = '' }: CardProps) => {
+export const CardHeaderColumn = ({
+    children,
+    className = '',
+}: ChildAndClassname) => {
     return (
         <div className={'flex flex-col w-full' + ' ' + className}>
             {children}
@@ -167,7 +130,10 @@ export const CardHeaderColumn = ({ children, className = '' }: CardProps) => {
  * @see useCard
  * @see framer-motion
  */
-export const CardHeaderTab = ({ children, className = '' }: CardProps) => {
+export const CardHeaderTab = ({
+    children,
+    className = '',
+}: ChildAndClassname) => {
     const { activeIndex, setActiveIndex } = useCard()
     const tabCount = React.Children.count(children)
     const tabWidth = 100 / tabCount
@@ -237,6 +203,9 @@ export const CardHeaderTab = ({ children, className = '' }: CardProps) => {
  * @remarks
  * Used to isolate dynamic or context-driven content within headers.
  */
-export const CardHeaderContent = ({ children, className = '' }: CardProps) => {
+export const CardHeaderContent = ({
+    children,
+    className = '',
+}: ChildAndClassname) => {
     return <div className={'w-full h-full' + ' ' + className}>{children}</div>
 }
