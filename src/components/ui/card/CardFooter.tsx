@@ -3,13 +3,13 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { ChildAndClassname } from './Card'
 import { motion } from 'framer-motion'
-import { useLayout } from '@/components/layout/TableEntityLayout/TableEntityLayout'
+import { useTableEntityStore } from '@/store/tableEntityStore'
 
 /**
  * Renders a tabbed footer with an animated underline indicating the active tab.
  *
  * This component is used as a dynamic footer for cards, with tab-like clickable areas that
- * trigger an index update in shared layout state (`useLayout`). It calculates dimensions and
+ * trigger an index update in shared layout state (`useTableEntityStore`). It calculates dimensions and
  * positions of tabs in order to animate an underline to reflect the currently active one.
  *
  * Uses ResizeObserver and window resize events to adapt to layout changes.
@@ -29,7 +29,7 @@ import { useLayout } from '@/components/layout/TableEntityLayout/TableEntityLayo
  * </CardFooter>
  */
 export const CardFooter = ({ children, className = '' }: ChildAndClassname) => {
-    const { activeIndex, setActiveIndex } = useLayout()
+    const { activeIndex, setActiveIndex } = useTableEntityStore()
     const containerRef = useRef<HTMLDivElement>(null)
     const [tabRects, setTabRects] = useState<{ width: number; left: number }[]>(
         []
