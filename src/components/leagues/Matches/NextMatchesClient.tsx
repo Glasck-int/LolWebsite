@@ -55,7 +55,7 @@ export const NextMatchesClient = ({
                 <SubTitle>
                     {lastMatches ? t('lastMatch') : t('nextMatch')}
                 </SubTitle>
-                <SubTitle>{bestOf ? `Bo${bestOf}` : ''}</SubTitle>
+                {/* <SubTitle>{bestOf ? `Bo${bestOf}` : ''}</SubTitle> */}
             </div>
         )
     }
@@ -116,7 +116,20 @@ export const NextMatchesClient = ({
 
                 {/* Match info */}
                 <div className="flex flex-col items-center flex-1">
-                    <TimeDisplay dateTime_UTC={match.dateTime_UTC || null} />
+                    {lastMatches ? (
+                        // Afficher le score pour les derniers matches
+                        <div className="flex flex-col items-center">
+                            <span className="text-white font-bold text-lg">
+                                {match.team1Score || 0} - {match.team2Score || 0}
+                            </span>
+                            <span className="text-gray-400 text-sm">
+                                {match.dateTime_UTC ? new Date(match.dateTime_UTC).toLocaleDateString() : ''}
+                            </span>
+                        </div>
+                    ) : (
+                        // Afficher l'heure pour les prochains matches
+                        <TimeDisplay dateTime_UTC={match.dateTime_UTC || null} />
+                    )}
                 </div>
 
                 {/* Team 2 */}

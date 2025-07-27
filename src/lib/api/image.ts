@@ -1,4 +1,8 @@
-import { ApiResponse, getApiBaseUrl } from './utils'
+import { ApiResponse } from './utils'
+
+const getStaticBaseUrl = () => {
+    return process.env.NEXT_PUBLIC_STATIC_URL || 'http://127.0.0.1:3001'
+}
 
 // Liste des ligues qui ont des images disponibles
 const AVAILABLE_LEAGUE_IMAGES = new Set([
@@ -33,8 +37,8 @@ async function getLeagueImage(
     leagueName: string
 ): Promise<ApiResponse<string | null>> {
     if (AVAILABLE_LEAGUE_IMAGES.has(leagueName)) {
-        const API_BASE_URL = getApiBaseUrl()
-        const imageUrl = `${API_BASE_URL}/static/leagues/${leagueName}.webp`
+        const STATIC_BASE_URL = getStaticBaseUrl()
+        const imageUrl = `${STATIC_BASE_URL}/static/leagues/${leagueName}.webp`
 
         try {
             const response = await fetch(imageUrl, { method: 'HEAD' })
@@ -57,10 +61,14 @@ async function getTeamImage(
     if (!image || image.trim() === '') {
         return { data: null }
     }
-    // console.log('image', image)
     
-    const API_BASE_URL = getApiBaseUrl()
-    const imageUrl = `${API_BASE_URL}/static/teamPng/${image}`
+    const STATIC_BASE_URL = getStaticBaseUrl()
+    const imageUrl = `${STATIC_BASE_URL}/static/teamPng/${image}`
+    
+    // Skip verification on server-side to avoid CORS issues
+    if (typeof window === 'undefined') {
+        return { data: imageUrl }
+    }
     
     try {
         const response = await fetch(imageUrl, { method: 'HEAD' })
@@ -76,8 +84,13 @@ async function getTeamImage(
 async function getPublicPlayerImage(
     image: string
 ): Promise<ApiResponse<string | null>> {
-    const API_BASE_URL = getApiBaseUrl()
-    const imageUrl = `${API_BASE_URL}/static/playerWebp/${image}`
+    const STATIC_BASE_URL = getStaticBaseUrl()
+    const imageUrl = `${STATIC_BASE_URL}/static/playerWebp/${image}`
+    
+    // Skip verification on server-side to avoid CORS issues
+    if (typeof window === 'undefined') {
+        return { data: imageUrl }
+    }
     
     try {
         const response = await fetch(imageUrl, { method: 'HEAD' })
@@ -98,7 +111,7 @@ async function getTeamImageByName(
         return { data: null }
     }
     // console.log('teamName', teamName)
-    const API_BASE_URL = getApiBaseUrl()
+    const STATIC_BASE_URL = getStaticBaseUrl()
     // Essayer différents formats de noms d'images
     const possibleNames = [
         `${teamName}.webp`,
@@ -109,8 +122,14 @@ async function getTeamImageByName(
         `${teamName.replace(/[^a-zA-Z0-9]/g, '')}.png`
     ]
     
+    // Skip verification on server-side to avoid CORS issues
+    if (typeof window === 'undefined') {
+        // Return first possible name for server-side rendering
+        return { data: `${STATIC_BASE_URL}/static/teamPng/${possibleNames[0]}` }
+    }
+    
     for (const imageName of possibleNames) {
-        const imageUrl = `${API_BASE_URL}/static/teamPng/${imageName}`
+        const imageUrl = `${STATIC_BASE_URL}/static/teamPng/${imageName}`
         try {
             const response = await fetch(imageUrl, { method: 'HEAD' })
             if (response.ok) {

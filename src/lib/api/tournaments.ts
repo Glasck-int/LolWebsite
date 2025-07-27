@@ -22,6 +22,14 @@ async function getNextThreeMatchesForTournament(
     )
 }
 
+async function getMatchesForTournament(
+    tournamentId: string
+): Promise<ApiResponse<{ data: MatchSchedule[], type: 'next' | 'last' }>> {
+    return apiRequest<{ data: MatchSchedule[], type: 'next' | 'last' }>(
+        `/api/tournaments/${tournamentId}/matches`
+    )
+}
+
 /**
  * Get tournaments by league ID
  *
@@ -100,4 +108,5 @@ export {
     getTournamentPlayersStatsByTournamentId,
     getLastThreeMatchesForTournament,
     getNextThreeMatchesForTournament,
+    getMatchesForTournament,
 }

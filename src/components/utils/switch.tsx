@@ -1,31 +1,154 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import * as SwitchPrimitive from "@radix-ui/react-switch"
+import React, { useState, useContext } from 'react'
+import { ChildAndClassname, useCard } from '../ui/card/Card'
+import { createContext } from 'react'
 
-import { cn } from "@/lib/utils"
+const SwitchContextP = createContext<{
+    activeIndex: number
+    setActiveIndex: (index: number) => void
+} | null>(null)
 
-function Switch({
-  className,
-  ...props
-}: React.ComponentProps<typeof SwitchPrimitive.Root>) {
-  return (
-    <SwitchPrimitive.Root
-      data-slot="switch"
-      className={cn(
-        "peer data-[state=checked]:bg-primary data-[state=unchecked]:bg-input focus-visible:border-ring focus-visible:ring-ring/50 dark:data-[state=unchecked]:bg-input/80 inline-flex h-[1.15rem] w-8 shrink-0 items-center rounded-full border border-transparent shadow-xs transition-all outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50",
-        className
-      )}
-      {...props}
-    >
-      <SwitchPrimitive.Thumb
-        data-slot="switch-thumb"
-        className={cn(
-          "bg-background dark:data-[state=unchecked]:bg-foreground dark:data-[state=checked]:bg-primary-foreground pointer-events-none block size-4 rounded-full ring-0 transition-transform data-[state=checked]:translate-x-[calc(100%-2px)] data-[state=unchecked]:translate-x-0"
-        )}
-      />
-    </SwitchPrimitive.Root>
-  )
+interface SwitchProps {
+    children: React.ReactNode[]
+    isRight: number
 }
 
-export { Switch }
+interface ChildrenProps {
+    children: React.ReactNode
+    className?: string
+}
+
+export const useSwitch = () => {
+    const context = useContext(SwitchContextP)
+    if (!context) {
+        throw new Error('useSwitch must be used within a Switch component')
+    }
+    return context
+}
+
+export const SwitchContext = ({ children }: ChildAndClassname) => {
+    const [activeIndex, setActiveIndex] = useState(0)
+
+    return (
+        <SwitchContextP.Provider value={{ activeIndex, setActiveIndex }}>
+            <div className="w-full h-full">{children}</div>
+        </SwitchContextP.Provider>
+    )
+}
+
+export const Switch = ({ children, className = '' }: ChildAndClassname) => {
+    const { activeIndex } = useSwitch()
+
+    if (React.Children.count(children) !== 2)
+        return (
+            <p className="text-red">
+                ERROR, more than 2 switch body content detected
+            </p>
+        )
+    const childrenArray = React.Children.toArray(children)
+
+    return (
+        <div className={`${className}`}>
+            <SwitchButton isRight={activeIndex}>{childrenArray}</SwitchButton>
+        </div>
+    )
+}
+
+const SwitchButton = ({ children, isRight }: SwitchProps) => {
+    const { setActiveIndex } = useSwitch()
+
+    return (
+        <div
+            onClick={() => setActiveIndex(isRight === 0 ? 1 : 0)}
+            className={`relative w-[96px] h-[32px] rounded-4xl bg-black/8 flex items-center px-[4.3px] py-[4.3px] select-none cursor-pointer
+                transition-shadow duration-300 ease-in-out
+                ${
+                    isRight === 1
+                        ? 'shadow-[inset_4px_4px_3.46px_rgba(0,0,0,0.35)]'
+                        : 'shadow-[inset_-4px_4px_3.46px_rgba(0,0,0,0.35)]'
+                }`}
+        >
+            {/* Boule animée */}
+            <div
+                className="absolute rounded-full bg-white h-[24px] w-[24px] top-[4.3px] left-[4.3px]"
+                style={{
+                    transform:
+                        isRight === 1 ? 'translateX(63px)' : 'translateX(0px)',
+                    transition: 'transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                    willChange: 'transform',
+                }}
+            />
+
+            {!isRight ? (
+                <div
+                    className={`flex items-center justify-start
+                transition-opacity duration-200 ease-in-out gap-2`}
+                >
+                    <div className="h-[24px] w-[24px]" />
+                    <div className="font-semibold text-sm text-clear-grey">
+                        {children[isRight]}
+                    </div>
+                </div>
+            ) : (
+                <div
+                    className={`flex items-center justify-end
+                transition-opacity duration-200 ease-in-out gap-2 w-full`}
+                >
+                    <div className="font-semibold text-sm text-clear-grey">
+                        {children[isRight]}
+                    </div>
+                    <div className="h-[24px] w-[24px]" />
+                </div>
+            )}
+        </div>
+    )
+}
+
+export const SwitchContent = ({
+    children,
+    className = '',
+}: ChildAndClassname) => {
+    return <div className={` ${className}`}>{children}</div>
+}
+
+export const SwitchBodyMultiple = ({ children }: ChildrenProps) => {
+    const { activeIndex } = useSwitch()
+    return (
+        <div className="h-full w-full">
+            {React.Children.map(children, (child, index) => {
+                if (React.isValidElement(child)) {
+                    if (index == activeIndex) {
+                        return (
+                            <SwitchBodyMultipleDiv>
+                                {child}
+                            </SwitchBodyMultipleDiv>
+                        )
+                    } else {
+                        return null
+                    }
+                }
+                return <div>ERROR IN SwitchBodyMultiple</div>
+            })}
+        </div>
+    )
+}
+
+/**
+ * Internal wrapper for active content in `SwitchBodyMultiple`.
+ *
+ * Used internally to render the selected child based on `activeIndex`.
+ *
+ * @param children - The active content
+ * @returns A full-width, full-height container
+ */
+const SwitchBodyMultipleDiv = ({ children }: ChildrenProps) => {
+    return <div className="h-full w-full">{children}</div>
+}
+
+export const SwitchBodyMultipleContent = ({
+    children,
+    className = '',
+}: ChildAndClassname) => {
+    return <div className={'w-full h-full' + ' ' + className}>{children}</div>
+}

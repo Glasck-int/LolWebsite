@@ -41,7 +41,7 @@ echo //npm.pkg.github.com/:_authToken=YOUR_TOKEN >> %USERPROFILE%\.npmrc
 echo @Glasck-int:registry=https://npm.pkg.github.com >> %USERPROFILE%\.npmrc
 
 # Or environment variable
-set NPM_TOKEN=YOUR_TOKEN
+ $env:NPM_TOKEN="YOUT_TOKEN"
 ```
 
 ### 3. Install dependencies

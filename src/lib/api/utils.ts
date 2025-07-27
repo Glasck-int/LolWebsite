@@ -20,6 +20,7 @@ const CACHE_STRATEGIES: Record<string, CacheStrategy> = {
     // Données dynamiques (cache court)
     '/api/standings': { type: 'dynamic', revalidate: 5 * 60 },
     '/api/player-stats': { type: 'dynamic', revalidate: 10 * 60 },
+    '/api/tournaments/matches': { type: 'dynamic', revalidate: 10 * 60 },
 
     // Données temps réel (pas de cache)
     '/api/live-matches': { type: 'live' },
@@ -27,6 +28,16 @@ const CACHE_STRATEGIES: Record<string, CacheStrategy> = {
 }
 
 function getCacheConfig(endpoint: string): RequestInit {
+    // Check for tournament patterns first
+    if (endpoint.includes('/tournaments/') && (endpoint.includes('/next-matches') || endpoint.includes('/last-matches') || endpoint.includes('/matches'))) {
+        return { next: { revalidate: 10 * 60 } } // 10 minutes
+    }
+    
+    // Check for team images
+    if (endpoint.includes('/teams/') && endpoint.includes('/image')) {
+        return { next: { revalidate: 24 * 60 * 60 } } // 24 hours
+    }
+    
     const strategy = CACHE_STRATEGIES[endpoint] || {
         type: 'dynamic',
         revalidate: 60 * 60,

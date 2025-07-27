@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Switch } from './switch'
+import { Switch } from './switch2'
 
 interface OfficialToggleProps {
     onlyOfficial: boolean
