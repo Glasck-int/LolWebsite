@@ -93,6 +93,25 @@ const LeagueTableEntityContent = ({
             <TableEntityBody>
                 <TableEntityContent>
                     <div className="space-y-4">
+                        <div className="space-y-4">
+                            {/* Next Matches */}
+                            {selectedTournamentId ? (
+                                <NextMatchesClient
+                                    tournamentId={selectedTournamentId}
+                                    showSingleMatchOnDesktop={false}
+                                />
+                            ) : (
+                                <div className="p-4 bg-gray-700 rounded-lg">
+                                    <h3 className="text-lg font-semibold mb-2">
+                                        Matchs
+                                    </h3>
+                                    <p>
+                                        Sélectionnez un tournoi pour voir les
+                                        matchs
+                                    </p>
+                                </div>
+                            )}
+                        </div>
                         {/* Standings Overview */}
                         {standings &&
                         playerStats &&
@@ -114,24 +133,7 @@ const LeagueTableEntityContent = ({
                         )}
                     </div>
                 </TableEntityContent>
-                <TableEntityContent>
-                    <div className="space-y-4">
-                        {/* Next Matches */}
-                        {selectedTournamentId ? (
-                            <NextMatchesClient 
-                                tournamentId={selectedTournamentId}
-                                showSingleMatchOnDesktop={false}
-                            />
-                        ) : (
-                            <div className="p-4 bg-gray-700 rounded-lg">
-                                <h3 className="text-lg font-semibold mb-2">
-                                    Matchs
-                                </h3>
-                                <p>Sélectionnez un tournoi pour voir les matchs</p>
-                            </div>
-                        )}
-                    </div>
-                </TableEntityContent>
+                <TableEntityContent></TableEntityContent>
                 <TableEntityContent>
                     <div className="space-y-4">
                         <p>Tournois</p>

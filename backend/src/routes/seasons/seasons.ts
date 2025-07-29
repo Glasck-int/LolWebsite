@@ -4,6 +4,20 @@ import prisma from '../../services/prisma'
 import { SeasonResponse, SplitResponse, TournamentResponse } from '@Glasck-int/glasck-types'
 
 /**
+ * Clean up extra spaces and separators in a string
+ */
+function cleanupStringFormatting(str: string): string {
+    const cleaned = str
+        .replace(/\s+/g, ' ')  // Multiple spaces to single space
+        .replace(/^[-\s]+|[-\s]+$/g, '')  // Remove leading/trailing dashes and spaces
+        .replace(/\s*[-–—]\s*/g, ' - ')  // Normalize separators
+        .trim()
+    
+    // Capitalize first letter if it exists
+    return cleaned.length > 0 ? cleaned.charAt(0).toUpperCase() + cleaned.slice(1) : cleaned
+}
+
+/**
  * Clean tournament name by removing league name, short name, and year if there's additional content
  * Only clean if the name contains more than just the league/short/year
  */
@@ -35,11 +49,7 @@ function cleanTournamentName(tournamentName: string, leagueName: string, leagueS
     }
 
     // Clean up extra spaces and separators
-    cleanedName = cleanedName
-        .replace(/\s+/g, ' ')  // Multiple spaces to single space
-        .replace(/^[-\s]+|[-\s]+$/g, '')  // Remove leading/trailing dashes and spaces
-        .replace(/\s*[-–—]\s*/g, ' - ')  // Normalize separators
-        .trim()
+    cleanedName = cleanupStringFormatting(cleanedName)
 
     // Only return cleaned name if there's still meaningful content
     // Avoid returning empty string or just separators
@@ -200,6 +210,11 @@ export default async function seasonsRoutes(fastify: FastifyInstance) {
                         // If no split detected, split stays undefined
                     }
 
+                    // Clean up split name if it exists
+                    if (split) {
+                        split = cleanupStringFormatting(split)
+                    }
+
                     // Initialize season if not exists
                     if (!seasonsMap.has(season)) {
                         seasonsMap.set(season, new Map())
@@ -221,7 +236,7 @@ export default async function seasonsRoutes(fastify: FastifyInstance) {
                         tournament.name, 
                         league.name, 
                         league.short, 
-                        tournament.year
+                        tournament.year || undefined
                     )
 
                     // Add tournament to split

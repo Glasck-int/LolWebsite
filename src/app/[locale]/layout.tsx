@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { Inter } from "next/font/google";
 import { Header } from "@/components/layout/Header/Header";
+import { SpoilerProvider } from "@/contexts/SpoilerContext";
 
 const inter = Inter({
 	subsets: ["latin"],
@@ -77,8 +78,10 @@ export default async function LocaleLayout({
 		<html lang={locale}>
 			<body className={inter.className}>
 				<NextIntlClientProvider locale={locale} messages={messages}>
-					<Header />
-					{children}
+					<SpoilerProvider>
+						<Header />
+						{children}
+					</SpoilerProvider>
 				</NextIntlClientProvider>
 			</body>
 		</html>

@@ -15,6 +15,7 @@ import {
     CardHeaderBase,
 } from '@/components/ui/card/index'
 import { MatchSkeleton } from '@/components/ui/skeleton/MatchSkeleton'
+import SpoilerWrapper from '@/components/leagues/Matches/Score'
 
 
 
@@ -91,8 +92,8 @@ export const NextMatchesClient = ({
     // Note: Client-side fetching is now handled by useMatchesData hook
 
     const matchesToShow = currentData.matches.slice(0, visibleCount)
-    // Show loading state when loading and no cached data exists yet
-    if (loading) {
+    // Show loading state only when loading and no data available at all
+    if (loading && !currentData.matches.length) {
         return (
             <div className="w-full">
                 <MatchSkeleton count={showSingleMatchOnDesktop ? 1 : 3} />
@@ -192,21 +193,23 @@ export const NextMatchesClient = ({
                 {/* Match info */}
                 <div className="flex flex-col items-center flex-1">
                     {currentData.lastMatches === true ? (
-                        // Afficher le score pour les derniers matches
-                        <div className="flex flex-col items-center gap-3">
-                            <span className="text-white font-bold text-lg flex flex-row items-center gap-1">
-                                {match.team1Score || 0}
-                                <span className="mx-2">-</span>
-                                {match.team2Score || 0}
-                            </span>
-                            <span className="text-gray-400 text-sm">
-                                {match.dateTime_UTC
-                                    ? new Date(
-                                          match.dateTime_UTC
-                                      ).toLocaleDateString()
-                                    : ''}
-                            </span>
-                        </div>
+                        // Afficher le score pour les derniers matches avec spoiler protection
+                        <SpoilerWrapper>
+                            <div className="flex flex-col items-center gap-3">
+                                <span className="text-white font-bold text-lg flex flex-row items-center gap-1">
+                                    {match.team1Score || 0}
+                                    <span className="mx-2">-</span>
+                                    {match.team2Score || 0}
+                                </span>
+                                <span className="text-gray-400 text-sm">
+                                    {match.dateTime_UTC
+                                        ? new Date(
+                                              match.dateTime_UTC
+                                          ).toLocaleDateString()
+                                        : ''}
+                                </span>
+                            </div>
+                        </SpoilerWrapper>
                     ) : (
                         // Afficher l'heure pour les prochains matches
                         <TimeDisplay

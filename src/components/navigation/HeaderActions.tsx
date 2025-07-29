@@ -2,10 +2,10 @@
 
 import { Eye, EyeOff } from "lucide-react";
 import { BurgerMenu } from "@/components/ui/BurgerMenu";
-import { useState } from "react";
 import { SearchBar } from "@/components/ui/search/SearchBar";
 import LocaleSwitcher from "../layout/LocaleSwitcher/LocaleSwitcher";
 import Link from "next/link";
+import { useSpoiler } from "@/contexts/SpoilerContext";
 
 interface HeaderActionsProps {
 	isMenuOpen: boolean;
@@ -38,21 +38,21 @@ export const HeaderActions = ({
 	isMenuOpen,
 	onMenuToggle,
 }: HeaderActionsProps) => {
-	const [isVisible, setIsVisible] = useState(false);
+	const { isSpoilerVisible, toggleSpoiler } = useSpoiler();
 
 	return (
 		<div className="flex flex-row gap-6 items-center" data-header-actions>
 			<SearchBar />
 
-			{isVisible ? (
+			{isSpoilerVisible ? (
 				<EyeOff
 					className="w-6 h-6 text-white transition-all duration-200 cursor-pointer hover:text-gray-300"
-					onClick={() => setIsVisible(!isVisible)}
+					onClick={toggleSpoiler}
 				/>
 			) : (
 				<Eye
 					className="w-6 h-6 text-white transition-all duration-200 cursor-pointer hover:text-gray-300"
-					onClick={() => setIsVisible(!isVisible)}
+					onClick={toggleSpoiler}
 				/>
 			)}
 			<LocaleSwitcher className="hidden md:block" />
