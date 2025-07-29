@@ -16,7 +16,7 @@ const CardContextP = createContext<{
     activeIndex: number
     setActiveIndex: (index: number) => void
     isHide:boolean
-    setIsHid: (value:boolean) => void
+    setIsHide: (value:boolean) => void
 } | null>(null)
 
 // Fonctions
@@ -108,7 +108,7 @@ export const Card = ({ children, className = '' }: ChildAndClassname) => {
  * ```
  *
  * @remarks
- * Supplies `activeIndex`, `setActiveIndex`, `isHide`, and `setIsHid` via CardContextP.Provider
+ * Supplies `activeIndex`, `setActiveIndex`, `isHide`, and `setIsHide` via CardContextP.Provider
  * allowing deeply nested components to share UI state
  */
 export const CardContext = ({
@@ -116,13 +116,13 @@ export const CardContext = ({
     className = '',
 }: ChildAndClassname) => {
     const [activeIndex, setActiveIndex] = useState(0)
-    const [isHide, setIsHid] = useState(false)
+    const [isHide, setIsHide] = useState(false)
 
     return (
-        <CardContextP.Provider value={{ activeIndex, setActiveIndex, isHide, setIsHid }}>
+        <CardContextP.Provider value={{ activeIndex, setActiveIndex, isHide, setIsHide }}>
             <div
-                className={
-                    'bg-white-06 default-border-radius h-full w-full flex flex-col justify-evenly backdrop-blur overflow-hidden ' +
+                className={ "h-full w-full"
+                    +
                     className
                 }
             >

@@ -2,25 +2,83 @@
 
 import React from 'react'
 import { ChildAndClassname, useCard } from './Card'
+import { useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+
 
 /**
- * Main body container for a Card.
- *
- * Provides a flexible layout for the card’s inner content.
- *
- * @param children - Content to render inside the card body
- * @param className - Optional custom styles to apply to the wrapper
- * @returns A flex container wrapping the children
- *
- * @example
- * ```tsx
- * <CardBody className="p-4">
- *   <p>My card content</p>
- * </CardBody>
- * ```
- */
+* Animated body container for a Card component.
+*
+* Provides a flexible layout with smooth show/hide animations based on the card's visibility state.
+* The component automatically handles entry/exit animations with opacity and height transitions.
+* 
+* - On first render: appears without animation
+* - On show: animates in with height expansion followed by opacity fade-in
+* - On hide: animates out with opacity fade-out followed by height collapse
+*
+* @param children - Content to render inside the card body
+* @param className - Optional custom styles to apply to the wrapper
+* @returns An animated flex container wrapping the children, or null when hidden
+*
+* @example
+* ```tsx
+* <Card>
+*   <CardHeader />
+*   <CardBody className="p-4">
+*     <p>My card content</p>
+*   </CardBody>
+* </Card>
+* ```
+* 
+* @dependencies framer-motion for animations
+* @remarks 
+* - IF HIDE animation : Do not override `height` or `opacity` styles in className as they will be overridden by animations
+* - The component manages these properties internally for smooth transitions
+*/
+
 export const CardBody = ({ children, className = '' }: ChildAndClassname) => {
-    return <div className={`flex grow-1 ${className ?? ''}`}>{children}</div>
+    const hasBeenToggled = useRef(false);
+    
+    try {
+        const { isHide } = useCard()
+        
+        if (isHide) {
+            hasBeenToggled.current = true;
+        }
+        
+        return (
+            <AnimatePresence>
+                {!isHide && (
+                    <motion.div
+                        className={`flex grow-1 ${className ?? ''}`}
+                        initial={hasBeenToggled.current ? 
+                            { height: 0, opacity: 0 } : 
+                            { height: 'auto', opacity: 1 }
+                        }
+                        animate={{ 
+                            height: 'auto', 
+                            opacity: 1,
+                        }}
+                        exit={{ 
+                            opacity: 0,
+                            height: 0,
+                        }}
+                        transition={{
+                            duration: 0.7,
+                            ease: "easeOut",
+                            opacity: { duration: 0.3 },
+                            height: { delay: 0.3 },
+                        }}
+                    >
+                        {children}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        )
+    } catch {
+        return <div className={`flex grow-1 ${className ?? ''}`}>{children}</div>
+    }
 }
 
 /**
@@ -52,20 +110,19 @@ export const CardBodyMultiple = ({ children }: ChildAndClassname) => {
     const { activeIndex } = useCard()
     return (
         <div className="h-full w-full">
-            {React.Children.map(children, (child, index) => {
-                if (React.isValidElement(child)) {
-                    if (index == activeIndex) {
-                        return (
-                            <CardBodyMultipleDiv>{child}</CardBodyMultipleDiv>
-                        )
-                    } else {
-                        return null
+                {React.Children.map(children, (child, index) => {
+                    if (React.isValidElement(child)) {
+                        if (index === activeIndex) {
+                            return <CardBodyMultipleDiv>{child}</CardBodyMultipleDiv>
+                        } else {
+                            return null
+                        }
                     }
-                }
-                return <div>ERROR IN CardBodyMultiple</div>
-            })}
+                    return <div>ERROR IN CardBodyMultiple</div>
+                })}
         </div>
     )
+
 }
 
 /**

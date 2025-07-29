@@ -45,6 +45,7 @@ import {
     SelectorContent,
 } from '@/components/utils/Selector'
 import { useIndexState } from '@/lib/hooks/useIndexState'
+import { HideCard } from '@/components/ui/card/HideCard'
 
 const seasons = [
     {
@@ -211,6 +212,22 @@ export default function Home() {
                     </CardContext>
                 </Card>
             </div>
+            ---
+            <Card>
+                <CardContext>
+                    <CardHeader>
+                        <CardHeaderBase className='justify-between'>
+                            <SubTitle>Header</SubTitle>
+                            <HideCard/>
+                        </CardHeaderBase>
+                    </CardHeader>
+                    <CardBody >
+                        <div className='h-[100px]'>
+                            <p>BODY</p>
+                        </div>
+                    </CardBody>
+                </CardContext>
+            </Card>
             ---
             <div>
                 <Card>
