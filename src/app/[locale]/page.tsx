@@ -46,6 +46,7 @@ import {
 } from '@/components/utils/Selector'
 import { useIndexState } from '@/lib/hooks/useIndexState'
 import { HideCard } from '@/components/ui/card/HideCard'
+import ChoseDate, {useChoseDate} from '@/components/ui/calendar/ChoseDate'
 
 const seasons = [
     {
@@ -167,6 +168,7 @@ export default function Home() {
         activeIndex: switchActiveIndex,
         setActiveIndex: setSwitchActiveIndex,
     } = useIndexState()
+    const calendar = useChoseDate()
     return (
         <div className="body-container">
             <div className="">
@@ -198,8 +200,9 @@ export default function Home() {
                             <CardBodyMultiple>
                                 <CardBodyMultipleContent>
                                     <div className="flex flex-col justify-center items-center h-full">
-                                        <p>TODO Pouvoir fermer les cartes</p>
                                     </div>
+                                        <p>- BUG : dans tableEntity quand je passe de tab all activée a non active, ca me reset ma season a la derniere</p>
+                                        <p>- Click sur Glasck sur la page principal doit scroll</p>
                                 </CardBodyMultipleContent>
                                 <CardBodyMultipleContent>
                                     <p>body 2</p>
@@ -212,6 +215,8 @@ export default function Home() {
                     </CardContext>
                 </Card>
             </div>
+            ---
+            <ChoseDate />
             ---
             <Card>
                 <CardContext>
