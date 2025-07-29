@@ -23,27 +23,33 @@ interface ChildrenProps {
     className?: string
 }
 
-export const useSwitch = () => {
-    const context = useContext(SwitchContextP)
-    if (!context) {
-        throw new Error('useSwitch doit être utilisé dans un composant Switch')
-    }
-    return context
-}
-
-export const SwitchContext = ({ children }: ChildAndClassname) => {
-    const [activeIndex, setActiveIndex] = useState(0)
-
-    return (
-        <SwitchContextP.Provider value={{ activeIndex, setActiveIndex }}>
-            <div className="w-full h-full">{children}</div>
-        </SwitchContextP.Provider>
-    )
-}
-
-export const Switch = ({ children, className = '' }: ChildAndClassname) => {
-    const { activeIndex } = useSwitch()
-
+/**
+ * Switch – A toggle component that switches between two views.
+ *
+ * This component displays a switch button with two possible states.
+ * It ensures exactly two children are passed and toggles the active index on click.
+ *
+ * @function Switch
+ *
+ * @param React.ReactNode children - Two children representing the switch options.
+ * @param string [className] - Optional class for custom styling.
+ * @param number activeIndex - Current selected index (0 or 1).
+ * @param (index: number) => void setActiveIndex - Function to update the active index.
+ *
+ * @returns Rendered switch component or error if more than two children.
+ *
+ * @example
+ * <Switch activeIndex={0} setActiveIndex={setIndex}>
+ *   <SwitchContent>Left</SwitchContent>
+ *   <SwitchContent>Right</SwitchContent>
+ * </Switch>
+ */
+export const Switch = ({
+    children,
+    className = '',
+    activeIndex,
+    setActiveIndex,
+}: SwitchProps) => {
     if (React.Children.count(children) !== 2)
         return (
             <p className="text-red">
