@@ -142,7 +142,7 @@ export const useMatchesData = (tournamentId: number | undefined) => {
             teamImages: cached.teamImages,
             lastMatches: cached.lastMatches
         } : null,
-        loading: cached?.loading || false,
+        loading: (cached?.loading || false) || (!initialized && !!tournamentId),
         error: cached?.error || null
     }
 }

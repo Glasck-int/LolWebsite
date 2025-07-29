@@ -72,7 +72,7 @@ const LeagueTableEntityContent = ({
                             />
                         )}
                     </div>
-                    <TableEntityHeader seasons={seasons} all={[]} />
+                    <TableEntityHeader seasons={seasons} />
                 </CardBody>
                 <CardFooter>
                     <CardFooterContent>

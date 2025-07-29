@@ -57,7 +57,7 @@ export const LeaguesClient: React.FC<LeaguesClientProps> = ({
     const glasckIconWhite = `${baseUrl}/static/assets/svg/favicon/Fichier 8.svg`
 
     return (
-        <div className="w-full px-4 py-8 pt-24 block md:hidden relative">
+        <div className="w-full px-4 py-8 pt-24 block  relative">
             <div className="absolute top-25 left-50 z-[-1]">
                 <Image
                     src={glasckIconWhite}

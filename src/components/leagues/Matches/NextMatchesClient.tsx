@@ -14,6 +14,9 @@ import {
     CardHeader,
     CardHeaderBase,
 } from '@/components/ui/card/index'
+import { MatchSkeleton } from '@/components/ui/skeleton/MatchSkeleton'
+
+
 
 interface NextMatchesData {
     matches: MatchScheduleType[]
@@ -67,47 +70,48 @@ export const NextMatchesClient = ({
     lastMatches: legacyLastMatches,
 }: NextMatchesClientProps) => {
     const t = useTranslations('Tournaments')
-    
+
     // Use the new cached hook for matches data
     const { data: cachedData, loading, error } = useMatchesData(tournamentId)
-    
+
     // Determine which data to use - prioritize cached data, then initialData, then legacy props
-    const currentData = cachedData || initialData || {
-        matches: legacyMatches || [],
-        teamsData: legacyTeamsData || [],
-        teamImages: legacyTeamImages || [],
-        lastMatches: legacyLastMatches || false
-    }
-    
+    const currentData = cachedData ||
+        initialData || {
+            matches: legacyMatches || [],
+            teamsData: legacyTeamsData || [],
+            teamImages: legacyTeamImages || [],
+            lastMatches: legacyLastMatches || false,
+        }
+
     const { containerRef, testRef, visibleCount } = useVisibleMatches(
         currentData.matches.length,
         showSingleMatchOnDesktop
     )
-    
+
     // Note: Client-side fetching is now handled by useMatchesData hook
 
     const matchesToShow = currentData.matches.slice(0, visibleCount)
-    
-    // Show loading state only when actually loading and no data available
-    if (loading && !currentData.matches.length) {
+    // Show loading state when loading and no cached data exists yet
+    if (loading) {
         return (
-            <div className="flex items-center justify-center h-[125px]">
-                <div className="text-gray-400">Loading matches...</div>
+            <div className="w-full">
+                <MatchSkeleton count={showSingleMatchOnDesktop ? 1 : 3} />
             </div>
         )
     }
-
     // Show error state if there's an error and no data
     if (error && !currentData.matches.length) {
         return (
             <div className="flex items-center justify-center h-[125px]">
-                <div className="text-red-400">Error loading matches: {error}</div>
+                <div className="text-red-400">
+                    Error loading matches: {error}
+                </div>
             </div>
         )
     }
 
     // Show "no matches" state if no loading, no error, but no matches
-    if (!loading && !error && !currentData.matches.length) {
+    if (!error && !currentData.matches.length) {
         return (
             <div className="flex items-center justify-center h-[125px]">
                 <div className="text-gray-400">Aucun match disponible</div>
@@ -123,9 +127,10 @@ export const NextMatchesClient = ({
         return (
             <div className="flex flex-row justify-between items-center w-full">
                 <SubTitle>
-                    {currentData.lastMatches === true ? t('lastMatch') : t('nextMatch')}
+                    {currentData.lastMatches === true
+                        ? t('lastMatch')
+                        : t('nextMatch')}
                 </SubTitle>
-                {/* <SubTitle>{bestOf ? `Bo${bestOf}` : ''}</SubTitle> */}
             </div>
         )
     }
@@ -188,17 +193,25 @@ export const NextMatchesClient = ({
                 <div className="flex flex-col items-center flex-1">
                     {currentData.lastMatches === true ? (
                         // Afficher le score pour les derniers matches
-                        <div className="flex flex-col items-center">
-                            <span className="text-white font-bold text-lg">
-                                {match.team1Score || 0} - {match.team2Score || 0}
+                        <div className="flex flex-col items-center gap-3">
+                            <span className="text-white font-bold text-lg flex flex-row items-center gap-1">
+                                {match.team1Score || 0}
+                                <span className="mx-2">-</span>
+                                {match.team2Score || 0}
                             </span>
                             <span className="text-gray-400 text-sm">
-                                {match.dateTime_UTC ? new Date(match.dateTime_UTC).toLocaleDateString() : ''}
+                                {match.dateTime_UTC
+                                    ? new Date(
+                                          match.dateTime_UTC
+                                      ).toLocaleDateString()
+                                    : ''}
                             </span>
                         </div>
                     ) : (
                         // Afficher l'heure pour les prochains matches
-                        <TimeDisplay dateTime_UTC={match.dateTime_UTC || null} />
+                        <TimeDisplay
+                            dateTime_UTC={match.dateTime_UTC || null}
+                        />
                     )}
                 </div>
 
@@ -232,7 +245,9 @@ export const NextMatchesClient = ({
                     <CardHeaderBase>
                         <div className="flex flex-row justify-between items-center w-full">
                             <SubTitle>
-                                {currentData.lastMatches === true ? t('lastMatch') : t('nextMatch')}
+                                {currentData.lastMatches === true
+                                    ? t('lastMatch')
+                                    : t('nextMatch')}
                             </SubTitle>
                         </div>
                     </CardHeaderBase>
@@ -259,7 +274,10 @@ export const NextMatchesClient = ({
                                     match,
                                     team1,
                                     team2,
-                                    currentData.teamImages[idx] || { team1Image: null, team2Image: null },
+                                    currentData.teamImages[idx] || {
+                                        team1Image: null,
+                                        team2Image: null,
+                                    },
                                     idx,
                                     matchesToShow.length
                                 )
@@ -293,7 +311,10 @@ export const NextMatchesClient = ({
                         match,
                         team1,
                         team2,
-                        currentData.teamImages[idx] || { team1Image: null, team2Image: null },
+                        currentData.teamImages[idx] || {
+                            team1Image: null,
+                            team2Image: null,
+                        },
                         idx,
                         matchesToShow.length
                     )

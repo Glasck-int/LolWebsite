@@ -3,6 +3,54 @@ import { ErrorResponseSchema } from '../../schemas/common'
 import prisma from '../../services/prisma'
 import { SeasonResponse, SplitResponse, TournamentResponse } from '@Glasck-int/glasck-types'
 
+/**
+ * Clean tournament name by removing league name, short name, and year if there's additional content
+ * Only clean if the name contains more than just the league/short/year
+ */
+function cleanTournamentName(tournamentName: string, leagueName: string, leagueShort: string, year?: string): string {
+    const originalName = tournamentName
+    let cleanedName = tournamentName
+
+    // Create regex patterns for league name, short, and year
+    const patterns = []
+    
+    // Add league name pattern (case insensitive)
+    if (leagueName) {
+        patterns.push(new RegExp(`\\b${leagueName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi'))
+    }
+    
+    // Add league short pattern (case insensitive)
+    if (leagueShort && leagueShort !== leagueName) {
+        patterns.push(new RegExp(`\\b${leagueShort.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi'))
+    }
+    
+    // Add year pattern
+    if (year) {
+        patterns.push(new RegExp(`\\b${year}\\b`, 'g'))
+    }
+
+    // Apply each pattern
+    for (const pattern of patterns) {
+        cleanedName = cleanedName.replace(pattern, '').trim()
+    }
+
+    // Clean up extra spaces and separators
+    cleanedName = cleanedName
+        .replace(/\s+/g, ' ')  // Multiple spaces to single space
+        .replace(/^[-\s]+|[-\s]+$/g, '')  // Remove leading/trailing dashes and spaces
+        .replace(/\s*[-–—]\s*/g, ' - ')  // Normalize separators
+        .trim()
+
+    // Only return cleaned name if there's still meaningful content
+    // Avoid returning empty string or just separators
+    if (cleanedName && cleanedName.length > 2 && !/^[-\s]*$/.test(cleanedName)) {
+        return cleanedName
+    }
+
+    // If cleaning would result in empty or meaningless string, return original
+    return originalName
+}
+
 export default async function seasonsRoutes(fastify: FastifyInstance) {
     const redis = fastify.redis
 
@@ -70,7 +118,8 @@ export default async function seasonsRoutes(fastify: FastifyInstance) {
                         id: parseInt(leagueId)
                     },
                     select: {
-                        name: true
+                        name: true,
+                        short: true
                     }
                 })
 
@@ -80,7 +129,7 @@ export default async function seasonsRoutes(fastify: FastifyInstance) {
                         .send({ error: 'League not found' })
                 }
 
-                // Get tournaments by league name
+                // Get tournaments by league name with match count
                 const tournaments = await prisma.tournament.findMany({
                     where: {
                         league: league.name
@@ -93,6 +142,12 @@ export default async function seasonsRoutes(fastify: FastifyInstance) {
                         splitNumber: true,
                         splitMainPage: true,
                         dateStart: true,
+                        overviewPage: true,
+                        _count: {
+                            select: {
+                                MatchSchedule: true
+                            }
+                        }
                     },
                     orderBy: [
                         { year: 'asc' },
@@ -112,6 +167,11 @@ export default async function seasonsRoutes(fastify: FastifyInstance) {
                 const seasonsMap = new Map<string, Map<string | undefined, { tournaments: TournamentResponse[], splitNumber?: number, dateStart?: Date }>>()
 
                 tournaments.forEach(tournament => {
+                    // Skip tournaments with no matches
+                    if (tournament._count.MatchSchedule === 0) {
+                        return
+                    }
+
                     // Use the year field as season, fallback to 'Unknown'
                     const season = tournament.year || 'Unknown'
                     
@@ -156,9 +216,17 @@ export default async function seasonsRoutes(fastify: FastifyInstance) {
                         })
                     }
 
+                    // Clean tournament name before adding
+                    const cleanedTournamentName = cleanTournamentName(
+                        tournament.name, 
+                        league.name, 
+                        league.short, 
+                        tournament.year
+                    )
+
                     // Add tournament to split
                     seasonSplits.get(split)!.tournaments.push({
-                        tournament: tournament.name,
+                        tournament: cleanedTournamentName,
                         id: tournament.id
                     })
                 })
@@ -172,7 +240,6 @@ export default async function seasonsRoutes(fastify: FastifyInstance) {
                                 const result: SplitResponse = {
                                     tournaments: splitData.tournaments
                                 }
-                                // Only add split property if it exists
                                 if (split) {
                                     result.split = split
                                 }
