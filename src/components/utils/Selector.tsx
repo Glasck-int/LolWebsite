@@ -39,7 +39,7 @@ export const SelectorIcon = ({
     setActiveIndex,
 }: SelectorProps) => {
     return (
-        <div className="flex ">
+        <div className={'flex ' + className}>
             {React.Children.map(children, (child, index) => {
                 if (React.isValidElement(child)) {
                     return (
@@ -108,7 +108,7 @@ export const SelectorBody = ({
     activeIndex,
 }: ActiveIndexProps) => {
     return (
-        <div className="h-full w-full">
+        <div className={'h-full w-full ' + className}>
             {React.Children.map(children, (child, index) => {
                 if (React.isValidElement(child)) {
                     if (index == activeIndex) {

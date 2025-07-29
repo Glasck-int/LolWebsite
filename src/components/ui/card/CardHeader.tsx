@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { ChildAndClassname, useCard } from './Card'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 
 // Components
 

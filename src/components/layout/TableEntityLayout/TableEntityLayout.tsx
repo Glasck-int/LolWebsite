@@ -267,7 +267,7 @@ export const TableEntityHeader = ({
 
     useEffect(() => {
         updateTournamentBySplit(seasons, isAllActive)
-    }, [activeSplit])
+    }, [activeSplit, seasons, isAllActive, updateTournamentBySplit])
 
     return (
         <div className={`flex flex-col w-full ${className}`}>

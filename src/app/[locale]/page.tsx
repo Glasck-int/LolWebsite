@@ -46,6 +46,7 @@ import {
 } from '@/components/utils/Selector'
 import { useIndexState } from '@/lib/hooks/useIndexState'
 import { HideCard } from '@/components/ui/card/HideCard'
+import Image from 'next/image'
 
 const seasons = [
     {
@@ -266,9 +267,12 @@ export default function Home() {
                     <Card>
                         <CardBody>
                             <div className="hidden md:flex p-[15px] h-[130px] gap-3 w-[250px]">
-                                <img
-                                    src="https://content.imageresizer.com/images/memes/SLAY-ALL-DAY-meme-7fequ2.jpg"
+                                <Image
+                                    src=""
                                     className="rounded-full"
+                                    alt="Shreckus"
+                                    width={100}
+                                    height={100}
                                 />
                                 <div className="py-[15px]">
                                     <h2>Shreckus</h2>

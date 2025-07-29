@@ -23,6 +23,32 @@ export interface SeasonData {
     data: Split[]
 }
 
+// Interface pour le cache des saisons
+interface CachedSeasonData {
+    data: SeasonData[]
+    cachedAt: number
+    loading: boolean
+    error: string | null
+}
+
+// Interface pour le cache des matches
+interface CachedMatchData {
+    matches: any[]
+    teamsData: Array<{
+        short?: string | null
+        image?: string | null
+        overviewPage?: string | null
+    }>
+    teamImages: Array<{
+        team1Image?: string | null
+        team2Image?: string | null
+    }>
+    lastMatches: boolean
+    cachedAt: number
+    loading: boolean
+    error: string | null
+}
+
 // Interface du store principal
 interface TableEntityState {
     activeIndex: number
@@ -33,6 +59,12 @@ interface TableEntityState {
     activeAllSplit: boolean
     activeHeaderSeason: string
 
+    // Cache des saisons par leagueId
+    seasonsCache: Record<number, CachedSeasonData>
+    // Cache des matches par tournamentId
+    matchesCache: Record<number, CachedMatchData>
+    cacheTimeout: number // 5 minutes par défaut
+
     setActiveIndex: (index: number) => void
     setActiveId: (id: number[]) => void
     setActiveSplit: (split: string) => void
@@ -40,6 +72,20 @@ interface TableEntityState {
     setActiveAllSeason: (all: boolean) => void
     setActiveAllSplit: (all: boolean) => void
     setActiveHeaderSeason: (season: string) => void
+
+    // Méthodes pour le cache des saisons
+    getCachedSeasons: (leagueId: number) => CachedSeasonData | null
+    setCachedSeasons: (leagueId: number, data: SeasonData[]) => void
+    setCacheLoading: (leagueId: number, loading: boolean) => void
+    setCacheError: (leagueId: number, error: string | null) => void
+    
+    // Méthodes pour le cache des matches
+    getCachedMatches: (tournamentId: number) => CachedMatchData | null
+    setCachedMatches: (tournamentId: number, data: Omit<CachedMatchData, 'cachedAt' | 'loading' | 'error'>) => void
+    setMatchesLoading: (tournamentId: number, loading: boolean) => void
+    setMatchesError: (tournamentId: number, error: string | null) => void
+    
+    clearExpiredCache: () => void
 
     initializeWithSeasons: (seasons: SeasonData[], isAllActive: boolean) => void
     selectSeason: (
@@ -95,6 +141,11 @@ export const useTableEntityStore = create<TableEntityState>()(
             activeAllSplit: false,
             activeHeaderSeason: '',
 
+            // État du cache
+            seasonsCache: {},
+            matchesCache: {},
+            cacheTimeout: 5 * 60 * 1000, // 5 minutes
+
             setActiveIndex: (index) => set({ activeIndex: index }),
             setActiveId: (id) => set({ activeId: id }),
             setActiveSplit: (split) => set({ activeSplit: split }),
@@ -105,6 +156,168 @@ export const useTableEntityStore = create<TableEntityState>()(
             setActiveHeaderSeason: (season) =>
                 set({ activeHeaderSeason: season }),
 
+            // Méthodes du cache
+            getCachedSeasons: (leagueId) => {
+                const state = get()
+                const cached = state.seasonsCache[leagueId]
+                
+                if (!cached) return null
+                
+                // Vérifier si le cache est expiré
+                const isExpired = Date.now() - cached.cachedAt > state.cacheTimeout
+                if (isExpired) {
+                    // Supprimer le cache expiré
+                    set(state => {
+                        const { [leagueId]: _, ...rest } = state.seasonsCache
+                        return { seasonsCache: rest }
+                    })
+                    return null
+                }
+                
+                return cached
+            },
+
+            setCachedSeasons: (leagueId, data) => {
+                set(state => ({
+                    seasonsCache: {
+                        ...state.seasonsCache,
+                        [leagueId]: {
+                            data,
+                            cachedAt: Date.now(),
+                            loading: false,
+                            error: null
+                        }
+                    }
+                }))
+            },
+
+            setCacheLoading: (leagueId, loading) => {
+                set(state => ({
+                    seasonsCache: {
+                        ...state.seasonsCache,
+                        [leagueId]: {
+                            ...state.seasonsCache[leagueId],
+                            data: state.seasonsCache[leagueId]?.data || [],
+                            cachedAt: state.seasonsCache[leagueId]?.cachedAt || Date.now(),
+                            loading,
+                            error: state.seasonsCache[leagueId]?.error || null
+                        }
+                    }
+                }))
+            },
+
+            setCacheError: (leagueId, error) => {
+                set(state => ({
+                    seasonsCache: {
+                        ...state.seasonsCache,
+                        [leagueId]: {
+                            ...state.seasonsCache[leagueId],
+                            data: state.seasonsCache[leagueId]?.data || [],
+                            cachedAt: state.seasonsCache[leagueId]?.cachedAt || Date.now(),
+                            loading: false,
+                            error
+                        }
+                    }
+                }))
+            },
+
+            // Méthodes du cache des matches
+            getCachedMatches: (tournamentId) => {
+                const state = get()
+                const cached = state.matchesCache[tournamentId]
+                
+                if (!cached) return null
+                
+                // Vérifier si le cache est expiré
+                const isExpired = Date.now() - cached.cachedAt > state.cacheTimeout
+                if (isExpired) {
+                    // Supprimer le cache expiré
+                    set(state => {
+                        const { [tournamentId]: _, ...rest } = state.matchesCache
+                        return { matchesCache: rest }
+                    })
+                    return null
+                }
+                
+                return cached
+            },
+
+            setCachedMatches: (tournamentId, data) => {
+                set(state => ({
+                    matchesCache: {
+                        ...state.matchesCache,
+                        [tournamentId]: {
+                            ...data,
+                            cachedAt: Date.now(),
+                            loading: false,
+                            error: null
+                        }
+                    }
+                }))
+            },
+
+            setMatchesLoading: (tournamentId, loading) => {
+                set(state => ({
+                    matchesCache: {
+                        ...state.matchesCache,
+                        [tournamentId]: {
+                            ...state.matchesCache[tournamentId],
+                            matches: state.matchesCache[tournamentId]?.matches || [],
+                            teamsData: state.matchesCache[tournamentId]?.teamsData || [],
+                            teamImages: state.matchesCache[tournamentId]?.teamImages || [],
+                            lastMatches: state.matchesCache[tournamentId]?.lastMatches || false,
+                            cachedAt: state.matchesCache[tournamentId]?.cachedAt || Date.now(),
+                            loading,
+                            error: state.matchesCache[tournamentId]?.error || null
+                        }
+                    }
+                }))
+            },
+
+            setMatchesError: (tournamentId, error) => {
+                set(state => ({
+                    matchesCache: {
+                        ...state.matchesCache,
+                        [tournamentId]: {
+                            ...state.matchesCache[tournamentId],
+                            matches: state.matchesCache[tournamentId]?.matches || [],
+                            teamsData: state.matchesCache[tournamentId]?.teamsData || [],
+                            teamImages: state.matchesCache[tournamentId]?.teamImages || [],
+                            lastMatches: state.matchesCache[tournamentId]?.lastMatches || false,
+                            cachedAt: state.matchesCache[tournamentId]?.cachedAt || Date.now(),
+                            loading: false,
+                            error
+                        }
+                    }
+                }))
+            },
+
+            clearExpiredCache: () => {
+                const state = get()
+                const now = Date.now()
+                
+                // Nettoyer les saisons expirées
+                const filteredSeasons = Object.entries(state.seasonsCache).reduce((acc, [key, value]) => {
+                    if (value && now - value.cachedAt < state.cacheTimeout) {
+                        acc[parseInt(key)] = value
+                    }
+                    return acc
+                }, {} as Record<number, CachedSeasonData>)
+                
+                // Nettoyer les matches expirés
+                const filteredMatches = Object.entries(state.matchesCache).reduce((acc, [key, value]) => {
+                    if (value && now - value.cachedAt < state.cacheTimeout) {
+                        acc[parseInt(key)] = value
+                    }
+                    return acc
+                }, {} as Record<number, CachedMatchData>)
+                
+                set({ 
+                    seasonsCache: filteredSeasons,
+                    matchesCache: filteredMatches
+                })
+            },
+
             initializeWithSeasons: (seasons, isAllActive) => {
                 if (seasons.length === 0) return
                 if (!isAllActive){
@@ -113,6 +326,7 @@ export const useTableEntityStore = create<TableEntityState>()(
                         activeAllSplit:false,
                     })
                 }
+
 
                 const latestSeason = seasons[seasons.length - 1].season
                 const splits = getSplits(latestSeason, seasons)
@@ -143,7 +357,7 @@ export const useTableEntityStore = create<TableEntityState>()(
                 })
             },
 
-            selectSeason: (season, seasons, isAllActive) => {
+            selectSeason: (season, seasons) => {
                 const splits = getSplits(season, seasons)
                 const latestSplit =
                     splits.length > 0 ? splits[splits.length - 1] : ''

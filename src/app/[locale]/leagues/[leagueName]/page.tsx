@@ -8,19 +8,11 @@ import {
 import { fetchEnrichedStandingsData } from '@/lib/api/standings'
 import { getPlayerImage } from '@/lib/api/player'
 import { LeagueDescription } from '@/components/leagues/components/LeagueDescription'
-import { NextMatches } from '@/components/leagues/Matches/NextMatches'
-import { StandingsOverviewClient } from '@/components/leagues/Standings/views/StandingsOverviewClient'
-import { StandingsWithTabsClient } from '@/components/leagues/Standings/views/StandingsWithTabsClient'
-import PlayersKda from '@/components/leagues/Stats/views/playersKda'
 
-import { TournamentProvider } from '@/contexts/TournamentContext'
 import { getTeamImage, getLeagueImage } from '@/lib/api/image'
 import { getTeamsByNames } from '@/lib/api/teams'
 import { LeagueTableEntityClient } from '@/components/leagues/components/LeagueTableEntityClient'
-import {
-    getLastThreeMatchesForTournament,
-    getNextThreeMatchesForTournament,
-} from '@/lib/api/tournaments'
+import { getNextThreeMatchesForTournament } from '@/lib/api/tournaments'
 
 interface LeaguePageProps {
     params: Promise<{ leagueName: string }>
@@ -156,8 +148,7 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
                         matches={matches}
                         teamsData={teamsData}
                         teamImages={teamImagesArray}
-                        imageData={leagueImage.data || ''}
-                    />
+                        imageData={leagueImage.data || ''}                    />
                 )}
 {/* 
                 {league.data && (

@@ -1,10 +1,9 @@
 import { useTournament } from '@/contexts/TournamentContext'
 import OverlayImage from '@/components/ui/OverlayImage'
-import { ProcessedStanding } from '@/components/leagues/Standings/utils/StandingsDataProcessor'
 // import PlayerAndTeam from '@/components/players/PlayerAndTeam'
 // import { getPlayerByLink } from '@/lib/api/player'
 
-export default function PlayersKdaTable({ processedData }: { processedData: ProcessedStanding[] }) {
+export default function PlayersKdaTable() {
     const { playerStats, Images } = useTournament()
     
     if (!playerStats || playerStats.length === 0) {

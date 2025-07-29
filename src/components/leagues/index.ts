@@ -18,6 +18,7 @@ export { LeagueSection } from './components/LeagueSection'
 // Matches
 export { NextMatches } from './Matches/NextMatches'
 export { NextMatchesClient } from './Matches/NextMatchesClient'
+export { NextMatchesServer } from './Matches/NextMatchesServer'
 
 // Standings (re-export from Standings module)
 export * from './Standings'

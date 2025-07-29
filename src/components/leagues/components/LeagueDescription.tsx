@@ -2,7 +2,6 @@ import React from 'react'
 import { Tooltip } from '../../utils/Tooltip'
 import { League as LeagueType } from '@/generated/prisma'
 import { truncateText } from '@/lib/utils'
-import { getLeagueImage } from '@/lib/api/image'
 import { LeagueDescriptionClient } from './LeagueDescriptionClient'
 
 interface LeagueDescriptionProps {
