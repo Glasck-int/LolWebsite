@@ -9,7 +9,6 @@ import {
     CardHeaderBase,
     CardHeaderColumn,
     CardHeaderContent,
-    CardHeaderSelector,
     CardHeaderTab,
     CardBody,
     CardBodyMultiple,
@@ -43,6 +42,7 @@ import {
 import { CardContext } from '@/components/ui/card/Card'
 import { SelectorIcon, SelectorBody, SelectorContent } from '@/components/utils/Selector'
 import { useIndexState } from '@/lib/hooks/useIndexState'
+import Image from 'next/image'
 
 const seasons = [
     {
@@ -194,7 +194,7 @@ export default function Home() {
                                         <p>TODO switch context</p>
                                         <p>
                                             Quand on passe de all a pas all,
-                                            mais qu'on avait select all, fait
+                                            mais qu&apos;on avait select all, fait
                                             fait de la merde
                                         </p>
                                         <p>
@@ -261,9 +261,12 @@ export default function Home() {
                     <Card>
                         <CardBody>
                             <div className="hidden md:flex p-[15px] h-[130px] gap-3 w-[250px]">
-                                <img
-                                    src="https://content.imageresizer.com/images/memes/SLAY-ALL-DAY-meme-7fequ2.jpg"
+                                <Image
+                                    src=""
                                     className="rounded-full"
+                                    alt="Shreckus"
+                                    width={100}
+                                    height={100}
                                 />
                                 <div className="py-[15px]">
                                     <h2>Shreckus</h2>

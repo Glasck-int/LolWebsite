@@ -141,11 +141,11 @@ export const TableEntityHeader = ({
         if (seasons.length > 0) {
             initializeWithSeasons(seasons, isAllActive)
         }
-    }, [seasons, initializeWithSeasons])
+    }, [seasons, initializeWithSeasons, isAllActive])
 
     useEffect(() => {
         updateTournamentBySplit(seasons, isAllActive)
-    }, [activeSplit])
+    }, [activeSplit, seasons, isAllActive, updateTournamentBySplit])
 
     return (
         <div className={`flex flex-col w-full ${className}`}>

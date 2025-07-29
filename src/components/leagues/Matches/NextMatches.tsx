@@ -49,13 +49,13 @@ export const NextMatches = async ({
     // Fallback to last matches if no next matches are found
     try {
         const nextMatchesResponse = await getNextThreeMatchesForTournament(
-            tournamentId || ''
+            tournamentId?.toString() || ''
         )
         if (nextMatchesResponse.data && nextMatchesResponse.data.length > 0) {
             matches = nextMatchesResponse.data
         } else {
             const lastMatchesResponse = await getLastThreeMatchesForTournament(
-                tournamentId || ''
+                tournamentId?.toString() || ''
             )
             matches = lastMatchesResponse.data || []
             lastMatches = true

@@ -1,4 +1,4 @@
-import React, { useState} from 'react'
+import { useState} from 'react'
 
 /**
  * useSelectorState – Custom hook to manage active index state.

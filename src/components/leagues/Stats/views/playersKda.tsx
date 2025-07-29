@@ -9,9 +9,8 @@ import { useTranslations } from 'next-intl'
 import { SubTitle } from '@/components/ui/text/SubTitle'
 import { Tooltip } from '@/components/utils/Tooltip'
 import PlayersKdaTable from '../components/PlayersKdaTable'
-import { ProcessedStanding } from '@/components/leagues/Standings/utils/StandingsDataProcessor'
 
-export default function PlayersKda({ processedData }: { processedData: ProcessedStanding[] }) {
+export default function PlayersKda() {
     const t = useTranslations()
     return (
         <div>

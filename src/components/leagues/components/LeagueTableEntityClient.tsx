@@ -2,8 +2,7 @@
 
 import React from 'react'
 import { useTableEntityData } from '@/hooks/useTableEntityData'
-import { useNextMatches } from '@/hooks/useNextMatches'
-import { useTableEntityStore } from '@/store/tableEntityStore'
+import { useTableEntityStore, SeasonData } from '@/store/tableEntityStore'
 import {
     TableEntityLayout,
     TableEntityHeader,
@@ -15,12 +14,9 @@ import {
     CardBody,
     CardFooter,
     CardFooterContent,
-    CardHeader,
-    CardHeaderBase,
 } from '@/components/ui/card'
 import {
     LeagueDescription,
-    NextMatches,
     NextMatchesClient,
     StandingsOverviewClient,
     StandingsWithTabsClient,
@@ -32,7 +28,7 @@ interface LeagueTableEntityClientProps {
     leagueId: number
     league?: League
     standings?: Standings[]
-    playerStats?: any
+    playerStats?: unknown
     tournamentName?: string
     enrichedStandingsData?: ProcessedStanding[]
     enrichedGamesData?: MatchScheduleGame[]
@@ -58,24 +54,11 @@ const LeagueTableEntityContent = ({
     enrichedStandingsData,
     enrichedGamesData,
     playerImages,
-    matches,
-    teamsData,
-    teamImages,
     imageData,
     seasons,
-}: Omit<LeagueTableEntityClientProps, 'leagueId'> & { seasons: any[] }) => {
+}: Omit<LeagueTableEntityClientProps, 'leagueId'> & { seasons: SeasonData[] }) => {
     const activeId = useTableEntityStore((state) => state.activeId)
     const selectedTournamentId = activeId.length > 0 ? activeId[0] : null
-    
-    // Hook pour récupérer les matches du tournoi sélectionné
-    const { 
-        matches: fetchedMatches, 
-        teamsData: fetchedTeamsData, 
-        teamImages: fetchedTeamImages, 
-        loading: matchesLoading, 
-        error: matchesError,
-        lastMatches 
-    } = useNextMatches(selectedTournamentId)
 
     return (
         <>
@@ -134,59 +117,26 @@ const LeagueTableEntityContent = ({
                 <TableEntityContent>
                     <div className="space-y-4">
                         {/* Next Matches */}
-                        {matchesLoading ? (
-                            <div className="p-4 bg-gray-700 rounded-lg">
-                                <h3 className="text-lg font-semibold mb-2">
-                                    Matchs
-                                </h3>
-                                <p>Chargement des matchs...</p>
-                            </div>
-                        ) : matchesError ? (
-                            <div className="p-4 bg-red-700 rounded-lg">
-                                <h3 className="text-lg font-semibold mb-2">
-                                    Erreur
-                                </h3>
-                                <p>{matchesError}</p>
-                            </div>
-                        ) : fetchedMatches.length > 0 ? (
-                            <Card>
-                                <CardHeader>
-                                    <CardHeaderBase>
-                                        <div className="flex flex-row justify-between items-center w-full">
-                                            <NextMatchesClient
-                                                matches={fetchedMatches}
-                                                teamsData={fetchedTeamsData}
-                                                teamImages={fetchedTeamImages}
-                                                showSingleMatchOnDesktop={false}
-                                                lastMatches={lastMatches}
-                                                isHeader={true}
-                                                bestOf={fetchedMatches[0]?.bestOf}
-                                            />
-                                        </div>
-                                    </CardHeaderBase>
-                                </CardHeader>
-                                <CardBody>
-                                    <NextMatchesClient
-                                        matches={fetchedMatches}
-                                        teamsData={fetchedTeamsData}
-                                        teamImages={fetchedTeamImages}
-                                        showSingleMatchOnDesktop={false}
-                                        lastMatches={lastMatches}
-                                        isHeader={false}
-                                    />
-                                </CardBody>
-                            </Card>
+                        {selectedTournamentId ? (
+                            <NextMatchesClient 
+                                tournamentId={selectedTournamentId}
+                                showSingleMatchOnDesktop={false}
+                            />
                         ) : (
                             <div className="p-4 bg-gray-700 rounded-lg">
                                 <h3 className="text-lg font-semibold mb-2">
                                     Matchs
                                 </h3>
-                                <p>Aucun match disponible</p>
+                                <p>Sélectionnez un tournoi pour voir les matchs</p>
                             </div>
                         )}
                     </div>
                 </TableEntityContent>
-                <TableEntityContent></TableEntityContent>
+                <TableEntityContent>
+                    <div className="space-y-4">
+                        <p>Tournois</p>
+                    </div>
+                </TableEntityContent>
                 <TableEntityContent>
                     <div className="space-y-4">
                         {/* Players KDA et Standings With Tabs */}

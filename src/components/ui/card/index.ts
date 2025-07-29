@@ -5,7 +5,7 @@ export {
     CardHeaderBase,
     CardHeaderColumn,
     CardHeaderTab,
-    CardHeaderSelector,
+    // CardHeaderSelector,
     CardHeaderContent,
 } from './CardHeader'
 

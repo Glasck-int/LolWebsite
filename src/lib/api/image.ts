@@ -46,7 +46,7 @@ async function getLeagueImage(
 
                 return { data: response.url }
             }
-        } catch (error) {
+        } catch {
             return { data: null }
         }
         return { data: null }
@@ -75,7 +75,7 @@ async function getTeamImage(
         if (response.ok) {
             return { data: imageUrl }
         }
-    } catch (error) {
+    } catch {
         return { data: null }
     }
     return { data: null }
@@ -99,7 +99,7 @@ async function getPublicPlayerImage(
         }
         console.log('imageUrl', imageUrl, 'response', response)
         return { data: null }
-    } catch (error) {
+    } catch {
         return { data: null }
     }
 }
@@ -135,7 +135,7 @@ async function getTeamImageByName(
             if (response.ok) {
                 return { data: imageUrl }
             }
-        } catch (error) {
+        } catch {
             // Continue to next possibility
         }
     }

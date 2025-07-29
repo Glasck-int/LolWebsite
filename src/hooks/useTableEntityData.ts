@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import type { SeasonData } from '@/components/layout/TableEntityLayout/TableEntityLayout'
+import type { SeasonData } from '@/store/tableEntityStore'
+import { useTableEntityStore } from '@/store/tableEntityStore'
 import { getSeasonsByLeagueId } from '@/lib/api/seasons'
 import type { SeasonResponse } from '@Glasck-int/glasck-types'
 
@@ -24,21 +25,31 @@ import type { SeasonResponse } from '@Glasck-int/glasck-types'
  * )
  */
 export const useTableEntityData = (leagueId: number) => {
-    const [data, setData] = useState<SeasonData[] | null>(null)
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
+    const getCachedSeasons = useTableEntityStore(state => state.getCachedSeasons)
+    const setCachedSeasons = useTableEntityStore(state => state.setCachedSeasons)
+    const setCacheLoading = useTableEntityStore(state => state.setCacheLoading)
+    const setCacheError = useTableEntityStore(state => state.setCacheError)
+    
+    const [initialized, setInitialized] = useState(false)
 
     useEffect(() => {
         const fetchData = async () => {
             if (!leagueId) {
-                setError('League ID is required')
-                setLoading(false)
+                setCacheError(leagueId, 'League ID is required')
+                return
+            }
+
+            // Vérifier le cache d'abord
+            const cached = getCachedSeasons(leagueId)
+            if (cached && !cached.loading && cached.data.length > 0) {
+                // Données en cache et valides, pas besoin de fetch
+                setInitialized(true)
                 return
             }
 
             try {
-                setLoading(true)
-                setError(null)
+                setCacheLoading(leagueId, true)
+                setCacheError(leagueId, null)
                 
                 const response = await getSeasonsByLeagueId(leagueId)
                 
@@ -59,19 +70,28 @@ export const useTableEntityData = (leagueId: number) => {
                     }))
                 }))
                 
-                setData(seasons)
+                // Stocker dans le cache
+                setCachedSeasons(leagueId, seasons)
                 
             } catch (err) {
                 console.error('Error fetching season data:', err)
-                setError(err instanceof Error ? err.message : 'Failed to fetch data')
-                setData(null)
-            } finally {
-                setLoading(false)
+                setCacheError(leagueId, err instanceof Error ? err.message : 'Failed to fetch data')
             }
+            
+            setInitialized(true)
         }
 
-        fetchData()
-    }, [leagueId])
+        if (!initialized) {
+            fetchData()
+        }
+    }, [leagueId, initialized, getCachedSeasons, setCachedSeasons, setCacheLoading, setCacheError])
 
-    return { data, loading, error }
+    // Récupérer les données du cache
+    const cached = getCachedSeasons(leagueId)
+    
+    return {
+        data: cached?.data || null,
+        loading: cached?.loading || false,
+        error: cached?.error || null
+    }
 }

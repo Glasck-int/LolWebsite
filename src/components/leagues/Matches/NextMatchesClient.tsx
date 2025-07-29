@@ -4,11 +4,18 @@ import React from 'react'
 import { MatchSchedule as MatchScheduleType } from '@/generated/prisma'
 import { TimeDisplay } from '@/lib/hooks/timeDisplay'
 import { useVisibleMatches } from '@/lib/hooks/useVisibleMatches'
+import { useMatchesData } from '@/hooks/useMatchesData'
 import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 import { SubTitle } from '@/components/ui/text/SubTitle'
+import {
+    Card,
+    CardBody,
+    CardHeader,
+    CardHeaderBase,
+} from '@/components/ui/card/index'
 
-interface NextMatchesClientProps {
+interface NextMatchesData {
     matches: MatchScheduleType[]
     teamsData: Array<{
         short?: string | null
@@ -19,31 +26,94 @@ interface NextMatchesClientProps {
         team1Image?: string | null
         team2Image?: string | null
     }>
-    showSingleMatchOnDesktop: boolean
     lastMatches: boolean
+}
+
+interface NextMatchesClientProps {
+    initialData?: NextMatchesData
+    tournamentId?: number
+    showSingleMatchOnDesktop: boolean
     isHeader?: boolean
     bestOf?: number | null
+    // Legacy props for backward compatibility
+    matches?: MatchScheduleType[]
+    teamsData?: Array<{
+        short?: string | null
+        image?: string | null
+        overviewPage?: string | null
+    }>
+    teamImages?: Array<{
+        team1Image?: string | null
+        team2Image?: string | null
+    }>
+    lastMatches?: boolean
 }
 
 /**
  * Client component that handles the responsive display of matches
+ * Can work with initialData (from server) or legacy direct props
+ * Falls back to client-side fetching if no data provided
  */
 export const NextMatchesClient = ({
-    matches,
-    teamsData,
-    teamImages,
+    initialData,
+    tournamentId,
     showSingleMatchOnDesktop,
-    lastMatches,
     isHeader = false,
-    bestOf,
+    // bestOf,
+    // Legacy props
+    matches: legacyMatches,
+    teamsData: legacyTeamsData,
+    teamImages: legacyTeamImages,
+    lastMatches: legacyLastMatches,
 }: NextMatchesClientProps) => {
     const t = useTranslations('Tournaments')
+    
+    // Use the new cached hook for matches data
+    const { data: cachedData, loading, error } = useMatchesData(tournamentId)
+    
+    // Determine which data to use - prioritize cached data, then initialData, then legacy props
+    const currentData = cachedData || initialData || {
+        matches: legacyMatches || [],
+        teamsData: legacyTeamsData || [],
+        teamImages: legacyTeamImages || [],
+        lastMatches: legacyLastMatches || false
+    }
+    
     const { containerRef, testRef, visibleCount } = useVisibleMatches(
-        matches.length,
+        currentData.matches.length,
         showSingleMatchOnDesktop
     )
+    
+    // Note: Client-side fetching is now handled by useMatchesData hook
 
-    const matchesToShow = matches.slice(0, visibleCount)
+    const matchesToShow = currentData.matches.slice(0, visibleCount)
+    
+    // Show loading state only when actually loading and no data available
+    if (loading && !currentData.matches.length) {
+        return (
+            <div className="flex items-center justify-center h-[125px]">
+                <div className="text-gray-400">Loading matches...</div>
+            </div>
+        )
+    }
+
+    // Show error state if there's an error and no data
+    if (error && !currentData.matches.length) {
+        return (
+            <div className="flex items-center justify-center h-[125px]">
+                <div className="text-red-400">Error loading matches: {error}</div>
+            </div>
+        )
+    }
+
+    // Show "no matches" state if no loading, no error, but no matches
+    if (!loading && !error && !currentData.matches.length) {
+        return (
+            <div className="flex items-center justify-center h-[125px]">
+                <div className="text-gray-400">Aucun match disponible</div>
+            </div>
+        )
+    }
 
     const hover =
         'hover:opacity-70 transition-opacity duration-200 cursor-pointer'
@@ -53,7 +123,7 @@ export const NextMatchesClient = ({
         return (
             <div className="flex flex-row justify-between items-center w-full">
                 <SubTitle>
-                    {lastMatches ? t('lastMatch') : t('nextMatch')}
+                    {currentData.lastMatches === true ? t('lastMatch') : t('nextMatch')}
                 </SubTitle>
                 {/* <SubTitle>{bestOf ? `Bo${bestOf}` : ''}</SubTitle> */}
             </div>
@@ -116,7 +186,7 @@ export const NextMatchesClient = ({
 
                 {/* Match info */}
                 <div className="flex flex-col items-center flex-1">
-                    {lastMatches ? (
+                    {currentData.lastMatches === true ? (
                         // Afficher le score pour les derniers matches
                         <div className="flex flex-col items-center">
                             <span className="text-white font-bold text-lg">
@@ -154,6 +224,53 @@ export const NextMatchesClient = ({
         )
     }
 
+    // If we need to show a full card (not just header/body content)
+    if (!isHeader && !initialData && currentData.matches.length > 0) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardHeaderBase>
+                        <div className="flex flex-row justify-between items-center w-full">
+                            <SubTitle>
+                                {currentData.lastMatches === true ? t('lastMatch') : t('nextMatch')}
+                            </SubTitle>
+                        </div>
+                    </CardHeaderBase>
+                </CardHeader>
+                <CardBody>
+                    <div ref={containerRef} className="w-full">
+                        {/* Hidden test element to measure match width */}
+                        <div
+                            ref={testRef}
+                            className="absolute invisible"
+                            style={{ width: '280px' }}
+                        />
+
+                        {/* Visible matches container */}
+                        <div className="flex flex-row w-full">
+                            {matchesToShow.map((match, idx) => {
+                                const team1 = currentData.teamsData.find(
+                                    (team) => team.overviewPage === match.team1
+                                )
+                                const team2 = currentData.teamsData.find(
+                                    (team) => team.overviewPage === match.team2
+                                )
+                                return renderMatch(
+                                    match,
+                                    team1,
+                                    team2,
+                                    currentData.teamImages[idx] || { team1Image: null, team2Image: null },
+                                    idx,
+                                    matchesToShow.length
+                                )
+                            })}
+                        </div>
+                    </div>
+                </CardBody>
+            </Card>
+        )
+    }
+
     return (
         <div ref={containerRef} className="w-full">
             {/* Hidden test element to measure match width */}
@@ -166,17 +283,17 @@ export const NextMatchesClient = ({
             {/* Visible matches container */}
             <div className="flex flex-row w-full">
                 {matchesToShow.map((match, idx) => {
-                    const team1 = teamsData.find(
+                    const team1 = currentData.teamsData.find(
                         (team) => team.overviewPage === match.team1
                     )
-                    const team2 = teamsData.find(
+                    const team2 = currentData.teamsData.find(
                         (team) => team.overviewPage === match.team2
                     )
                     return renderMatch(
                         match,
                         team1,
                         team2,
-                        teamImages[idx] || { team1Image: null, team2Image: null },
+                        currentData.teamImages[idx] || { team1Image: null, team2Image: null },
                         idx,
                         matchesToShow.length
                     )
