@@ -22,7 +22,7 @@ interface ChildrenProps {
 export const useSwitch = () => {
     const context = useContext(SwitchContextP)
     if (!context) {
-        throw new Error('useSwitch must be used within a Switch component')
+        throw new Error('useSwitch doit être utilisé dans un composant Switch')
     }
     return context
 }
