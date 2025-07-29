@@ -2,16 +2,20 @@
 
 import React, { useState, useContext } from 'react'
 import { ChildAndClassname, useCard } from '../ui/card/Card'
-import { createContext } from 'react'
 
-const SwitchContextP = createContext<{
+interface SwitchProps extends ChildAndClassname {
     activeIndex: number
     setActiveIndex: (index: number) => void
-} | null>(null)
+}
 
-interface SwitchProps {
+interface SwitchButtonProps {
+    setActiveIndex: (index: number) => void
     children: React.ReactNode[]
     isRight: number
+}
+
+interface SwitchBodyProps extends ChildrenProps{
+    activeIndex: number
 }
 
 interface ChildrenProps {
@@ -50,14 +54,35 @@ export const Switch = ({ children, className = '' }: ChildAndClassname) => {
 
     return (
         <div className={`${className}`}>
-            <SwitchButton isRight={activeIndex}>{childrenArray}</SwitchButton>
+            <SwitchButton
+                isRight={activeIndex}
+                setActiveIndex={() => setActiveIndex(activeIndex === 1 ? 0 : 1)}
+            >
+                {childrenArray}
+            </SwitchButton>
         </div>
     )
 }
 
-const SwitchButton = ({ children, isRight }: SwitchProps) => {
-    const { setActiveIndex } = useSwitch()
-
+/**
+ * SwitchButton – Internal UI button for the switch.
+ *
+ * This handles rendering the toggle animation and content display depending on the current active side.
+ * It shows the selected child content based on the active index.
+ *
+ * @function SwitchButton
+ *
+ * @param number isRight - Whether the right side is active (1 or 0).
+ * @param (index: number) => void setActiveIndex - Toggles the active index when clicked.
+ * @param React.ReactNode[] children - Two children nodes displayed on either side of the switch.
+ *
+ * @returns  The rendered animated toggle button.
+ */
+const SwitchButton = ({
+    children,
+    isRight,
+    setActiveIndex,
+}: SwitchButtonProps) => {
     return (
         <div
             onClick={() => setActiveIndex(isRight === 0 ? 1 : 0)}
@@ -105,6 +130,18 @@ const SwitchButton = ({ children, isRight }: SwitchProps) => {
     )
 }
 
+/**
+ * SwitchContent – Simple wrapper for switch option content.
+ *
+ * Used to wrap each selectable element inside the <Switch> component.
+ *
+ * @function SwitchContent
+ *
+ * @param React.ReactNode children - Content inside the switch option.
+ * @param string [className] - Optional custom styling.
+ *
+ * @returns  The wrapped content.
+ */
 export const SwitchContent = ({
     children,
     className = '',
@@ -112,8 +149,25 @@ export const SwitchContent = ({
     return <div className={` ${className}`}>{children}</div>
 }
 
-export const SwitchBodyMultiple = ({ children }: ChildrenProps) => {
-    const { activeIndex } = useSwitch()
+/**
+ * SwitchBodyMultiple – Displays the body content associated with the active switch index.
+ *
+ * Renders the child element that matches the current active index, hiding others.
+ *
+ * @function SwitchBodyMultiple
+ *
+ * @param React.ReactNode children - Multiple content elements.
+ * @param number activeIndex - The index of the currently active child to show.
+ *
+ * @returns The currently active content, or an error if children are invalid.
+ *
+ * @example
+ * <SwitchBodyMultiple activeIndex={1}>
+ *   <SwitchBodyMultipleContent>View A</SwitchBodyMultipleContent>
+ *   <SwitchBodyMultipleContent>View B</SwitchBodyMultipleContent>
+ * </SwitchBodyMultiple>
+ */
+export const SwitchBodyMultiple = ({ children, activeIndex }: SwitchBodyProps) => {
     return (
         <div className="h-full w-full">
             {React.Children.map(children, (child, index) => {

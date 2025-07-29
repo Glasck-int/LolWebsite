@@ -9,7 +9,6 @@ import {
     CardHeaderBase,
     CardHeaderColumn,
     CardHeaderContent,
-    CardHeaderSelector,
     CardHeaderTab,
     CardBody,
     CardBodyMultiple,
@@ -36,13 +35,17 @@ import {
 import {
     Switch,
     SwitchContent,
-    SwitchContext,
     SwitchBodyMultiple,
     SwitchBodyMultipleContent,
 } from '@/components/utils/Switch'
 import { CardContext } from '@/components/ui/card/Card'
-import { SelectorIcon, SelectorBody, SelectorContent } from '@/components/utils/Selector'
+import {
+    SelectorIcon,
+    SelectorBody,
+    SelectorContent,
+} from '@/components/utils/Selector'
 import { useIndexState } from '@/lib/hooks/useIndexState'
+import { HideCard } from '@/components/ui/card/HideCard'
 
 const seasons = [
     {
@@ -155,10 +158,15 @@ const seasons = [
     },
 ]
 
-
-
 export default function Home() {
-    const {activeIndex, setActiveIndex} = useIndexState()
+    const {
+        activeIndex: selectorActiveIndex,
+        setActiveIndex: setSelectorActiveIndex,
+    } = useIndexState()
+    const {
+        activeIndex: switchActiveIndex,
+        setActiveIndex: setSwitchActiveIndex,
+    } = useIndexState()
     return (
         <div className="body-container">
             <div className="">
@@ -191,26 +199,6 @@ export default function Home() {
                                 <CardBodyMultipleContent>
                                     <div className="flex flex-col justify-center items-center h-full">
                                         <p>TODO Pouvoir fermer les cartes</p>
-                                        <p>TODO switch context</p>
-                                        <p>
-                                            Quand on passe de all a pas all,
-                                            mais qu'on avait select all, fait
-                                            fait de la merde
-                                        </p>
-                                        <p>
-                                            modifier le nom de card pour creer
-                                            un cardContext
-                                        </p>
-                                        <p>
-                                            ajouter un context pour annotion
-                                            sans utiliser celui de card
-                                        </p>
-                                        <p>
-                                            patcher : quand tu utilises all
-                                            season tu peux plus selec un
-                                            tournois
-                                        </p>
-                                        <p>enlever le context du switch pour le gerer comme selector</p>
                                     </div>
                                 </CardBodyMultipleContent>
                                 <CardBodyMultipleContent>
@@ -225,33 +213,50 @@ export default function Home() {
                 </Card>
             </div>
             ---
+            <Card>
+                <CardContext>
+                    <CardHeader>
+                        <CardHeaderBase className='justify-between'>
+                            <SubTitle>Header</SubTitle>
+                            <HideCard/>
+                        </CardHeaderBase>
+                    </CardHeader>
+                    <CardBody >
+                        <div className='h-[100px]'>
+                            <p>BODY</p>
+                        </div>
+                    </CardBody>
+                </CardContext>
+            </Card>
+            ---
             <div>
                 <Card>
-                    <SwitchContext>
-                        <CardHeader>
-                            <CardHeaderBase className="px-[15px] justify-between">
-                                <SubTitle>Header</SubTitle>
-                                <Switch>
-                                    <SwitchContent>
-                                        <p className="text-inherit">@15</p>
-                                    </SwitchContent>
-                                    <SwitchContent>
-                                        <p className="text-inherit">Tout</p>
-                                    </SwitchContent>
-                                </Switch>
-                            </CardHeaderBase>
-                        </CardHeader>
-                        <CardBody className="px-[15px]">
-                            <SwitchBodyMultiple>
-                                <SwitchBodyMultipleContent>
-                                    <p>BODY 1</p>
-                                </SwitchBodyMultipleContent>
-                                <SwitchBodyMultipleContent>
-                                    <p>BODY 2</p>
-                                </SwitchBodyMultipleContent>
-                            </SwitchBodyMultiple>
-                        </CardBody>
-                    </SwitchContext>
+                    <CardHeader>
+                        <CardHeaderBase className="px-[15px] justify-between">
+                            <SubTitle>Header</SubTitle>
+                            <Switch
+                                activeIndex={switchActiveIndex}
+                                setActiveIndex={setSwitchActiveIndex}
+                            >
+                                <SwitchContent>
+                                    <p className="text-inherit">@15</p>
+                                </SwitchContent>
+                                <SwitchContent>
+                                    <p className="text-inherit">Tout</p>
+                                </SwitchContent>
+                            </Switch>
+                        </CardHeaderBase>
+                    </CardHeader>
+                    <CardBody className="px-[15px]">
+                        <SwitchBodyMultiple activeIndex={switchActiveIndex}>
+                            <SwitchBodyMultipleContent>
+                                <p>BODY 1</p>
+                            </SwitchBodyMultipleContent>
+                            <SwitchBodyMultipleContent>
+                                <p>BODY 2</p>
+                            </SwitchBodyMultipleContent>
+                        </SwitchBodyMultiple>
+                    </CardBody>
                 </Card>
             </div>
             ---
@@ -270,7 +275,7 @@ export default function Home() {
                                     <SubTitle>BGteams</SubTitle>
                                 </div>
                             </div>
-                            <TableEntityHeader seasons={seasons} all={[2]} />
+                            <TableEntityHeader seasons={seasons} allExcluded={[2]} />
                         </CardBody>
                         <CardFooter>
                             <CardFooterContent>
@@ -299,55 +304,23 @@ export default function Home() {
                 </TableEntityLayout>
             </div>
             ---
-            {/* <div className="h-[200px]">
-                <Card>
-                    <CardHeader>
-                        <CardHeaderBase className="justify-between">
-                            <SubTitle>header</SubTitle>
-                            <CardHeaderSelector>
-                                <CardHeaderContent>
-                                    <Annoyed></Annoyed>
-                                </CardHeaderContent>
-                                <CardHeaderContent>
-                                    <Annoyed></Annoyed>
-                                </CardHeaderContent>
-                                <CardHeaderContent>
-                                    <Annoyed></Annoyed>
-                                </CardHeaderContent>
-                            </CardHeaderSelector>
-                        </CardHeaderBase>
-                    </CardHeader>
-                    <CardBody>
-                        <CardBodyMultiple>
-                            <CardBodyMultipleContent>
-                                <div className="flex justify-center items-center h-full">
-                                    <p>body 1</p>
-                                </div>
-                            </CardBodyMultipleContent>
-                            <CardBodyMultipleContent>
-                                <p>body 2</p>
-                            </CardBodyMultipleContent>
-                            <CardBodyMultipleContent>
-                                <p>body 3</p>
-                            </CardBodyMultipleContent>
-                        </CardBodyMultiple>
-                    </CardBody>
-                </Card>
-            </div> */}
             <div>
                 <Card>
                     <CardHeader>
-                        <CardHeaderBase className='justify-between'>
+                        <CardHeaderBase className="justify-between">
                             <SubTitle>Header</SubTitle>
-                            <SelectorIcon activeIndex={activeIndex} setActiveIndex={setActiveIndex}>
-                                    <Annoyed/>
-                                    <Annoyed/>
-                                    <Annoyed/>
+                            <SelectorIcon
+                                activeIndex={selectorActiveIndex}
+                                setActiveIndex={setSelectorActiveIndex}
+                            >
+                                <Annoyed />
+                                <Annoyed />
+                                <Annoyed />
                             </SelectorIcon>
                         </CardHeaderBase>
                     </CardHeader>
                     <CardBody>
-                        <SelectorBody activeIndex={activeIndex}>
+                        <SelectorBody activeIndex={selectorActiveIndex}>
                             <SelectorContent>
                                 <p>BODY 1</p>
                             </SelectorContent>

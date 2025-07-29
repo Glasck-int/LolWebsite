@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import type { SeasonData } from '@/components/layout/TableEntityLayout/TableEntityLayout'
+import type { SeasonData } from '@/store/tableEntityStore'
 import { getSeasonsByLeagueId } from '@/lib/api/seasons'
 import type { SeasonResponse } from '@Glasck-int/glasck-types'
 
