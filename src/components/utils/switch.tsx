@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useContext } from 'react'
-import { ChildAndClassname } from '../ui/card/Card'
+import { ChildAndClassname, useCard } from '../ui/card/Card'
 import { createContext } from 'react'
 
 const SwitchContextP = createContext<{
@@ -22,7 +22,7 @@ interface ChildrenProps {
 export const useSwitch = () => {
     const context = useContext(SwitchContextP)
     if (!context) {
-        throw new Error('useSwitch must be used within a Switch component')
+        throw new Error('useSwitch doit être utilisé dans un composant Switch')
     }
     return context
 }
