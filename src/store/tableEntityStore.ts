@@ -107,6 +107,12 @@ export const useTableEntityStore = create<TableEntityState>()(
 
             initializeWithSeasons: (seasons, isAllActive) => {
                 if (seasons.length === 0) return
+                if (!isAllActive){
+                    set ({
+                        activeAllSeason: false,
+                        activeAllSplit:false,
+                    })
+                }
 
                 const latestSeason = seasons[seasons.length - 1].season
                 const splits = getSplits(latestSeason, seasons)

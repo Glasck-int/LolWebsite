@@ -9,11 +9,11 @@ import React, { useState} from 'react'
  *
  * @function useSelectorState
  *
- * @param {number} [defaultSelector=0] - Optional. The default active index to initialize with.
+ * @param number [defaultSelector=0] - Optional. The default active index to initialize with.
  *
- * @returns {Object} An object containing the current index and a function to update it.
- * @returns {number} return.activeIndex - Current active index.
- * @returns {Function} return.setActiveIndex - Function to update the active index.
+ * @returns Object An object containing the current index and a function to update it.
+ * @returns number return.activeIndex - Current active index.
+ * @returns Function return.setActiveIndex - Function to update the active index.
  *
  * @example
  * const { activeIndex, setActiveIndex } = useSelectorState()
