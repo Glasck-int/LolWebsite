@@ -4,7 +4,11 @@ import { ErrorResponseSchema } from '../../schemas/common'
 import { MatchScheduleSchema } from '../../schemas/matchShedule'
 import prisma from '../../services/prisma'
 import { MatchScheduleGameListResponse } from '../../schemas/matchScheduleGame'
-import { TeamNameParamSchema, TeamTournamentParamsSchema } from '../../schemas/params'
+import {
+    TeamNameParamSchema,
+    TeamTournamentParamsSchema,
+} from '../../schemas/params'
+import { cleanTeamName } from '../../utils/teamName'
 
 export default async function teamsRoutes(fastify: FastifyInstance) {
     const redis = fastify.redis
@@ -44,9 +48,14 @@ export default async function teamsRoutes(fastify: FastifyInstance) {
                 return reply.status(404).send({ error: 'Team not found' })
             }
 
+            const cleanedTeam = {
+                ...team,
+                name: cleanTeamName(team.name)
+            }
+
             // Cache for 1 week (604800 seconds)
-            await redis.setex(cacheKey, 604800, JSON.stringify(team))
-            return team
+            await redis.setex(cacheKey, 604800, JSON.stringify(cleanedTeam))
+            return cleanedTeam
         }
     )
 
@@ -152,13 +161,13 @@ export default async function teamsRoutes(fastify: FastifyInstance) {
                 return {
                     matchId: match.matchId,
                     dateTime_UTC: match.dateTime_UTC?.toISOString(),
-                    team1: match.team1,
-                    team2: match.team2,
+                    team1: cleanTeamName(match.team1),
+                    team2: cleanTeamName(match.team2),
                     winner: match.winner,
                     team1Score: match.team1Score,
                     team2Score: match.team2Score,
                     isWin,
-                    opponent: opponent || 'Unknown',
+                    opponent: cleanTeamName(opponent) || 'Unknown',
                     tournament: match.overviewPage,
                 }
             })
@@ -169,7 +178,7 @@ export default async function teamsRoutes(fastify: FastifyInstance) {
                 .join('')
 
             const result = {
-                team: name,
+                team: cleanTeamName(name),
                 tournament: tournament,
                 recentMatches: processedMatches, // ← Changer "matches" en "recentMatches"
                 form,
@@ -295,13 +304,13 @@ export default async function teamsRoutes(fastify: FastifyInstance) {
                 return {
                     gameId: game.gameId,
                     matchId: game.matchId,
-                    blue: game.blue,
-                    red: game.red,
+                    blue: cleanTeamName(game.blue),
+                    red: cleanTeamName(game.red),
                     winner: game.winner,
                     blueScore: game.blueScore,
                     redScore: game.redScore,
                     isWin,
-                    opponent: opponent || 'Unknown',
+                    opponent: cleanTeamName(opponent) || 'Unknown',
                     tournament: game.MatchSchedule?.overviewPage,
                     nGameInMatch: game.nGameInMatch,
                 }
@@ -313,7 +322,7 @@ export default async function teamsRoutes(fastify: FastifyInstance) {
                 .join('')
 
             const result = {
-                team: name,
+                team: cleanTeamName(name),
                 tournament: tournament,
                 recentGames: processedGames,
                 form,

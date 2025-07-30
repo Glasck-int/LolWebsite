@@ -16,7 +16,7 @@ interface SpoilerProviderProps {
 export const SpoilerProvider = ({ children }: SpoilerProviderProps) => {
   const [isSpoilerVisible, setIsSpoilerVisible] = useState(false);
 
-  // Charger l'état depuis le localStorage au montage
+  // Load the state from localStorage on mount
   useEffect(() => {
     const savedSpoilerState = localStorage.getItem('spoilerVisible');
     if (savedSpoilerState !== null) {
@@ -27,7 +27,7 @@ export const SpoilerProvider = ({ children }: SpoilerProviderProps) => {
   const toggleSpoiler = () => {
     const newState = !isSpoilerVisible;
     setIsSpoilerVisible(newState);
-    // Sauvegarder dans le localStorage
+    // Save to localStorage
     localStorage.setItem('spoilerVisible', JSON.stringify(newState));
   };
 

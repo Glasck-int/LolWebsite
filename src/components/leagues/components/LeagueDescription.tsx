@@ -9,21 +9,22 @@ interface LeagueDescriptionProps {
     imageData: string
 }
 
-
-export const LeagueDescription =  ({ league, imageData }: LeagueDescriptionProps) => {
-
+export const LeagueDescription = ({
+    league,
+    imageData,
+}: LeagueDescriptionProps) => {
     return (
-        <div className="flex flex-row mb-4 gap-4">
+        <div className="flex flex-row gap-4 items-center">
             {imageData && (
-                <LeagueDescriptionClient league={league} imageData={imageData} />
+                <LeagueDescriptionClient
+                    league={league}
+                    imageData={imageData}
+                />
             )}
-            <div className="flex flex-col justify-end items-start gap-0">
+            <div className="flex flex-col justify-center items-start gap-0">
                 <Tooltip content={league.name || ''}>
-                    <h1 className="font-medium tracking-wider m-0 leading-none">
-                        {truncateText(
-                            league.short || league.name || '',
-                            20
-                        )}
+                    <h1 className="font-medium  m-0 leading-none">
+                        {truncateText(league.short || league.name || '', 20)}
                     </h1>
                 </Tooltip>
                 <p className="text-clear-grey font-semibold m-0 leading-none">

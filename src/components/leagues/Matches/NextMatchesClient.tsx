@@ -15,7 +15,7 @@ import {
     CardHeaderBase,
 } from '@/components/ui/card/index'
 import { MatchSkeleton } from '@/components/ui/skeleton/MatchSkeleton'
-import SpoilerWrapper from '@/components/leagues/Matches/Score'
+import SpoilerWrapper from '@/components/leagues/Matches/SpoilerWrapper'
 
 
 

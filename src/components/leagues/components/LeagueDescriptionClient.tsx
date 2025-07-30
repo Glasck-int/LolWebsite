@@ -90,17 +90,17 @@ export const LeagueDescriptionClient = ({ league, imageData }: LeagueDescription
     }, [imageData])
 
     return (
-        <div className="w-[75px] h-[75px] [perspective:1000px] cursor-pointer">
+        <div className=" cursor-pointer ">
             <div
                 ref={cardRef}
-                className="w-full h-full relative [transform-style:preserve-3d] transition-transform duration-300 rounded-lg"
+                className=" w-full h-full flex justify-center items-center relative [transform-style:preserve-3d] transition-transform duration-300 rounded-lg"
                 style={{
                     transform: `rotateX(${mousePosition.x}deg) rotateY(${mousePosition.y}deg)`
                 }}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
             >
-                <div className="absolute inset-0 [backface-visibility:hidden] rounded-lg">
+                <div className=" inset-0 [backface-visibility:hidden] rounded-lg  ">
                     <Image
                         src={imageData}
                         alt={league.name || ''}
@@ -109,7 +109,7 @@ export const LeagueDescriptionClient = ({ league, imageData }: LeagueDescription
                             filter: `drop-shadow(0 0 8px ${dominantColor})`
                         }}
                         width={75}
-                        height={75}
+                        height={75} 
                     />
                 </div>
             </div>

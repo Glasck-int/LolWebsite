@@ -3,9 +3,10 @@ import { useTableEntityStore } from '@/store/tableEntityStore'
 import { getMatchesForTournament } from '@/lib/api/tournaments'
 import { getTeamsByNames } from '@/lib/api/teams'
 import { getTeamImage } from '@/lib/api/image'
+import { MatchSchedule } from '@/generated/prisma'
 
 interface NextMatchesData {
-    matches: any[]
+    matches: MatchSchedule[]
     teamsData: Array<{
         short?: string | null
         image?: string | null
@@ -41,14 +42,25 @@ export const useMatchesData = (tournamentId: number | undefined) => {
     useEffect(() => {
         const fetchMatches = async () => {
             if (!tournamentId) {
+                console.log('🚫 useMatchesData: no tournamentId')
                 setInitialized(true)
                 return
             }
 
             // Vérifier le cache d'abord
             const cached = getCachedMatches(tournamentId)
-            if (cached && !cached.loading) {
+            console.log('🔍 useMatchesData cache check:', {
+                tournamentId,
+                cached: cached ? {
+                    hasMatches: cached.data.matches.length > 0,
+                    loading: cached.loading,
+                    error: cached.error
+                } : null
+            })
+            
+            if (cached && !cached.loading && cached.data.matches.length > 0) {
                 // Données en cache et valides, pas besoin de fetch
+                console.log('✅ useMatchesData: using cached data')
                 setInitialized(true)
                 return
             }
@@ -137,10 +149,10 @@ export const useMatchesData = (tournamentId: number | undefined) => {
     
     return {
         data: cached ? {
-            matches: cached.matches,
-            teamsData: cached.teamsData,
-            teamImages: cached.teamImages,
-            lastMatches: cached.lastMatches
+            matches: cached.data.matches,
+            teamsData: cached.data.teamsData,
+            teamImages: cached.data.teamImages,
+            lastMatches: cached.data.lastMatches
         } : null,
         loading: (cached?.loading || false) || (!initialized && !!tournamentId),
         error: cached?.error || null

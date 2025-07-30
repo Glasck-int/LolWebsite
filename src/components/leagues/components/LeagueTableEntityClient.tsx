@@ -21,7 +21,12 @@ import {
     StandingsOverviewClient,
     StandingsWithTabsClient,
 } from '@/components/leagues'
-import { League, Standings, MatchSchedule, MatchScheduleGame } from '@/generated/prisma'
+import {
+    League,
+    Standings,
+    MatchSchedule,
+    MatchScheduleGame,
+} from '@/generated/prisma'
 import { ProcessedStanding } from '@/components/leagues/Standings/utils/StandingsDataProcessor'
 
 interface LeagueTableEntityClientProps {
@@ -56,19 +61,22 @@ const LeagueTableEntityContent = ({
     playerImages,
     imageData,
     seasons,
-}: Omit<LeagueTableEntityClientProps, 'leagueId'> & { seasons: SeasonData[] }) => {
+}: Omit<LeagueTableEntityClientProps, 'leagueId'> & {
+    seasons: SeasonData[]
+}) => {
     const activeId = useTableEntityStore((state) => state.activeId)
     const selectedTournamentId = activeId.length > 0 ? activeId[0] : null
 
+    // Debug logs pour comprendre le timing
     return (
         <>
             <Card>
                 <CardBody>
-                    <div className="hidden md:flex p-[15px] h-[130px] gap-3 w-[250px]">
-                        {league && imageData && (
+                    <div className="hidden md:flex p-[15px] h-[130px] gap-3 w-[250px] items-center justify-center">
+                        {league && (
                             <LeagueDescription
                                 league={league}
-                                imageData={imageData}
+                                imageData={imageData || ''}
                             />
                         )}
                     </div>
