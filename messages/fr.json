@@ -41,5 +41,10 @@
 	"Tournaments": {
 		"lastMatch": "Derniers Match",
 		"nextMatch": "Prochains Match"
+	},
+	"Calendar":{
+		"today":"Aujourd'hui",
+		"tomorrow":"Demain",
+		"yesterday":"Hier"
 	}
 }

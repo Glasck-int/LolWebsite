@@ -9,6 +9,7 @@ interface DropDownProps {
     setIsDown: (value: boolean) => void
     sizeMd?: number
     size?: number
+    ref?:React.Ref<HTMLDivElement> | undefined
 }
 
 export const getStateArrow = (isDownByDefault: boolean = true) => {
@@ -27,11 +28,13 @@ export default function DropDownArrow({
     arrowColor = '#373737',
     size = 20,
     sizeMd = 20,
+    ref
 }: DropDownProps) {
     const isMd = getMediaQuery('(min-width: 768px)') 
     const iconSize = isMd ? sizeMd : size
     return (
         <div
+            ref={ref && ref}
             className={`flex bg-white/35 rounded-full items-center justify-center cursor-pointer ${className}`}
             onClick={() => setIsDown(!isDown)}
         >

@@ -216,7 +216,7 @@ export default function Home() {
                 </Card>
             </div>
             ---
-            <ChoseDate />
+            <ChoseDate {...calendar}/>
             ---
             <Card>
                 <CardContext>
