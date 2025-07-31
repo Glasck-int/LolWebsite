@@ -40,6 +40,12 @@ export interface ProcessedStanding {
         form: string
         recentGames: MatchScheduleGameType[]
     }
+    /** Group information if the team is in a group */
+    groupInfo?: {
+        groupName: string
+        groupDisplay?: string
+        groupN?: number
+    }
 }
 
 /**
@@ -171,6 +177,16 @@ export const processStandingsData = (
                 ? Math.round((gamesStats.wins / gamesTotalGames) * 100)
                 : 0
 
+        // Extract group information from team data
+        // Check if standing.Team includes TournamentGroups (from API include)
+        const standingTeam = (standing as any).Team
+        const tournamentGroups = standingTeam?.TournamentGroups
+        const groupInfo = tournamentGroups?.[0] ? {
+            groupName: tournamentGroups[0].groupName,
+            groupDisplay: tournamentGroups[0].groupDisplay || undefined,
+            groupN: tournamentGroups[0].groupN || undefined
+        } : undefined
+
         processedStandings.push({
             standing,
             teamData,
@@ -188,6 +204,7 @@ export const processStandingsData = (
                 recentGames: gamesRecent?.recentGames || [],
                 form: form,
             },
+            groupInfo,
         })
     }
 
@@ -276,4 +293,55 @@ export const processGamesData = (
     }
 
     return processedGameStats
+}
+
+/**
+ * Groups processed standings data by group information.
+ * 
+ * @param processedData - Array of processed standings data
+ * @returns Object with grouped standings or null if no groups exist
+ */
+export const groupStandingsData = (processedData: ProcessedStanding[]) => {
+    // Check if any teams have group information
+    const hasGroups = processedData.some(team => team.groupInfo)
+    
+    if (!hasGroups) {
+        return null
+    }
+    
+    // Group teams by group name
+    const groupedData: Record<string, ProcessedStanding[]> = {}
+    
+    processedData.forEach(team => {
+        if (team.groupInfo) {
+            const groupKey = team.groupInfo.groupName
+            if (!groupedData[groupKey]) {
+                groupedData[groupKey] = []
+            }
+            groupedData[groupKey].push(team)
+        } else {
+            // Teams without group go to "Ungrouped"
+            if (!groupedData['Ungrouped']) {
+                groupedData['Ungrouped'] = []
+            }
+            groupedData['Ungrouped'].push(team)
+        }
+    })
+    
+    // Sort groups by group number if available, otherwise alphabetically
+    const sortedGroups = Object.entries(groupedData).sort(([a, teamsA], [b, teamsB]) => {
+        const groupANumber = teamsA[0]?.groupInfo?.groupN
+        const groupBNumber = teamsB[0]?.groupInfo?.groupN
+        
+        if (groupANumber !== undefined && groupBNumber !== undefined) {
+            return groupANumber - groupBNumber
+        }
+        
+        // If no group numbers, sort alphabetically but put "Ungrouped" last
+        if (a === 'Ungrouped') return 1
+        if (b === 'Ungrouped') return -1
+        return a.localeCompare(b)
+    })
+    
+    return Object.fromEntries(sortedGroups)
 }
