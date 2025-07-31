@@ -53,6 +53,12 @@ export interface StandingsColumnsConfig {
      * Useful for creating specialized views with specific data sets.
      */
     customColumns?: string[]
+    
+    /** 
+     * Group name to display instead of "Team" in the header.
+     * When provided, replaces the default "Team" header with the group name.
+     */
+    groupName?: string
 }
 
 /**
@@ -95,7 +101,8 @@ export const useStandingsColumns = (config: StandingsColumnsConfig) => {
         sortable = true,
         includeForm = true,
         mobileOptimized = false,
-        customColumns
+        customColumns,
+        groupName
     } = config
     const t = useTranslate('Standings')
     
@@ -119,7 +126,7 @@ export const useStandingsColumns = (config: StandingsColumnsConfig) => {
         },
         {
             key: 'team',
-            header: t('Team'),
+            header: groupName || t('Team'),
             cell: ({ standing, teamImage, teamData }) => (
                 <div className="flex items-center gap-4">
                     {teamImage ? (
@@ -439,7 +446,7 @@ export const useMobileStandingsColumns = (type: StandingsType) =>
  * const { columns } = useCombinedStandingsColumns(false);
  * ```
  */
-export const useCombinedStandingsColumns = (sortable: boolean = true) => {
+export const useCombinedStandingsColumns = (sortable: boolean = true, groupName?: string) => {
     const t = useTranslate('Standings')
     const teamHover = 'hover:text-clear-violet/80 transition-all duration-200'
 
@@ -455,7 +462,7 @@ export const useCombinedStandingsColumns = (sortable: boolean = true) => {
         },
         {
             key: 'team',
-            header: t('Team'),
+            header: groupName || t('Team'),
             cell: ({ standing, teamImage, teamData }) => (
                 <div className="flex items-center gap-4">
                     {teamImage ? (

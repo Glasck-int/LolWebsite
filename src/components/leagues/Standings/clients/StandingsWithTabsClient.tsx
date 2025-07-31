@@ -56,18 +56,22 @@ export const StandingsWithTabsClient = ({
     maxRows?: number | null
 }) => {
     const t = useTranslate('Standings.tabs')
-    // Desktop: combined columns, Tablet + Mobile: tabs
-    const desktopColumns = useCombinedStandingsColumns(true)
-    const tabletMatchesColumns = useMatchesColumns({ sortable: true })
-    const tabletGamesColumns = useGamesColumns({ sortable: true })
-    const mobileMatchesColumns = useMatchesColumns({ sortable: true })
-    const mobileGamesColumns = useGamesColumns({ sortable: true })
-    const mobileMColumns = getMobileColumns(mobileMatchesColumns)
-    const mobileGColumns = getMobileColumns(mobileGamesColumns)
-
-    // Check if we have groups
+    
+    // Check if we have groups first
     const groupedData = groupStandingsData(processedData)
     const hasGroups = groupedData !== null
+    
+    // Helper function to get columns for a specific group
+    const getColumnsForGroup = (groupName?: string) => {
+        const groupDisplayName = groupName && hasGroups ? groupName : undefined
+        return {
+            desktop: useCombinedStandingsColumns(true, groupDisplayName),
+            tabletMatches: useMatchesColumns({ sortable: true, groupName: groupDisplayName }),
+            tabletGames: useGamesColumns({ sortable: true, groupName: groupDisplayName }),
+            mobileMatches: useMatchesColumns({ sortable: true, groupName: groupDisplayName }),
+            mobileGames: useGamesColumns({ sortable: true, groupName: groupDisplayName })
+        }
+    }
 
     // If we have groups, render by groups
     if (hasGroups) {
@@ -102,34 +106,33 @@ export const StandingsWithTabsClient = ({
                                     </div>
                                     
                                     <div className="flex flex-col w-full h-full">
-                                        {Object.entries(groupedData).map(([groupName, groupTeams]) => (
-                                            <div key={groupName} className="flex flex-col">
-                                                {/* Group header */}
-                                                {/* <div className="mb-4">
-                                                    <SubTitle className="text-lg font-semibold">
-                                                        {groupTeams[0]?.groupInfo?.groupDisplay || groupName}
-                                                    </SubTitle>
-                                                </div> */}
+                                        {Object.entries(groupedData).map(([groupName, groupTeams]) => {
+                                            const groupDisplayName = groupTeams[0]?.groupInfo?.groupDisplay || groupName
+                                            const columns = getColumnsForGroup(groupDisplayName)
+                                            
+                                            return (
+                                                <div key={groupName} className="flex flex-col">
 
-                                            <CardHeader>
-                                                <CardHeaderBase>
-                                                    <StandingsHeader
-                                                        columns={desktopColumns}
-                                                        gridTemplate={desktopGridTemplate}
-                                                        className=""
-                                                    />
-                                                </CardHeaderBase>
-                                            </CardHeader>
-                                            <SortedMixedRows
-                                                processedData={groupTeams}
-                                                columns={desktopColumns}
-                                                highlightedTeam={highlightedTeam}
-                                                maxRows={maxRows}
-                                                gridTemplate={desktopGridTemplate}
-                                                className=""
-                                            />
-                                            </div>
-                                        ))}
+                                                <CardHeader>
+                                                    <CardHeaderBase>
+                                                        <StandingsHeader
+                                                            columns={columns.desktop}
+                                                            gridTemplate={desktopGridTemplate}
+                                                            className=""
+                                                        />
+                                                    </CardHeaderBase>
+                                                </CardHeader>
+                                                <SortedMixedRows
+                                                    processedData={groupTeams}
+                                                    columns={columns.desktop}
+                                                    highlightedTeam={highlightedTeam}
+                                                    maxRows={maxRows}
+                                                    gridTemplate={desktopGridTemplate}
+                                                    className=""
+                                                />
+                                                </div>
+                                            )
+                                        })}
                                     </div>
                                 </div>
                             </CardBody>
@@ -151,110 +154,122 @@ export const StandingsWithTabsClient = ({
                                 <CardBodyMultiple>
                                     <CardBodyMultipleContent>
                                         <div className="flex flex-col w-full h-full ">
-                                            {Object.entries(groupedData).map(([groupName, groupTeams]) => (
-                                                <div key={groupName} className="flex flex-col">
-                                                    {/* Group header */}
-                                                    {/* <div className="mb-4">
-                                                        <SubTitle className="text-lg font-semibold">
-                                                            {groupTeams[0]?.groupInfo?.groupDisplay || groupName}
-                                                        </SubTitle>
-                                                    </div> */}
-                                                    
-                                                    <CardHeader>
-                                                        <CardHeaderBase>
-                                                            <div className="hidden md:block lg:hidden w-full">
-                                                                <StandingsHeader
-                                                                    columns={tabletMatchesColumns}
-                                                                    gridTemplate={tabletGridTemplate}
-                                                                    className="gap-2"
-                                                                />
-                                                            </div>
-                                                            <div className="md:hidden w-full">
-                                                                <StandingsHeader
-                                                                    columns={mobileMColumns}
-                                                                    gridTemplate={mobileGridTemplate}
-                                                                    className="gap-2"
-                                                                />
-                                                            </div>
-                                                        </CardHeaderBase>
-                                                    </CardHeader>
-                                                    
-                                                    <div className="hidden md:block lg:hidden">
-                                                        <SortedRows
-                                                            processedData={groupTeams}
-                                                            columns={tabletMatchesColumns}
-                                                            highlightedTeam={highlightedTeam}
-                                                            maxRows={maxRows}
-                                                            gridTemplate={tabletGridTemplate}
-                                                            className="gap-2"
-                                                        />
+                                            {Object.entries(groupedData).map(([groupName, groupTeams]) => {
+                                                const groupDisplayName = groupTeams[0]?.groupInfo?.groupDisplay || groupName
+                                                const columns = getColumnsForGroup(groupDisplayName)
+                                                const mobileMColumns = getMobileColumns(columns.mobileMatches)
+                                                
+                                                return (
+                                                    <div key={groupName} className="flex flex-col">
+                                                        {/* Group header */}
+                                                        {/* <div className="mb-4">
+                                                            <SubTitle className="text-lg font-semibold">
+                                                                {groupTeams[0]?.groupInfo?.groupDisplay || groupName}
+                                                            </SubTitle>
+                                                        </div> */}
+                                                        
+                                                        <CardHeader>
+                                                            <CardHeaderBase>
+                                                                <div className="hidden md:block lg:hidden w-full">
+                                                                    <StandingsHeader
+                                                                        columns={columns.tabletMatches}
+                                                                        gridTemplate={tabletGridTemplate}
+                                                                        className="gap-2"
+                                                                    />
+                                                                </div>
+                                                                <div className="md:hidden w-full">
+                                                                    <StandingsHeader
+                                                                        columns={mobileMColumns}
+                                                                        gridTemplate={mobileGridTemplate}
+                                                                        className="gap-2"
+                                                                    />
+                                                                </div>
+                                                            </CardHeaderBase>
+                                                        </CardHeader>
+                                                        
+                                                        <div className="hidden md:block lg:hidden">
+                                                            <SortedRows
+                                                                processedData={groupTeams}
+                                                                columns={columns.tabletMatches}
+                                                                highlightedTeam={highlightedTeam}
+                                                                maxRows={maxRows}
+                                                                gridTemplate={tabletGridTemplate}
+                                                                className="gap-2"
+                                                            />
+                                                        </div>
+                                                        <div className="md:hidden">
+                                                            <SortedRows
+                                                                processedData={groupTeams}
+                                                                columns={mobileMColumns}
+                                                                highlightedTeam={highlightedTeam}
+                                                                maxRows={maxRows}
+                                                                gridTemplate={mobileGridTemplate}
+                                                                className="gap-2"
+                                                            />
+                                                        </div>
                                                     </div>
-                                                    <div className="md:hidden">
-                                                        <SortedRows
-                                                            processedData={groupTeams}
-                                                            columns={mobileMColumns}
-                                                            highlightedTeam={highlightedTeam}
-                                                            maxRows={maxRows}
-                                                            gridTemplate={mobileGridTemplate}
-                                                            className="gap-2"
-                                                        />
-                                                    </div>
-                                                </div>
-                                            ))}
+                                                )
+                                            })}
                                         </div>
                                     </CardBodyMultipleContent>
                                     <CardBodyMultipleContent>
                                         <div className="flex flex-col w-full h-full gap-6">
-                                            {Object.entries(groupedData).map(([groupName, groupTeams]) => (
-                                                <div key={groupName} className="flex flex-col">
-                                                    {/* Group header */}
-                                                    <div className="mb-4">
-                                                        <SubTitle className="text-lg font-semibold">
-                                                            {groupTeams[0]?.groupInfo?.groupDisplay || groupName}
-                                                        </SubTitle>
+                                            {Object.entries(groupedData).map(([groupName, groupTeams]) => {
+                                                const groupDisplayName = groupTeams[0]?.groupInfo?.groupDisplay || groupName
+                                                const columns = getColumnsForGroup(groupDisplayName)
+                                                const mobileGColumns = getMobileColumns(columns.mobileGames)
+                                                
+                                                return (
+                                                    <div key={groupName} className="flex flex-col">
+                                                        {/* Group header */}
+                                                        <div className="mb-4">
+                                                            <SubTitle className="text-lg font-semibold">
+                                                                {groupTeams[0]?.groupInfo?.groupDisplay || groupName}
+                                                            </SubTitle>
+                                                        </div>
+                                                        
+                                                        <CardHeader>
+                                                            <CardHeaderBase>
+                                                                <div className="hidden md:block lg:hidden w-full">
+                                                                    <StandingsHeader
+                                                                        columns={columns.tabletGames}
+                                                                        gridTemplate={tabletGridTemplate}
+                                                                        className="gap-2"
+                                                                    />
+                                                                </div>
+                                                                <div className="md:hidden w-full">
+                                                                    <StandingsHeader
+                                                                        columns={mobileGColumns}
+                                                                        gridTemplate={mobileGridTemplate}
+                                                                        className="gap-2"
+                                                                    />
+                                                                </div>
+                                                            </CardHeaderBase>
+                                                        </CardHeader>
+                                                        
+                                                        <div className="hidden md:block lg:hidden">
+                                                            <SortedRows
+                                                                processedData={groupTeams}
+                                                                columns={columns.tabletGames}
+                                                                highlightedTeam={highlightedTeam}
+                                                                maxRows={maxRows}
+                                                                gridTemplate={tabletGridTemplate}
+                                                                className="gap-2"
+                                                            />
+                                                        </div>
+                                                        <div className="md:hidden">
+                                                            <SortedRows
+                                                                processedData={groupTeams}
+                                                                columns={mobileGColumns}
+                                                                highlightedTeam={highlightedTeam}
+                                                                maxRows={maxRows}
+                                                                gridTemplate={mobileGridTemplate}
+                                                                className="gap-2"
+                                                            />
+                                                        </div>
                                                     </div>
-                                                    
-                                                    <CardHeader>
-                                                        <CardHeaderBase>
-                                                            <div className="hidden md:block lg:hidden w-full">
-                                                                <StandingsHeader
-                                                                    columns={tabletGamesColumns}
-                                                                    gridTemplate={tabletGridTemplate}
-                                                                    className="gap-2"
-                                                                />
-                                                            </div>
-                                                            <div className="md:hidden w-full">
-                                                                <StandingsHeader
-                                                                    columns={mobileGColumns}
-                                                                    gridTemplate={mobileGridTemplate}
-                                                                    className="gap-2"
-                                                                />
-                                                            </div>
-                                                        </CardHeaderBase>
-                                                    </CardHeader>
-                                                    
-                                                    <div className="hidden md:block lg:hidden">
-                                                        <SortedRows
-                                                            processedData={groupTeams}
-                                                            columns={tabletGamesColumns}
-                                                            highlightedTeam={highlightedTeam}
-                                                            maxRows={maxRows}
-                                                            gridTemplate={tabletGridTemplate}
-                                                            className="gap-2"
-                                                        />
-                                                    </div>
-                                                    <div className="md:hidden">
-                                                        <SortedRows
-                                                            processedData={groupTeams}
-                                                            columns={mobileGColumns}
-                                                            highlightedTeam={highlightedTeam}
-                                                            maxRows={maxRows}
-                                                            gridTemplate={mobileGridTemplate}
-                                                            className="gap-2"
-                                                        />
-                                                    </div>
-                                                </div>
-                                            ))}
+                                                )
+                                            })}
                                         </div>
                                     </CardBodyMultipleContent>
                                 </CardBodyMultiple>
@@ -267,6 +282,10 @@ export const StandingsWithTabsClient = ({
     }
 
     // No groups - original layout
+    const noGroupColumns = getColumnsForGroup()
+    const noGroupMobileMColumns = getMobileColumns(noGroupColumns.mobileMatches)
+    const noGroupMobileGColumns = getMobileColumns(noGroupColumns.mobileGames)
+    
     return (
         <Card className="flex flex-col w-full h-full ">
             <CardContext>
@@ -305,7 +324,7 @@ export const StandingsWithTabsClient = ({
                             <CardHeader>
                                 <CardHeaderBase>
                                     <StandingsHeader
-                                        columns={desktopColumns}
+                                        columns={noGroupColumns.desktop}
                                         gridTemplate={desktopGridTemplate}
                                         className=""
                                     />
@@ -313,7 +332,7 @@ export const StandingsWithTabsClient = ({
                             </CardHeader>
                             <SortedMixedRows
                                 processedData={processedData}
-                                columns={desktopColumns}
+                                columns={noGroupColumns.desktop}
                                 highlightedTeam={highlightedTeam}
                                 maxRows={maxRows}
                                 gridTemplate={desktopGridTemplate}
@@ -344,7 +363,7 @@ export const StandingsWithTabsClient = ({
                                             {/* Tablette: colonnes complètes avec Form */}
                                             <div className="hidden md:block lg:hidden w-full">
                                                 <StandingsHeader
-                                                    columns={tabletMatchesColumns}
+                                                    columns={noGroupColumns.tabletMatches}
                                                     gridTemplate={tabletGridTemplate}
                                                     className="gap-2"
                                                 />
@@ -352,7 +371,7 @@ export const StandingsWithTabsClient = ({
                                             {/* Mobile: colonnes filtrées sans Form */}
                                             <div className="md:hidden w-full">
                                                 <StandingsHeader
-                                                    columns={mobileMColumns}
+                                                    columns={noGroupMobileMColumns}
                                                     gridTemplate={mobileGridTemplate}
                                                     className="gap-2"
                                                 />
@@ -364,7 +383,7 @@ export const StandingsWithTabsClient = ({
                                     <div className="hidden md:block lg:hidden">
                                         <SortedRows
                                             processedData={processedData}
-                                            columns={tabletMatchesColumns}
+                                            columns={noGroupColumns.tabletMatches}
                                             highlightedTeam={highlightedTeam}
                                             maxRows={maxRows}
                                             gridTemplate={tabletGridTemplate}
@@ -375,7 +394,7 @@ export const StandingsWithTabsClient = ({
                                     <div className="md:hidden">
                                         <SortedRows
                                             processedData={processedData}
-                                            columns={mobileMColumns}
+                                            columns={noGroupMobileMColumns}
                                             highlightedTeam={highlightedTeam}
                                             maxRows={maxRows}
                                             gridTemplate={mobileGridTemplate}
@@ -391,7 +410,7 @@ export const StandingsWithTabsClient = ({
                                             {/* Tablette: colonnes complètes avec Form */}
                                             <div className="hidden md:block lg:hidden w-full">
                                                 <StandingsHeader
-                                                    columns={tabletGamesColumns}
+                                                    columns={noGroupColumns.tabletGames}
                                                     gridTemplate={tabletGridTemplate}
                                                     className="gap-2"
                                                 />
@@ -399,7 +418,7 @@ export const StandingsWithTabsClient = ({
                                             {/* Mobile: colonnes filtrées sans Form */}
                                             <div className="md:hidden w-full">
                                                 <StandingsHeader
-                                                    columns={mobileGColumns}
+                                                    columns={noGroupMobileGColumns}
                                                     gridTemplate={mobileGridTemplate}
                                                     className="gap-2"
                                                 />
@@ -411,7 +430,7 @@ export const StandingsWithTabsClient = ({
                                     <div className="hidden md:block lg:hidden">
                                         <SortedRows
                                             processedData={processedData}
-                                            columns={tabletGamesColumns}
+                                            columns={noGroupColumns.tabletGames}
                                             highlightedTeam={highlightedTeam}
                                             maxRows={maxRows}
                                             gridTemplate={tabletGridTemplate}
@@ -422,7 +441,7 @@ export const StandingsWithTabsClient = ({
                                     <div className="md:hidden">
                                         <SortedRows
                                             processedData={processedData}
-                                            columns={mobileGColumns}
+                                            columns={noGroupMobileGColumns}
                                             highlightedTeam={highlightedTeam}
                                             maxRows={maxRows}
                                             gridTemplate={mobileGridTemplate}
