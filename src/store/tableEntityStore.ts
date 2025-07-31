@@ -96,12 +96,13 @@ interface TableEntityState {
     setActiveHeaderSeason: (season: string) => void
 
     /**
-     * Tab management methods - Generic tab state and URL synchronization
+     * Tab management methods - Auto-detection and URL synchronization
      */
-    setTabConfigs: (configs: TabConfig[]) => void
+    autoRegisterTabs: (tabNames: string[]) => void
     getTabName: (index: number) => string
     getTabIndex: (name: string) => number
     setActiveTab: (index: number) => void
+    getActiveTabIndex: () => number
 
     // Cache methods for seasons
     getCachedSeasons: (leagueId: number) => CacheItem<CachedSeasonData> | null
@@ -234,11 +235,29 @@ export const useTableEntityStore = create<TableEntityState>()(
                     set({ activeHeaderSeason: season }),
 
                 /**
-                 * Sets the tab configuration for the current component
-                 * @param configs - Array of tab configurations
+                 * Auto-registers tabs from detected tab names in the component
+                 * @param tabNames - Array of display names detected from JSX (e.g., ["Aperçu", "Matchs"])
                  */
-                setTabConfigs: (configs) => {
-                    set({ tabConfigs: configs })
+                autoRegisterTabs: (tabNames) => {
+                    const tabConfigs = tabNames.map((displayName, index) => {
+                        // Convert display name to URL-friendly name
+                        let name = displayName.toLowerCase()
+                        // Remove French accents
+                        name = name.replace(/[àáâãäå]/g, 'a')
+                                  .replace(/[èéêë]/g, 'e')
+                                  .replace(/[ìíîï]/g, 'i')
+                                  .replace(/[òóôõö]/g, 'o')
+                                  .replace(/[ùúûü]/g, 'u')
+                                  .replace(/[ÿý]/g, 'y')
+                                  .replace(/[ç]/g, 'c')
+                        
+                        return {
+                            index,
+                            name,
+                            displayName
+                        }
+                    })
+                    set({ tabConfigs })
                 },
 
                 /**
@@ -261,6 +280,14 @@ export const useTableEntityStore = create<TableEntityState>()(
                     const state = get()
                     const tabIndex = state.tabConfigs.findIndex(tab => tab.name === name)
                     return tabIndex !== -1 ? tabIndex : 0
+                },
+
+                /**
+                 * Gets the current active tab index
+                 * @returns Current active tab index
+                 */
+                getActiveTabIndex: () => {
+                    return get().activeTabIndex
                 },
 
                 /**

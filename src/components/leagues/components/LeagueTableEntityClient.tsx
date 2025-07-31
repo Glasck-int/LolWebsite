@@ -1,9 +1,9 @@
 'use client'
 
 import React, { useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { useTableEntityData } from '@/hooks/useTableEntityData'
-import { useTableEntityStore, SeasonData, TabConfig } from '@/store/tableEntityStore'
+import { useTableEntityStore, SeasonData } from '@/store/tableEntityStore'
+import { useAutoTabs } from '@/hooks/useAutoTabs'
 import {
     TableEntityLayout,
     TableEntityHeader,
@@ -52,41 +52,41 @@ interface LeagueTableEntityClientProps {
     imageData?: string
 }
 
-// Tab configuration specific to League pages
-const LEAGUE_TAB_CONFIG: TabConfig[] = [
-    { index: 0, name: 'apercu', displayName: 'Aperçu' },
-    { index: 1, name: 'matchs', displayName: 'Matchs' },
-    { index: 2, name: 'statistiques', displayName: 'Statistiques' },
-    { index: 3, name: 'tournois', displayName: 'Tournois' }
-]
-
 const LeagueTableEntityContent = ({
     league,
-    standings,
-    playerStats,
-    tournamentName,
-    enrichedStandingsData,
-    enrichedGamesData,
-    playerImages,
     imageData,
     seasons,
 }: Omit<LeagueTableEntityClientProps, 'leagueId'> & {
     seasons: SeasonData[]
 }) => {
-    const searchParams = useSearchParams()
-    const { activeId, activeIndex, syncFromUrl, setActiveTab, setTabConfigs } = useTableEntityStore()
+    const { activeId } = useTableEntityStore()
+    const { registerTabsFromJSX, injectTabHandlers } = useAutoTabs()
     const selectedTournamentId = activeId.length > 0 ? activeId[0] : null
 
-    // Set tab configuration and sync store state from URL parameters on mount
+    // Create the CardFooter JSX structure for tab detection
+    const cardFooterJSX = (
+        <CardFooter>
+            <CardFooterContent>
+                <p className="text-inherit">Aperçu</p>
+            </CardFooterContent>
+            <CardFooterContent>
+                <p className="text-inherit">Matchs</p>
+            </CardFooterContent>
+            <CardFooterContent>
+                <p className="text-inherit">Statistiques</p>
+            </CardFooterContent>
+            <CardFooterContent>
+                <p className="text-inherit">Tournois</p>
+            </CardFooterContent>
+        </CardFooter>
+    )
+
+    // Auto-register tabs on mount
     useEffect(() => {
-        // Set the tab configuration for this component
-        setTabConfigs(LEAGUE_TAB_CONFIG)
-        
         if (seasons.length > 0) {
-            // Sync all state (season/split/tournament/tab) from URL
-            syncFromUrl(searchParams, seasons)
+            registerTabsFromJSX(cardFooterJSX, seasons)
         }
-    }, [seasons.length > 0, setTabConfigs, syncFromUrl, searchParams]) // Only run when seasons are available
+    }, [seasons.length > 0, registerTabsFromJSX, seasons]) // Only run when seasons are available
 
     return (
         <>
@@ -102,18 +102,7 @@ const LeagueTableEntityContent = ({
                     </div>
                     <TableEntityHeader seasons={seasons} />
                 </CardBody>
-                <CardFooter>
-                    {LEAGUE_TAB_CONFIG.map((tab) => (
-                        <CardFooterContent key={tab.index}>
-                            <p 
-                                className="text-inherit cursor-pointer hover:text-white"
-                                onClick={() => setActiveTab(tab.index)}
-                            >
-                                {tab.displayName}
-                            </p>
-                        </CardFooterContent>
-                    ))}
-                </CardFooter>
+                {injectTabHandlers(cardFooterJSX)}
             </Card>
             {/* Body avec le contenu des différents onglets */}
             <TableEntityBody>
