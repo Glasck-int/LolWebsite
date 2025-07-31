@@ -182,6 +182,48 @@ const TournamentSchema = Type.Object({
 })
 
 /**
+ * Tournament groups schema
+ */
+const TournamentGroupSchema = Type.Object({
+    groupName: Type.String({
+        description: 'Name of the tournament group',
+        examples: ['Group A', 'Group B', 'Swiss Stage']
+    }),
+    groupDisplay: Type.Optional(Type.String({
+        description: 'Display name for the group',
+        examples: ['Group A', 'Swiss Stage']
+    })),
+    groupN: Type.Optional(Type.Number({
+        description: 'Group number for ordering',
+        examples: [1, 2, 3]
+    })),
+})
+
+/**
+ * Team information schema for standings
+ */
+const TeamInStandingsSchema = Type.Object({
+    name: Type.String({
+        description: 'Team name',
+        examples: ['G2 Esports', 'T1', 'Fnatic']
+    }),
+    short: Type.Optional(Type.String({
+        description: 'Team short name/abbreviation',
+        examples: ['G2', 'T1', 'FNC']
+    })),
+    region: Type.Optional(Type.String({
+        description: 'Team region',
+        examples: ['Europe', 'Korea', 'North America']
+    })),
+    image: Type.Optional(Type.String({
+        description: 'Team logo/image URL'
+    })),
+    TournamentGroups: Type.Array(TournamentGroupSchema, {
+        description: 'Tournament groups this team belongs to'
+    }),
+})
+
+/**
  * Tournament standings schema with detailed field descriptions
  */
  const TournamentStandingsResponse = Type.Object({
@@ -260,6 +302,9 @@ const TournamentSchema = Type.Object({
     updatedAt: Type.String({
         format: 'date-time',
         description: 'Last update date of the standings in db',
+    }),
+    Team: Type.Optional(TeamInStandingsSchema, {
+        description: 'Team information including tournament groups'
     }),
 })
 

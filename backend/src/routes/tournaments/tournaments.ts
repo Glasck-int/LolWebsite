@@ -125,6 +125,16 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
                                 short: true,
                                 region: true,
                                 image: true,
+                                TournamentGroups: {
+                                    where: {
+                                        overviewPage: tournament.overviewPage,
+                                    },
+                                    select: {
+                                        groupName: true,
+                                        groupDisplay: true,
+                                        groupN: true,
+                                    },
+                                },
                             },
                         },
                     },
@@ -194,6 +204,16 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
                                 short: true,
                                 region: true,
                                 image: true,
+                                TournamentGroups: {
+                                    where: {
+                                        overviewPage: decodedOverviewPage,
+                                    },
+                                    select: {
+                                        groupName: true,
+                                        groupDisplay: true,
+                                        groupN: true,
+                                    },
+                                },
                             },
                         },
                     },

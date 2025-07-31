@@ -96,13 +96,15 @@ interface TableEntityState {
     setActiveHeaderSeason: (season: string) => void
 
     /**
-     * Tab management methods - Auto-detection and URL synchronization
+     * Tab management methods - Auto-detection and URL synchronization  
      */
-    autoRegisterTabs: (tabNames: string[]) => void
+    registerTab: (index: number, displayName: string) => void
+    unregisterTab: (index: number) => void
     getTabName: (index: number) => string
     getTabIndex: (name: string) => number
     setActiveTab: (index: number) => void
     getActiveTabIndex: () => number
+    initializeFromUrl: (searchParams: URLSearchParams, seasons?: any[]) => void
 
     // Cache methods for seasons
     getCachedSeasons: (leagueId: number) => CacheItem<CachedSeasonData> | null
@@ -235,29 +237,69 @@ export const useTableEntityStore = create<TableEntityState>()(
                     set({ activeHeaderSeason: season }),
 
                 /**
-                 * Auto-registers tabs from detected tab names in the component
-                 * @param tabNames - Array of display names detected from JSX (e.g., ["Aperçu", "Matchs"])
+                 * Registers a single tab (called automatically by smart components)
+                 * @param index - Tab index (order in the UI)
+                 * @param displayName - Display name (e.g., "Aperçu", "Matchs")
                  */
-                autoRegisterTabs: (tabNames) => {
-                    const tabConfigs = tabNames.map((displayName, index) => {
-                        // Convert display name to URL-friendly name
-                        let name = displayName.toLowerCase()
-                        // Remove French accents
-                        name = name.replace(/[àáâãäå]/g, 'a')
-                                  .replace(/[èéêë]/g, 'e')
-                                  .replace(/[ìíîï]/g, 'i')
-                                  .replace(/[òóôõö]/g, 'o')
-                                  .replace(/[ùúûü]/g, 'u')
-                                  .replace(/[ÿý]/g, 'y')
-                                  .replace(/[ç]/g, 'c')
-                        
-                        return {
-                            index,
-                            name,
-                            displayName
-                        }
-                    })
-                    set({ tabConfigs })
+                registerTab: (index, displayName) => {
+                    const state = get()
+                    
+                    // Check if tab is already registered with same name to avoid duplicates
+                    const existingTab = state.tabConfigs[index]
+                    if (existingTab && existingTab.displayName === displayName) {
+                        return // Already registered, skip
+                    }
+                    
+                    // Convert display name to URL-friendly name
+                    let name = displayName.toLowerCase()
+                    // Remove French accents
+                    name = name.replace(/[àáâãäå]/g, 'a')
+                              .replace(/[èéêë]/g, 'e')
+                              .replace(/[ìíîï]/g, 'i')
+                              .replace(/[òóôõö]/g, 'o')
+                              .replace(/[ùúûü]/g, 'u')
+                              .replace(/[ÿý]/g, 'y')
+                              .replace(/[ç]/g, 'c')
+                    
+                    const newTab = { index, name, displayName }
+                    
+                    // Update or add the tab at the correct index
+                    const updatedConfigs = [...state.tabConfigs]
+                    updatedConfigs[index] = newTab
+                    
+                    set({ tabConfigs: updatedConfigs })
+                },
+
+                /**
+                 * Unregisters a tab (cleanup when component unmounts)
+                 * @param index - Tab index to remove
+                 */
+                unregisterTab: (index) => {
+                    const state = get()
+                    const updatedConfigs = state.tabConfigs.filter(tab => tab.index !== index)
+                    set({ tabConfigs: updatedConfigs })
+                },
+
+                /**
+                 * Initializes tabs from URL parameters (called once when all tabs are registered)
+                 * @param searchParams - URL search parameters
+                 * @param seasons - Optional seasons data for full sync
+                 */
+                initializeFromUrl: (searchParams, seasons) => {
+                    // Sync tab from URL
+                    const tabParam = searchParams.get('tab')
+                    if (tabParam) {
+                        const tabIndex = get().getTabIndex(tabParam)
+                        set({ 
+                            activeTabIndex: tabIndex,
+                            activeIndex: tabIndex 
+                        })
+                    }
+                    
+                    // Sync other parameters if seasons provided
+                    if (seasons && seasons.length > 0) {
+                        get().syncFromUrl(searchParams, seasons)
+                    }
                 },
 
                 /**

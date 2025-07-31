@@ -464,30 +464,31 @@ model Standings {
 }
 
 model Team {
-  id             Int              @id @default(autoincrement())
-  name           String
-  short          String?
-  location       String?
-  region         String?
-  image          String?
-  isDisbanded    Boolean          @default(false)
-  youtube        String?
-  twitter        String?
-  instagram      String?
-  facebook       String?
-  vk             String?
-  bluesky        String?
-  discord        String?
-  subreddit      String?
-  snapchat       String?
-  rosterPhoto    String?
-  renamedTo      String?
-  isLowercase    Boolean          @default(false)
-  overviewPage   String?          @unique
-  updatedAt      DateTime
-  PlayerImage    PlayerImage[]
-  ScoreboardTeam ScoreboardTeam[]
-  Standings      Standings[]
+  id               Int                @id @default(autoincrement())
+  name             String
+  short            String?
+  location         String?
+  region           String?
+  image            String?
+  isDisbanded      Boolean            @default(false)
+  youtube          String?
+  twitter          String?
+  instagram        String?
+  facebook         String?
+  vk               String?
+  bluesky          String?
+  discord          String?
+  subreddit        String?
+  snapchat         String?
+  rosterPhoto      String?
+  renamedTo        String?
+  isLowercase      Boolean            @default(false)
+  overviewPage     String?            @unique
+  updatedAt        DateTime
+  PlayerImage      PlayerImage[]
+  ScoreboardTeam   ScoreboardTeam[]
+  Standings        Standings[]
+  TournamentGroups TournamentGroups[]
 }
 
 model Tournament {
@@ -534,6 +535,7 @@ model Tournament {
   PlayerImage             PlayerImage[]
   Standings               Standings[]
   League                  League?             @relation(fields: [league], references: [name])
+  TournamentGroups        TournamentGroups[]
   TournamentPlayer        TournamentPlayer[]
   TournamentResult        TournamentResult[]
   TournamentRosters       TournamentRosters[]
@@ -609,4 +611,18 @@ model TournamentRosters {
   tournamentName String?
   rosterLinks    String[]
   Tournament     Tournament @relation(fields: [overviewPage], references: [overviewPage])
+}
+
+model TournamentGroups {
+  id           Int        @id @default(autoincrement())
+  team         String
+  overviewPage String
+  groupName    String
+  groupDisplay String?
+  groupN       Int?
+  pageAndTeam  String?    @unique
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime
+  Tournament   Tournament @relation(fields: [overviewPage], references: [overviewPage])
+  Team         Team       @relation(fields: [team], references: [overviewPage])
 }

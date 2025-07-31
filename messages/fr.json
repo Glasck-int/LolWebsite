@@ -24,6 +24,10 @@
 		"BestOf": "Bo"
 	},
 	"Standings": {
+		"tabs": {
+			"matches": "MATCHES",
+			"games": "GAMES"
+		},
 		"Team": "Equipes",
 		"#": "Position",
 		"Form": "Forme",
@@ -41,5 +45,11 @@
 	"Tournaments": {
 		"lastMatch": "Derniers Match",
 		"nextMatch": "Prochains Match"
+	},
+	"Tabs": {
+		"Overview": "Aperçu",
+		"Matches": "Matchs",
+		"Statistics": "Statistiques",
+		"Tournaments": "Tournois"
 	}
 }

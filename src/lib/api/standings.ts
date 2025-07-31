@@ -1,6 +1,6 @@
 import { MatchScheduleGame, Standings as StandingsType } from '@/generated/prisma'
 import { getTeamsByNames, getTeamsRecentGames, getTeamsRecentMatches } from './teams'
-import { getTeamImage } from './image'
+import { getTeamImage, getTeamImageByName } from './image'
 import { getTournamentsGamesByTournamentOverviewPage } from './tournaments'
 import { processStandingsData, ProcessedStanding } from '@/components/leagues/Standings/utils/StandingsDataProcessor'
 import { Team } from '@/generated/prisma'

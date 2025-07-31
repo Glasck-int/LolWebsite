@@ -1,9 +1,9 @@
 'use client'
 
 import React, { useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useTableEntityData } from '@/hooks/useTableEntityData'
 import { useTableEntityStore, SeasonData } from '@/store/tableEntityStore'
-import { useAutoTabs } from '@/hooks/useAutoTabs'
 import {
     TableEntityLayout,
     TableEntityHeader,
@@ -13,9 +13,8 @@ import {
 import {
     Card,
     CardBody,
-    CardFooter,
-    CardFooterContent,
 } from '@/components/ui/card'
+import { SmartCardFooter, SmartCardFooterContent, useSmartTabsInit } from '@/components/ui/SmartTabs'
 import {
     LeagueDescription,
     NextMatchesClient,
@@ -29,6 +28,7 @@ import {
     MatchScheduleGame,
 } from '@/generated/prisma'
 import { ProcessedStanding } from '@/components/leagues/Standings/utils/StandingsDataProcessor'
+import { useTranslate } from '@/lib/hooks/useTranslate'
 
 interface LeagueTableEntityClientProps {
     leagueId: number
@@ -59,34 +59,22 @@ const LeagueTableEntityContent = ({
 }: Omit<LeagueTableEntityClientProps, 'leagueId'> & {
     seasons: SeasonData[]
 }) => {
+    const searchParams = useSearchParams()
     const { activeId } = useTableEntityStore()
-    const { registerTabsFromJSX, injectTabHandlers } = useAutoTabs()
+    const { initializeFromUrl } = useSmartTabsInit()
     const selectedTournamentId = activeId.length > 0 ? activeId[0] : null
-
-    // Create the CardFooter JSX structure for tab detection
-    const cardFooterJSX = (
-        <CardFooter>
-            <CardFooterContent>
-                <p className="text-inherit">Aperçu</p>
-            </CardFooterContent>
-            <CardFooterContent>
-                <p className="text-inherit">Matchs</p>
-            </CardFooterContent>
-            <CardFooterContent>
-                <p className="text-inherit">Statistiques</p>
-            </CardFooterContent>
-            <CardFooterContent>
-                <p className="text-inherit">Tournois</p>
-            </CardFooterContent>
-        </CardFooter>
-    )
-
-    // Auto-register tabs on mount
+    const t = useTranslate('Tabs')
+    // Initialize from URL once all tabs are registered
     useEffect(() => {
         if (seasons.length > 0) {
-            registerTabsFromJSX(cardFooterJSX, seasons)
+            // Small delay to ensure all tabs are registered first
+            const timer = setTimeout(() => {
+                initializeFromUrl(searchParams, seasons)
+            }, 100)
+            
+            return () => clearTimeout(timer)
         }
-    }, [seasons.length > 0, registerTabsFromJSX, seasons]) // Only run when seasons are available
+    }, [seasons.length > 0, initializeFromUrl, searchParams, seasons])
 
     return (
         <>
@@ -102,7 +90,20 @@ const LeagueTableEntityContent = ({
                     </div>
                     <TableEntityHeader seasons={seasons} />
                 </CardBody>
-                {injectTabHandlers(cardFooterJSX)}
+                <SmartCardFooter>
+                    <SmartCardFooterContent>
+                        <p className="text-inherit">{t('Overview')}</p>
+                    </SmartCardFooterContent>
+                    <SmartCardFooterContent>
+                        <p className="text-inherit">{t('Matches')}</p>
+                    </SmartCardFooterContent>
+                    <SmartCardFooterContent>
+                        <p className="text-inherit">{t('Statistics')}</p>
+                    </SmartCardFooterContent>
+                    <SmartCardFooterContent>
+                        <p className="text-inherit">{t('Tournaments')}</p>
+                    </SmartCardFooterContent>
+                </SmartCardFooter>
             </Card>
             {/* Body avec le contenu des différents onglets */}
             <TableEntityBody>
