@@ -202,7 +202,7 @@ export const useStandingsColumns = (config: StandingsColumnsConfig) => {
                     />
                 ) : null,
             headerClassName: 'text-left hidden md:flex flex-shrink-0 w-42 ml-4',
-            className: 'text-left hidden md:flex flex-shrink-0 w-42',
+            className: 'text-left hidden md:flex flex-shrink-0 w-42 justify-start ml-2',
             sortable,
         },
     ]
@@ -256,7 +256,7 @@ export const useStandingsColumns = (config: StandingsColumnsConfig) => {
                     />
                 ) : null,
             headerClassName: 'text-left hidden md:flex flex-shrink-0 w-42 ml-4',
-            className: 'text-left hidden md:flex flex-shrink-0 w-42',
+            className: 'text-left hidden md:flex flex-shrink-0 w-42 justify-start ml-2',
             sortable,
         },
     ]
@@ -581,7 +581,7 @@ export const useCombinedStandingsColumns = (sortable: boolean = true) => {
                     />
                 ) : null,
             headerClassName: 'text-left hidden md:flex flex-shrink-0 w-42 ml-4',
-            className: 'text-left hidden md:flex flex-shrink-0 w-42',
+            className: 'text-left hidden md:flex flex-shrink-0 w-42 justify-start ml-2',
             sortable,
         },
     ]

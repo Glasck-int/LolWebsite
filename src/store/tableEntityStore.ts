@@ -6,7 +6,15 @@ import {
     getTournaments,
 } from '@/components/layout/TableEntityLayout/TableEntityLayout'
 import { createCacheHelpers, CacheItem } from '@/lib/cacheUtils'
-import { MatchSchedule } from '@/generated/prisma'
+import { MatchSchedule, Standings } from '@/generated/prisma'
+import { ProcessedStanding } from '@/components/leagues/Standings/utils/StandingsDataProcessor'
+
+// Generic tab interface for reusability across different components
+export interface TabConfig {
+    index: number
+    name: string
+    displayName: string
+}
 
 // Types pour le store
 export interface Tournament {
@@ -42,9 +50,22 @@ interface CachedMatchData {
     lastMatches: boolean
 }
 
+interface CachedStandingsOverviewData {
+    standings: Standings[]
+    processedData: ProcessedStanding[]
+    tournamentName: string
+}
+
+interface CachedStandingsWithTabsData {
+    standings: Standings[]
+    processedData: ProcessedStanding[]
+    tournamentName: string
+}
+
 // Interface du store principal
 interface TableEntityState {
     activeIndex: number
+    activeTabIndex: number
     activeId: number[]
     activeSplit: string
     activeTournament: string
@@ -52,19 +73,35 @@ interface TableEntityState {
     activeAllSplit: boolean
     activeHeaderSeason: string
 
+    // Tab configuration set by components
+    tabConfigs: TabConfig[]
+
     // Cache des saisons par leagueId
     seasonsCache: Record<number, CacheItem<CachedSeasonData>>
     // Cache des matches par tournamentId
     matchesCache: Record<number, CacheItem<CachedMatchData>>
+    // Cache des standings overview par tournamentId
+    standingsOverviewCache: Record<number, CacheItem<CachedStandingsOverviewData>>
+    // Cache des standings with tabs par tournamentId
+    standingsWithTabsCache: Record<number, CacheItem<CachedStandingsWithTabsData>>
     cacheTimeout: number
 
     setActiveIndex: (index: number) => void
+    setActiveTabIndex: (index: number) => void
     setActiveId: (id: number[]) => void
     setActiveSplit: (split: string) => void
     setActiveTournament: (tournament: string) => void
     setActiveAllSeason: (all: boolean) => void
     setActiveAllSplit: (all: boolean) => void
     setActiveHeaderSeason: (season: string) => void
+
+    /**
+     * Tab management methods - Generic tab state and URL synchronization
+     */
+    setTabConfigs: (configs: TabConfig[]) => void
+    getTabName: (index: number) => string
+    getTabIndex: (name: string) => number
+    setActiveTab: (index: number) => void
 
     // Cache methods for seasons
     getCachedSeasons: (leagueId: number) => CacheItem<CachedSeasonData> | null
@@ -77,6 +114,18 @@ interface TableEntityState {
     setCachedMatches: (tournamentId: number, data: CachedMatchData) => void
     setMatchesLoading: (tournamentId: number, loading: boolean) => void
     setMatchesError: (tournamentId: number, error: string | null) => void
+    
+    // Cache methods for standings overview
+    getCachedStandingsOverview: (tournamentId: number) => CacheItem<CachedStandingsOverviewData> | null
+    setCachedStandingsOverview: (tournamentId: number, data: CachedStandingsOverviewData) => void
+    setStandingsOverviewLoading: (tournamentId: number, loading: boolean) => void
+    setStandingsOverviewError: (tournamentId: number, error: string | null) => void
+    
+    // Cache methods for standings with tabs
+    getCachedStandingsWithTabs: (tournamentId: number) => CacheItem<CachedStandingsWithTabsData> | null
+    setCachedStandingsWithTabs: (tournamentId: number, data: CachedStandingsWithTabsData) => void
+    setStandingsWithTabsLoading: (tournamentId: number, loading: boolean) => void
+    setStandingsWithTabsError: (tournamentId: number, error: string | null) => void
     
     clearExpiredCache: () => void
 
@@ -100,6 +149,14 @@ interface TableEntityState {
     ) => void
 
     reset: () => void
+
+    /**
+     * URL synchronization methods - Synchronizes store state with URL parameters
+     * for shareable links that preserve season/split/tournament selection
+     */
+    _updateUrl: () => void
+    syncFromUrl: (params: URLSearchParams, seasons: SeasonData[]) => void
+    syncToUrl: () => URLSearchParams
 }
 
 const getTournamentId = (
@@ -134,9 +191,20 @@ export const useTableEntityStore = create<TableEntityState>()(
                 teamImages: [],
                 lastMatches: false
             }))
+            const standingsOverviewHelpers = createCacheHelpers<CachedStandingsOverviewData>(CACHE_TIMEOUT, () => ({
+                standings: [],
+                processedData: [],
+                tournamentName: ''
+            }))
+            const standingsWithTabsHelpers = createCacheHelpers<CachedStandingsWithTabsData>(CACHE_TIMEOUT, () => ({
+                standings: [],
+                processedData: [],
+                tournamentName: ''
+            }))
             
             return {
                 activeIndex: 0,
+                activeTabIndex: 0,
                 activeId: [],
                 activeSplit: '',
                 activeTournament: '',
@@ -144,12 +212,18 @@ export const useTableEntityStore = create<TableEntityState>()(
                 activeAllSplit: false,
                 activeHeaderSeason: '',
 
+                // Tab configuration - empty by default, set by components
+                tabConfigs: [],
+
                 // Cache state
                 seasonsCache: {},
                 matchesCache: {},
+                standingsOverviewCache: {},
+                standingsWithTabsCache: {},
                 cacheTimeout: CACHE_TIMEOUT,
 
                 setActiveIndex: (index) => set({ activeIndex: index }),
+                setActiveTabIndex: (index) => set({ activeTabIndex: index }),
                 setActiveId: (id) => set({ activeId: id }),
                 setActiveSplit: (split) => set({ activeSplit: split }),
                 setActiveTournament: (tournament) =>
@@ -158,6 +232,50 @@ export const useTableEntityStore = create<TableEntityState>()(
                 setActiveAllSplit: (all) => set({ activeAllSplit: all }),
                 setActiveHeaderSeason: (season) =>
                     set({ activeHeaderSeason: season }),
+
+                /**
+                 * Sets the tab configuration for the current component
+                 * @param configs - Array of tab configurations
+                 */
+                setTabConfigs: (configs) => {
+                    set({ tabConfigs: configs })
+                },
+
+                /**
+                 * Gets the tab name from index using current tab configuration
+                 * @param index - Tab index
+                 * @returns Tab name for URL parameter, defaults to first tab or empty string
+                 */
+                getTabName: (index) => {
+                    const state = get()
+                    const tab = state.tabConfigs[index]
+                    return tab?.name || (state.tabConfigs[0]?.name || '')
+                },
+
+                /**
+                 * Gets the tab index from name using current tab configuration
+                 * @param name - Tab name from URL parameter
+                 * @returns Tab index, defaults to 0
+                 */
+                getTabIndex: (name) => {
+                    const state = get()
+                    const tabIndex = state.tabConfigs.findIndex(tab => tab.name === name)
+                    return tabIndex !== -1 ? tabIndex : 0
+                },
+
+                /**
+                 * Sets active tab and updates URL automatically
+                 * @param index - Tab index to activate
+                 */
+                setActiveTab: (index) => {
+                    set({ 
+                        activeTabIndex: index,
+                        activeIndex: index // Keep both for compatibility
+                    })
+                    
+                    // Update URL with new tab
+                    get()._updateUrl()
+                },
 
                 // Cache methods for seasons
                 getCachedSeasons: (leagueId) => {
@@ -235,12 +353,90 @@ export const useTableEntityStore = create<TableEntityState>()(
                     }))
                 },
 
+                // Cache methods for standings overview
+                getCachedStandingsOverview: (tournamentId) => {
+                    const state = get()
+                    const cached = standingsOverviewHelpers.getCachedItem(state.standingsOverviewCache, tournamentId)
+                    
+                    if (!cached) {
+                        return null
+                    }
+                    
+                    // Remove expired cache automatically handled by getCachedItem
+                    if (!standingsOverviewHelpers.isCacheValid(cached.cachedAt)) {
+                        set(state => ({
+                            standingsOverviewCache: standingsOverviewHelpers.removeCacheItem(state.standingsOverviewCache, tournamentId)
+                        }))
+                        return null
+                    }
+                    
+                    return cached
+                },
+
+                setCachedStandingsOverview: (tournamentId, data) => {
+                    set(state => ({
+                        standingsOverviewCache: standingsOverviewHelpers.setCachedItem(state.standingsOverviewCache, tournamentId, data)
+                    }))
+                },
+
+                setStandingsOverviewLoading: (tournamentId, loading) => {
+                    set(state => ({
+                        standingsOverviewCache: standingsOverviewHelpers.setCacheLoading(state.standingsOverviewCache, tournamentId, loading)
+                    }))
+                },
+
+                setStandingsOverviewError: (tournamentId, error) => {
+                    set(state => ({
+                        standingsOverviewCache: standingsOverviewHelpers.setCacheError(state.standingsOverviewCache, tournamentId, error)
+                    }))
+                },
+
+                // Cache methods for standings with tabs
+                getCachedStandingsWithTabs: (tournamentId) => {
+                    const state = get()
+                    const cached = standingsWithTabsHelpers.getCachedItem(state.standingsWithTabsCache, tournamentId)
+                    
+                    if (!cached) {
+                        return null
+                    }
+                    
+                    // Remove expired cache automatically handled by getCachedItem
+                    if (!standingsWithTabsHelpers.isCacheValid(cached.cachedAt)) {
+                        set(state => ({
+                            standingsWithTabsCache: standingsWithTabsHelpers.removeCacheItem(state.standingsWithTabsCache, tournamentId)
+                        }))
+                        return null
+                    }
+                    
+                    return cached
+                },
+
+                setCachedStandingsWithTabs: (tournamentId, data) => {
+                    set(state => ({
+                        standingsWithTabsCache: standingsWithTabsHelpers.setCachedItem(state.standingsWithTabsCache, tournamentId, data)
+                    }))
+                },
+
+                setStandingsWithTabsLoading: (tournamentId, loading) => {
+                    set(state => ({
+                        standingsWithTabsCache: standingsWithTabsHelpers.setCacheLoading(state.standingsWithTabsCache, tournamentId, loading)
+                    }))
+                },
+
+                setStandingsWithTabsError: (tournamentId, error) => {
+                    set(state => ({
+                        standingsWithTabsCache: standingsWithTabsHelpers.setCacheError(state.standingsWithTabsCache, tournamentId, error)
+                    }))
+                },
+
                 clearExpiredCache: () => {
                     const state = get()
                     
                     set({ 
                         seasonsCache: seasonsHelpers.removeExpiredItems(state.seasonsCache),
-                        matchesCache: matchesHelpers.removeExpiredItems(state.matchesCache)
+                        matchesCache: matchesHelpers.removeExpiredItems(state.matchesCache),
+                        standingsOverviewCache: standingsOverviewHelpers.removeExpiredItems(state.standingsOverviewCache),
+                        standingsWithTabsCache: standingsWithTabsHelpers.removeExpiredItems(state.standingsWithTabsCache)
                     })
                 },
 
@@ -309,6 +505,9 @@ export const useTableEntityStore = create<TableEntityState>()(
                         activeTournament: latestTournament,
                         activeId: tournamentId,
                     })
+                    
+                    // Sync URL with new state
+                    get()._updateUrl()
                 },
 
                 selectSplit: (split, seasons, isAllActive) => {
@@ -353,6 +552,9 @@ export const useTableEntityStore = create<TableEntityState>()(
                         activeAllSplit: false,
                         activeAllSeason: false,
                     })
+                    
+                    // Sync URL with new state
+                    get()._updateUrl()
                 },
 
                 selectTournament: (tournament) => {
@@ -371,6 +573,9 @@ export const useTableEntityStore = create<TableEntityState>()(
                         activeAllSeason: false,
                         activeAllSplit: false,
                     })
+                    
+                    // Sync URL with new state
+                    get()._updateUrl()
                 },
 
                 selectAllSeasons: (allId) => {
@@ -379,6 +584,9 @@ export const useTableEntityStore = create<TableEntityState>()(
                         activeAllSplit: false,
                         activeId: allId,
                     })
+                    
+                    // Sync URL with new state
+                    get()._updateUrl()
                 },
 
                 selectAllSplits: (allId) => {
@@ -387,6 +595,9 @@ export const useTableEntityStore = create<TableEntityState>()(
                         activeAllSeason: false,
                         activeId: allId,
                     })
+                    
+                    // Sync URL with new state
+                    get()._updateUrl()
                 },
 
                 updateTournamentBySplit: (seasons, isAllActive) => {
@@ -417,6 +628,7 @@ export const useTableEntityStore = create<TableEntityState>()(
                 reset: () =>
                     set({
                         activeIndex: 0,
+                        activeTabIndex: 0,
                         activeId: [],
                         activeSplit: '',
                         activeTournament: '',
@@ -424,6 +636,174 @@ export const useTableEntityStore = create<TableEntityState>()(
                         activeAllSplit: false,
                         activeHeaderSeason: '',
                     }),
+
+                /**
+                 * Updates the browser URL with current store state (internal helper)
+                 * @private
+                 */
+                _updateUrl: () => {
+                    if (typeof window !== 'undefined') {
+                        try {
+                            const state = get()
+                            const params = state.syncToUrl()
+                            
+                            // Add current tab to URL
+                            params.set('tab', state.getTabName(state.activeTabIndex))
+                            
+                            const newUrl = `${window.location.pathname}?${params.toString()}`
+                            window.history.replaceState({}, '', newUrl)
+                        } catch (error) {
+                            console.warn('Failed to sync URL:', error)
+                        }
+                    }
+                },
+
+                /**
+                 * Synchronizes store state from URL parameters for shareable links
+                 * @param params - URLSearchParams from the current URL
+                 * @param seasons - Available season data to validate against
+                 * 
+                 * URL format: ?season=2024&split=Summer&tournament=Playoffs&tab=matchs
+                 * - season: The season to select (e.g., "2024")
+                 * - split: The split within the season (e.g., "Summer")  
+                 * - tournament: The tournament name (e.g., "Playoffs")
+                 * - tab: The active tab name (e.g., "matchs", "apercu")
+                 * 
+                 * Special values:
+                 * - season=all: Selects all seasons
+                 * - split=all: Selects all splits within the season
+                 * - tournament=all: Selects all tournaments within the split
+                 */
+                syncFromUrl: (params, seasons) => {
+                    if (seasons.length === 0) return
+
+                    const seasonParam = params.get('season')
+                    const splitParam = params.get('split')
+                    const tournamentParam = params.get('tournament')
+                    const tabParam = params.get('tab')
+
+                    // Sync tab first (independent of other parameters)
+                    if (tabParam) {
+                        const tabIndex = get().getTabIndex(tabParam)
+                        set({ 
+                            activeTabIndex: tabIndex,
+                            activeIndex: tabIndex // Keep both for compatibility
+                        })
+                    }
+
+                    // Handle "all seasons" case
+                    if (seasonParam === 'all') {
+                        const allId = seasons.flatMap(season =>
+                            season.data.flatMap(split =>
+                                split.tournaments?.map(t => t.id) || []
+                            )
+                        )
+                        set({
+                            activeAllSeason: true,
+                            activeAllSplit: false,
+                            activeId: allId,
+                            activeHeaderSeason: seasons[seasons.length - 1].season
+                        })
+                        return
+                    }
+
+                    // Find and validate season
+                    const season = seasons.find(s => s.season === seasonParam)
+                    if (!season && seasonParam) return // Invalid season param
+
+                    const targetSeason = season?.season || seasons[seasons.length - 1].season
+                    const splits = getSplits(targetSeason, seasons)
+
+                    // Handle "all splits" case
+                    if (splitParam === 'all' && season) {
+                        const allId = season.data.flatMap(split =>
+                            split.tournaments?.map(t => t.id) || []
+                        )
+                        set({
+                            activeHeaderSeason: targetSeason,
+                            activeAllSeason: false,
+                            activeAllSplit: true,
+                            activeId: allId,
+                            activeSplit: splits.length > 0 ? splits[splits.length - 1] : ''
+                        })
+                        return
+                    }
+
+                    // Find and validate split
+                    const targetSplit = splitParam && splits.includes(splitParam) 
+                        ? splitParam 
+                        : (splits.length > 0 ? splits[splits.length - 1] : '')
+
+                    const tournaments = getTournaments(targetSeason, targetSplit, seasons, false)
+
+                    // Handle "all tournaments" case
+                    if (tournamentParam === 'all' && tournaments.length > 0) {
+                        const allId = tournaments.map(t => t.id)
+                        set({
+                            activeHeaderSeason: targetSeason,
+                            activeSplit: targetSplit,
+                            activeAllSeason: false,
+                            activeAllSplit: false,
+                            activeTournament: 'All',
+                            activeId: allId
+                        })
+                        return
+                    }
+
+                    // Find and validate tournament
+                    const tournament = tournaments.find(t => t.tournament === tournamentParam)
+                    const targetTournament = tournament || tournaments[tournaments.length - 1]
+
+                    if (targetTournament) {
+                        set({
+                            activeHeaderSeason: targetSeason,
+                            activeSplit: targetSplit,
+                            activeTournament: targetTournament.tournament,
+                            activeId: [targetTournament.id],
+                            activeAllSeason: false,
+                            activeAllSplit: false
+                        })
+                    }
+                },
+
+                /**
+                 * Generates URL parameters from current store state for shareable links
+                 * @returns URLSearchParams object with current selection encoded
+                 * 
+                 * Generates clean URLs like:
+                 * - ?season=2024&split=Summer&tournament=Playoffs&tab=matchs
+                 * - ?season=all&tab=apercu (for all seasons)
+                 * - ?season=2024&split=all&tab=statistiques (for all splits in season)
+                 */
+                syncToUrl: () => {
+                    const state = get()
+                    const params = new URLSearchParams()
+
+                    // Handle special "all" cases
+                    if (state.activeAllSeason) {
+                        params.set('season', 'all')
+                    } else if (state.activeAllSplit) {
+                        params.set('season', state.activeHeaderSeason)
+                        params.set('split', 'all')
+                    } else {
+                        // Normal selection
+                        if (state.activeHeaderSeason) {
+                            params.set('season', state.activeHeaderSeason)
+                        }
+                        if (state.activeSplit) {
+                            params.set('split', state.activeSplit)
+                        }
+                        if (state.activeTournament) {
+                            if (state.activeTournament === 'All') {
+                                params.set('tournament', 'all')
+                            } else {
+                                params.set('tournament', state.activeTournament)
+                            }
+                        }
+                    }
+
+                    return params
+                },
             }
         },
         {

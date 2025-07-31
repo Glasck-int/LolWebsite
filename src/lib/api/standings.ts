@@ -40,9 +40,16 @@ export async function fetchEnrichedStandingsData(
     const teamsRecentMatches = teamsRecentMatchesResponse.data || []
 
     const teamImagePromises = teamsData.map(async (team: Team) => {
-      const teamImageResponse = await getTeamImage(
+      // Essayer d'abord avec l'image de l'équipe si elle existe
+      let teamImageResponse = await getTeamImage(
         team.image?.replace('.png', '.webp') || ''
       )
+
+      // Si ça ne marche pas, essayer avec le nom de l'équipe
+      if (!teamImageResponse.data && team.overviewPage) {
+        teamImageResponse = await getTeamImageByName(team.overviewPage)
+      }
+
       return {
         teamName: team.overviewPage,
         imageUrl: teamImageResponse.data || '',
@@ -102,9 +109,16 @@ export async function fetchEnrichedStandingsOverviewData(
     const teamsRecentMatches = teamsRecentMatchesResponse.data || []
 
     const teamImagePromises = teamsData.map(async (team: Team) => {
-      const teamImageResponse = await getTeamImage(
-        team.image?.replace('.png', '') || ''
+      // Essayer d'abord avec l'image de l'équipe si elle existe
+      let teamImageResponse = await getTeamImage(
+        team.image?.replace('.png', '.webp') || ''
       )
+
+      // Si ça ne marche pas, essayer avec le nom de l'équipe
+      if (!teamImageResponse.data && team.overviewPage) {
+        teamImageResponse = await getTeamImageByName(team.overviewPage)
+      }
+
       return {
         teamName: team.overviewPage,
         imageUrl: teamImageResponse.data || '',
@@ -130,6 +144,7 @@ export async function fetchEnrichedStandingsOverviewData(
       teamsRecentMatches,
       gamesRecentResponse.data || [],
     )
+
 
     return processedStandings
   } catch (error) {

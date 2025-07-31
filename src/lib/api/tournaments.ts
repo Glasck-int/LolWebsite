@@ -101,9 +101,24 @@ async function getTournamentPlayersStatsByTournamentId(
     )
 }
 
+/**
+ * Get standings by tournament ID
+ *
+ * @param tournamentId - The ID of the tournament to fetch standings for
+ * @returns Promise with array of standings or error
+ */
+async function getTournamentStandingsByTournamentId(
+    tournamentId: string
+): Promise<ApiResponse<Standings[]>> {
+    return apiRequest<Standings[]>(
+        `/api/tournaments/id/${tournamentId}/standings`
+    )
+}
+
 export {
     getTournamentsByLeagueName,
     getTournamentsStandingsByTournamentOverviewPage,
+    getTournamentStandingsByTournamentId,
     getTournamentsGamesByTournamentOverviewPage,
     getTournamentsScoreboardPlayersByTournamentOverviewPage,
     getTournamentPlayersStatsByTournamentId,

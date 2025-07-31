@@ -15,6 +15,8 @@ export { StandingsRows } from './components/StandingsRows'
 // Views
 export { StandingsOverview } from './views/StandingsOverview'
 export { StandingsWithTabs } from './views/StandingsWithTabs'
+export { StandingsOverviewFetch } from './views/StandingsOverviewFetch'
+export { StandingsWithTabsFetch } from './views/StandingsWithTabsFetch'
 
 // Clients
 export { StandingsOverviewClient } from './clients/StandingsOverviewClient'

@@ -45,7 +45,7 @@ export const Form = ({
     )
 
     return (
-        <div className="flex gap-1">
+        <div className="flex gap-1 justify-start">
             {displayForm.split('').map((letter, index) => {
                 // Get the corresponding match data for this form letter
                 const teamMatches = teamsRecentMatches?.find(

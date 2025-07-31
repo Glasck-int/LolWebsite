@@ -96,7 +96,7 @@ export const NextMatchesClient = ({
     if (loading && !currentData.matches.length) {
         return (
             <div className="w-full">
-                <MatchSkeleton count={showSingleMatchOnDesktop ? 1 : 3} />
+                <MatchSkeleton />
             </div>
         )
     }

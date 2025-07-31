@@ -20,10 +20,10 @@ interface NextMatchesData {
 }
 
 /**
- * Hook pour récupérer automatiquement les données de matches depuis l'API
- * avec cache intelligent pour éviter les re-fetches
+ * Hook to automatically fetch matches data from the API
+ * with intelligent caching to avoid re-fetches
  * 
- * @param tournamentId - ID du tournoi pour récupérer les matches
+ * @param tournamentId - ID of the tournament to fetch matches from
  * @returns { data: NextMatchesData | null, loading: boolean, error: string | null }
  */
 export const useMatchesData = (tournamentId: number | undefined) => {
@@ -34,7 +34,7 @@ export const useMatchesData = (tournamentId: number | undefined) => {
     
     const [initialized, setInitialized] = useState(false)
 
-    // Réinitialiser quand tournamentId change
+    // Reset when tournamentId changes
     useEffect(() => {
         setInitialized(false)
     }, [tournamentId])
@@ -42,25 +42,15 @@ export const useMatchesData = (tournamentId: number | undefined) => {
     useEffect(() => {
         const fetchMatches = async () => {
             if (!tournamentId) {
-                console.log('🚫 useMatchesData: no tournamentId')
                 setInitialized(true)
                 return
             }
 
-            // Vérifier le cache d'abord
+            // Check cache first
             const cached = getCachedMatches(tournamentId)
-            console.log('🔍 useMatchesData cache check:', {
-                tournamentId,
-                cached: cached ? {
-                    hasMatches: cached.data.matches.length > 0,
-                    loading: cached.loading,
-                    error: cached.error
-                } : null
-            })
+            
             
             if (cached && !cached.loading && cached.data.matches.length > 0) {
-                // Données en cache et valides, pas besoin de fetch
-                console.log('✅ useMatchesData: using cached data')
                 setInitialized(true)
                 return
             }
@@ -123,7 +113,7 @@ export const useMatchesData = (tournamentId: number | undefined) => {
                     })
                 )
                 
-                // Stocker dans le cache
+                // Store in cache
                 setCachedMatches(tournamentId, {
                     matches,
                     teamsData: teams,
@@ -144,7 +134,7 @@ export const useMatchesData = (tournamentId: number | undefined) => {
         }
     }, [tournamentId, initialized, getCachedMatches, setCachedMatches, setMatchesLoading, setMatchesError])
 
-    // Récupérer les données du cache
+    // Get cached data
     const cached = tournamentId ? getCachedMatches(tournamentId) : null
     
     return {

@@ -261,11 +261,6 @@ export const TableEntityHeader = ({
 
     useEffect(() => {
         if (seasons.length > 0) {
-            console.log('🔧 TableEntityHeader initializing:', {
-                seasonsLength: seasons.length,
-                isAllActive,
-                timestamp: Date.now()
-            })
             initializeWithSeasons(seasons, isAllActive)
         }
     }, [seasons, initializeWithSeasons, isAllActive])

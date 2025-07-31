@@ -1,8 +1,9 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useTableEntityData } from '@/hooks/useTableEntityData'
-import { useTableEntityStore, SeasonData } from '@/store/tableEntityStore'
+import { useTableEntityStore, SeasonData, TabConfig } from '@/store/tableEntityStore'
 import {
     TableEntityLayout,
     TableEntityHeader,
@@ -18,8 +19,8 @@ import {
 import {
     LeagueDescription,
     NextMatchesClient,
-    StandingsOverviewClient,
-    StandingsWithTabsClient,
+    StandingsOverviewFetch,
+    StandingsWithTabsFetch,
 } from '@/components/leagues'
 import {
     League,
@@ -51,6 +52,14 @@ interface LeagueTableEntityClientProps {
     imageData?: string
 }
 
+// Tab configuration specific to League pages
+const LEAGUE_TAB_CONFIG: TabConfig[] = [
+    { index: 0, name: 'apercu', displayName: 'Aperçu' },
+    { index: 1, name: 'matchs', displayName: 'Matchs' },
+    { index: 2, name: 'statistiques', displayName: 'Statistiques' },
+    { index: 3, name: 'tournois', displayName: 'Tournois' }
+]
+
 const LeagueTableEntityContent = ({
     league,
     standings,
@@ -64,10 +73,21 @@ const LeagueTableEntityContent = ({
 }: Omit<LeagueTableEntityClientProps, 'leagueId'> & {
     seasons: SeasonData[]
 }) => {
-    const activeId = useTableEntityStore((state) => state.activeId)
+    const searchParams = useSearchParams()
+    const { activeId, activeIndex, syncFromUrl, setActiveTab, setTabConfigs } = useTableEntityStore()
     const selectedTournamentId = activeId.length > 0 ? activeId[0] : null
 
-    // Debug logs pour comprendre le timing
+    // Set tab configuration and sync store state from URL parameters on mount
+    useEffect(() => {
+        // Set the tab configuration for this component
+        setTabConfigs(LEAGUE_TAB_CONFIG)
+        
+        if (seasons.length > 0) {
+            // Sync all state (season/split/tournament/tab) from URL
+            syncFromUrl(searchParams, seasons)
+        }
+    }, [seasons.length > 0, setTabConfigs, syncFromUrl, searchParams]) // Only run when seasons are available
+
     return (
         <>
             <Card>
@@ -83,18 +103,16 @@ const LeagueTableEntityContent = ({
                     <TableEntityHeader seasons={seasons} />
                 </CardBody>
                 <CardFooter>
-                    <CardFooterContent>
-                        <p className="text-inherit">Aperçu</p>
-                    </CardFooterContent>
-                    <CardFooterContent>
-                        <p className="text-inherit">Matchs</p>
-                    </CardFooterContent>
-                    <CardFooterContent>
-                        <p className="text-inherit">Statistiques</p>
-                    </CardFooterContent>
-                    <CardFooterContent>
-                        <p className="text-inherit">Tournois</p>
-                    </CardFooterContent>
+                    {LEAGUE_TAB_CONFIG.map((tab) => (
+                        <CardFooterContent key={tab.index}>
+                            <p 
+                                className="text-inherit cursor-pointer hover:text-white"
+                                onClick={() => setActiveTab(tab.index)}
+                            >
+                                {tab.displayName}
+                            </p>
+                        </CardFooterContent>
+                    ))}
                 </CardFooter>
             </Card>
             {/* Body avec le contenu des différents onglets */}
@@ -121,14 +139,9 @@ const LeagueTableEntityContent = ({
                             )}
                         </div>
                         {/* Standings Overview */}
-                        {standings &&
-                        playerStats &&
-                        tournamentName &&
-                        enrichedStandingsData &&
-                        enrichedGamesData &&
-                        playerImages ? (
-                            <StandingsOverviewClient
-                                processedData={enrichedStandingsData}
+                        {selectedTournamentId ? (
+                            <StandingsOverviewFetch
+                                tournamentId={selectedTournamentId}
                                 maxRows={3}
                             />
                         ) : (
@@ -136,28 +149,27 @@ const LeagueTableEntityContent = ({
                                 <h3 className="text-lg font-semibold mb-2">
                                     Aperçu
                                 </h3>
-                                <p>Chargement des données...</p>
+                                <p>Sélectionnez un tournoi pour voir le classement</p>
                             </div>
                         )}
                     </div>
                 </TableEntityContent>
-                <TableEntityContent></TableEntityContent>
                 <TableEntityContent>
                     <div className="space-y-4">
-                        <p>Tournois</p>
+                        <p>matchs</p>
+                    </div>
+                </TableEntityContent>
+                <TableEntityContent>
+                    <div className="space-y-4">
+                        <p>stats</p>
                     </div>
                 </TableEntityContent>
                 <TableEntityContent>
                     <div className="space-y-4">
                         {/* Players KDA et Standings With Tabs */}
-                        {standings &&
-                        playerStats &&
-                        tournamentName &&
-                        enrichedStandingsData &&
-                        enrichedGamesData &&
-                        playerImages ? (
-                            <StandingsWithTabsClient
-                                processedData={enrichedStandingsData}
+                        {selectedTournamentId ? (
+                            <StandingsWithTabsFetch
+                                tournamentId={selectedTournamentId}
                                 maxRows={null}
                             />
                         ) : (
@@ -165,7 +177,7 @@ const LeagueTableEntityContent = ({
                                 <h3 className="text-lg font-semibold mb-2">
                                     Statistiques
                                 </h3>
-                                <p>Chargement des statistiques...</p>
+                                <p>Sélectionnez un tournoi pour voir les statistiques</p>
                             </div>
                         )}
                     </div>

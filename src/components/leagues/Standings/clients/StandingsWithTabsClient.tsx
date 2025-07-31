@@ -4,6 +4,7 @@ import React from 'react'
 import { StandingsHeader } from '../components/StandingsHeader'
 import {
     Card,
+    CardContext,
     CardBody,
     CardBodyMultiple,
     CardHeader,
@@ -63,7 +64,8 @@ export const StandingsWithTabsClient = ({
 
     return (
         <Card className="flex flex-col w-full h-full ">
-            <CardSort>
+            <CardContext>
+                <CardSort>
                 {/* Desktop: combined view with sections */}
                 <div className="hidden lg:block">
                     <CardBody>
@@ -227,7 +229,8 @@ export const StandingsWithTabsClient = ({
                         </CardBodyMultiple>
                     </CardBody>
                 </div>
-            </CardSort>
+                </CardSort>
+            </CardContext>
         </Card>
     )
 }

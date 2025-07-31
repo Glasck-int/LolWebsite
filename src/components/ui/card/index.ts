@@ -1,4 +1,4 @@
-export { Card } from './Card'
+export { Card, CardContext } from './Card'
 
 export {
     CardHeader,
