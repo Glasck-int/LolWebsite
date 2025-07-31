@@ -3,3 +3,14 @@
 reviews:
   Homepage.Title:
     description: Hello English World
+  Standings.tabs.matches:
+    locales:
+      fr:
+        comments:
+          - user:
+              name: Glasck
+              email: glasckint@gmail.com
+            id: SI2bq9lmN5RvyjIM_2V5n
+            type: request_change
+            comment: ''
+            time: '2025-07-31T18:22:00.498Z'

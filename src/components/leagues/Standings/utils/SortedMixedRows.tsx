@@ -17,14 +17,18 @@ import { useFlipAnimation } from '../hooks/useFlipAnimation'
  *
  * Key features:
  * - Dynamic sorting based on various statistics (place, wins, losses, win rate, etc.)
+ *   Following sports convention: wins/winRate DESC by default, losses ASC by default
  * - FLIP animations for smooth transitions between sort states
- * - Dynamic position numbering that updates with sort order
+ * - Dynamic position numbering that updates with sort order and direction
+ *   (1,2,3... for normal order, 10,9,8... for inverted order)
  * - Responsive row limiting with team-centered visibility
  * - Support for both ProcessedStanding and ProcessedGameStats data types
  *
  * The component integrates with the global sort state through useSort hook and provides
  * visual feedback during data transitions through flip animations.
  *
+ * @author joaquim
+ * 
  * @param props - Component properties
  * @param props.processedData - Array of processed standings or game statistics data to sort and display.
  *                             Can handle both match-level and game-level statistics.
@@ -139,17 +143,17 @@ export const SortedMixedRows = ({
                 case 'played':
                 case 'matchesPlayed':
                     comparison =
-                        ('totalGames' in a
-                            ? a.totalGames
-                            : a.gamesStats.totalGames) -
                         ('totalGames' in b
                             ? b.totalGames
-                            : b.gamesStats.totalGames)
+                            : b.gamesStats.totalGames) -
+                        ('totalGames' in a
+                            ? a.totalGames
+                            : a.gamesStats.totalGames)
                     break
                 case 'gamesPlayed':
                     comparison =
-                        ('gamesStats' in a ? a.gamesStats.totalGames : 0) -
-                        ('gamesStats' in b ? b.gamesStats.totalGames : 0)
+                        ('gamesStats' in b ? b.gamesStats.totalGames : 0) -
+                        ('gamesStats' in a ? a.gamesStats.totalGames : 0)
                     break
                 case 'wins':
                 case 'matchesWins':
@@ -157,12 +161,12 @@ export const SortedMixedRows = ({
                         'standing' in a ? a.standing.winSeries || 0 : a.wins || 0
                     const bWins =
                         'standing' in b ? b.standing.winSeries || 0 : b.wins || 0
-                    comparison = aWins - bWins
+                    comparison = bWins - aWins 
                     break
                 case 'gamesWins':
                     const aGamesWins = 'gamesStats' in a ? a.gamesStats.wins : 0
                     const bGamesWins = 'gamesStats' in b ? b.gamesStats.wins : 0
-                    comparison = aGamesWins - bGamesWins
+                    comparison = bGamesWins - aGamesWins 
                     break
                 case 'losses':
                 case 'matchesLosses':
@@ -174,27 +178,23 @@ export const SortedMixedRows = ({
                         'standing' in b
                             ? b.standing.lossSeries || 0
                             : b.losses || 0
-                    comparison = aLosses - bLosses
+                    comparison = aLosses - bLosses 
                     break
                 case 'gamesLosses':
                     const aGamesLosses = 'gamesStats' in a ? a.gamesStats.losses : 0
                     const bGamesLosses = 'gamesStats' in b ? b.gamesStats.losses : 0
-                    comparison = aGamesLosses - bGamesLosses
+                    comparison = aGamesLosses - bGamesLosses 
                     break
                 case 'winRate':
                 case 'matchesWinRate':
-                    comparison =
-                        ('winRate' in a
-                            ? a.winRate || 0
-                            : a.gamesStats.winRate || 0) -
-                        ('winRate' in b
-                            ? b.winRate || 0
-                            : b.gamesStats.winRate || 0)
+                    const aMatchWinRate = 'matchWinRate' in a ? a.matchWinRate || 0 : 0
+                    const bMatchWinRate = 'matchWinRate' in b ? b.matchWinRate || 0 : 0
+                    comparison = bMatchWinRate - aMatchWinRate 
                     break
                 case 'gamesWinRate':
                     const aGamesWinRate = 'gamesStats' in a ? a.gamesStats.winRate : 0
                     const bGamesWinRate = 'gamesStats' in b ? b.gamesStats.winRate : 0
-                    comparison = aGamesWinRate - bGamesWinRate
+                    comparison = bGamesWinRate - aGamesWinRate 
                     break
                 case 'form':
                     comparison = 0 // Placeholder
@@ -319,7 +319,11 @@ export const SortedMixedRows = ({
                             }
                             gridTemplate={gridTemplate}
                             className={className}
-                            sortedPosition={index + 1} // Dynamic position based on current sort order
+                            sortedPosition={
+                                activeSort.direction === 'desc' 
+                                    ? sortedData.length - index 
+                                    : index + 1
+                            }
                         />
                     </div>
                 )

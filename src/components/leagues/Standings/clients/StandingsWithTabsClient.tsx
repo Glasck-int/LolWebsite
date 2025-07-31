@@ -213,7 +213,7 @@ export const StandingsWithTabsClient = ({
                                         </div>
                                     </CardBodyMultipleContent>
                                     <CardBodyMultipleContent>
-                                        <div className="flex flex-col w-full h-full gap-6">
+                                        <div className="flex flex-col w-full h-full">
                                             {Object.entries(groupedData).map(([groupName, groupTeams]) => {
                                                 const groupDisplayName = groupTeams[0]?.groupInfo?.groupDisplay || groupName
                                                 const columns = getColumnsForGroup(groupDisplayName)
@@ -221,12 +221,7 @@ export const StandingsWithTabsClient = ({
                                                 
                                                 return (
                                                     <div key={groupName} className="flex flex-col">
-                                                        {/* Group header */}
-                                                        <div className="mb-4">
-                                                            <SubTitle className="text-lg font-semibold">
-                                                                {groupTeams[0]?.groupInfo?.groupDisplay || groupName}
-                                                            </SubTitle>
-                                                        </div>
+                
                                                         
                                                         <CardHeader>
                                                             <CardHeaderBase>

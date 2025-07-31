@@ -152,6 +152,7 @@ export const useStandingsColumns = (config: StandingsColumnsConfig) => {
                     </p>
                 </div>
             ),
+            tooltip: groupName ? `${t('GroupTooltip')}` : t('GroupTooltip'),
             headerClassName: 'justify-start items-center flex-1 min-w-0',
             className: 'justify-start items-center flex-1 min-w-0',
             sortable: false,
@@ -488,6 +489,7 @@ export const useCombinedStandingsColumns = (sortable: boolean = true, groupName?
                     </p>
                 </div>
             ),
+            tooltip: groupName ? `${t('GroupTooltip')}` : t('GroupTooltip'),
             headerClassName: 'justify-start items-center flex-1 min-w-0',
             className: 'justify-start items-center flex-1 min-w-0',
             sortable: false,

@@ -29,8 +29,10 @@
 			"games": "GAMES"
 		},
 		"Team": "Equipes",
+		"Group": "Groupe",
 		"#": "Position",
 		"Form": "Forme",
+		"GroupTooltip": "Groupe",
 		"MatchesPlayedTooltip": "Nombre de matchs joués",
 		"WinsTooltip": "Matchs gagnés",
 		"LossesTooltip": "Matchs perdus",
