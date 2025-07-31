@@ -17,10 +17,16 @@ export { StandingsOverview } from './views/StandingsOverview'
 export { StandingsWithTabs } from './views/StandingsWithTabs'
 export { StandingsOverviewFetch } from './views/StandingsOverviewFetch'
 export { StandingsWithTabsFetch } from './views/StandingsWithTabsFetch'
+export { NewStandingsWithTabsFetch } from './views/NewStandingsWithTabsFetch'
 
 // Clients
 export { StandingsOverviewClient } from './clients/StandingsOverviewClient'
 export { StandingsWithTabsClient } from './clients/StandingsWithTabsClient'
+export { NewStandingsWithTabsClient } from './clients/NewStandingsWithTabsClient'
+
+// New Table Components
+export { StandingsTable, CombinedStandingsTable } from './components/StandingsTable'
+export { StandingsWithTabs as NewStandingsWithTabs } from './components/StandingsWithTabs'
 
 // Utils
 export {

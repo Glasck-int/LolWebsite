@@ -21,6 +21,7 @@ import {
     StandingsOverviewFetch,
     StandingsWithTabsFetch,
 } from '@/components/leagues'
+import { NewStandingsWithTabsFetch } from '@/components/leagues/Standings/views/NewStandingsWithTabsFetch'
 import {
     League,
     Standings,
@@ -151,7 +152,20 @@ const LeagueTableEntityContent = ({
                 </TableEntityContent>
                 <TableEntityContent>
                     <div className="space-y-4">
-                        <p>stats</p>
+                        {/* Nouveau système de tableaux avec vraies balises HTML */}
+                        {selectedTournamentId ? (
+                            <NewStandingsWithTabsFetch
+                                tournamentId={selectedTournamentId}
+                                maxRows={null}
+                            />
+                        ) : (
+                            <div className="p-4 bg-gray-700 rounded-lg">
+                                <h3 className="text-lg font-semibold mb-2">
+                                    Statistiques
+                                </h3>
+                                <p>Sélectionnez un tournoi pour voir les statistiques détaillées</p>
+                            </div>
+                        )}
                     </div>
                 </TableEntityContent>
                 <TableEntityContent>

@@ -79,6 +79,20 @@
 	.body-container {
 		@apply max-w-[1440px] mx-auto md:px-24 px-4  flex flex-col gap-1 h-full w-full pt-24;
 	}
+	
+	/* Standings table styling to match original */
+	.standings-table {
+		@apply text-white;
+	}
+	.standings-table td {
+		@apply text-white;
+	}
+	.standings-table th {
+		@apply text-clear-grey;
+	}
+	.standings-table .team-name {
+		@apply hover:text-clear-violet/80 transition-all duration-200;
+	}
 }
 
 @layer utilities {
