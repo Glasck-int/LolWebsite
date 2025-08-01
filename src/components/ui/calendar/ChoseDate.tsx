@@ -14,6 +14,8 @@ import { useClickOutside } from '@/lib/hooks/handleClickoutside'
 import { useTranslate } from '@/lib/hooks/useTranslate'
 import { useLocale } from 'next-intl'
 import { I18nProvider } from '@react-aria/i18n'
+import { ButtonBar } from '../Button/ButtonBar'
+import { FunctionalSearchBar } from '../search/FunctionalSearchBar'
 
 export interface ChoseDateState {
     selectedDate: Date
@@ -91,7 +93,7 @@ export default function ChoseDate({
     const calendarRef = useRef<HTMLDivElement>(null)
     const translate = useTranslate('Calendar')
     const locale = useLocale()
-    
+
     const onChangeDateCalendar = (calendarDate: CalendarDate) => {
         const jsDate = calendarDate?.toDate(getLocalTimeZone()) || null
         setSelectedDate(jsDate)
@@ -104,7 +106,7 @@ export default function ChoseDate({
         return 'en-US'
     }
     const currentLocale = normalizeLocale(locale)
-    
+
     const formatSelectedDate = () => {
         if (!selectedDate) return ''
 
@@ -147,6 +149,55 @@ export default function ChoseDate({
         if (isDown == false) setIsDown(true)
     })
 
+    const handleButtonClick = (option: string | null) => {
+        if (!option) {
+            setIsLive(false)
+            setMatchChaud(false)
+            setSearch('')
+            return
+        }
+
+        if (option === translate('live')) {
+            setIsLive(true)
+            setMatchChaud(false)
+        }
+
+        if (option === translate('hotGame')) {
+            setMatchChaud(true)
+            setIsLive(false)
+        }
+    }
+
+    const handleSearch = (term: string) => {
+        setSearch(term)
+    }
+
+    const strings = ['LEC', 'KCORP', 'LCK', 'La ligue francaise']
+
+    const [placeholder, setPlaceholder] = useState('')
+    const [stringIndex, setStringIndex] = useState(0)
+
+    // useEffect(() => {
+    //     let currentString = strings[stringIndex]
+    //     let charIndex = 0
+
+    //     const typeInterval = setInterval(() => {
+    //         if (charIndex < currentString.length) {
+    //             setPlaceholder((prev) => prev + currentString[charIndex])
+    //             charIndex++
+    //         } else {
+    //             clearInterval(typeInterval)
+
+    //             setTimeout(() => {
+    //                 setPlaceholder('')
+    //                 setStringIndex((prev) => (prev + 1) % strings.length)
+    //             }, 5000)
+    //         }
+    //     }, 300)
+
+    //     return () => clearInterval(typeInterval)
+    // }, [stringIndex])
+
     return (
         <div className="w-full h-31 md:bg-white/6 flex flex-col pt-[5px] pb-[10px] px-[10px] relative default-border-radius">
             <ArrowButton
@@ -175,42 +226,59 @@ export default function ChoseDate({
                         className="absolute top-[56px] left-[10px] right-[10px] flex justify-center z-50"
                     >
                         <I18nProvider locale={currentLocale}>
-                        <Calendar
-                            
-                            ref={calendarRef}
-                            value={
-                                dateToCalendarDate(selectedDate) ||
-                                today(getLocalTimeZone())
-                            }
-                            onChange={(calendarDate) =>
-                                onChangeDateCalendar(calendarDate)
-                            }
-                            classNames={{
-                                base: 'bg-white/4 rounded-lg backdrop-blur border border-grey/30',
-                                headerWrapper: 'bg-clear-grey/20 rounded-t-lg',
-                                title: 'text-lg font-semibold text-white',
-                                nextButton: 'text-clear-grey hover:text-white',
-                                prevButton: 'text-clear-grey hover:text-white',
-                                gridWrapper: 'gap-1',
-                                gridHeaderRow: 'mb-2 justify-between px-0',
-                                gridHeader:
-                                    'text-xs font-medium text-clear-grey bg-clear-grey/20',
-                                gridHeaderCell: 'p-0 flex-1',
-                                cell: 'p-0 w-10 h-10 flex items-center justify-center',
-                                cellButton: [
-                                    ' rounded-md text-sm text-clear-grey',
-                                    'hover:bg-white/6 hover:text-white',
-                                    'data-[selected=true]:bg-white/20 data-[selected=true]:text-white',
-                                    'data-[outside-month=true]:text-grey/60',
-                                    'transition-colors duration-150',
-                                ],
-                            }}
-                        />
+                            <Calendar
+                                ref={calendarRef}
+                                value={
+                                    dateToCalendarDate(selectedDate) ||
+                                    today(getLocalTimeZone())
+                                }
+                                onChange={(calendarDate) =>
+                                    onChangeDateCalendar(calendarDate)
+                                }
+                                classNames={{
+                                    base: 'bg-white/4 rounded-lg backdrop-blur border border-grey/30',
+                                    headerWrapper:
+                                        'bg-clear-grey/20 rounded-t-lg',
+                                    title: 'text-lg font-semibold text-white',
+                                    nextButton:
+                                        'text-clear-grey hover:text-white',
+                                    prevButton:
+                                        'text-clear-grey hover:text-white',
+                                    gridWrapper: 'gap-1',
+                                    gridHeaderRow: 'mb-2 justify-between px-0',
+                                    gridHeader:
+                                        'text-xs font-medium text-clear-grey bg-clear-grey/20',
+                                    gridHeaderCell: 'p-0 flex-1',
+                                    cell: 'p-0 w-10 h-10 flex items-center justify-center',
+                                    cellButton: [
+                                        ' rounded-md text-sm text-clear-grey',
+                                        'hover:bg-white/6 hover:text-white',
+                                        'data-[selected=true]:bg-white/20 data-[selected=true]:text-white',
+                                        'data-[outside-month=true]:text-grey/60',
+                                        'transition-colors duration-150',
+                                    ],
+                                }}
+                            />
                         </I18nProvider>
                     </motion.div>
                 )}
             </AnimatePresence>
-            <div className=" flex-1 w-full"></div>
+            <div className=" flex-1 w-full ">
+                <div className="flex gap-2 ">
+                    <ButtonBar
+                        options={[translate('live'), translate('hotGame')]}
+                        onButtonChange={(option) => handleButtonClick(option)}
+                    />
+                    <div className="flex-1 min-w-0">
+                        <FunctionalSearchBar
+                            searchLogo="textSearch"
+                            className="h-[40px] !rounded-2xl border md:border-none border-solid border-dark-grey bg-white-06"
+                            onSearch={handleSearch}
+                            placeholder={placeholder}
+                        />
+                    </div>
+                </div>
+            </div>
         </div>
     )
 }

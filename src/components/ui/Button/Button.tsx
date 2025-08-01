@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react'
 
 /**
  * Button component properties
@@ -13,12 +13,12 @@ import React from "react";
  * @param type - The HTML button type attribute
  */
 interface ButtonProps {
-	children: React.ReactNode;
-	variant?: "base" | "selected";
-	onClick?: () => void;
-	disabled?: boolean;
-	className?: string;
-	type?: "button" | "submit" | "reset";
+    children: React.ReactNode
+    variant?: 'base' | 'selected'
+    onClick?: () => void
+    disabled?: boolean
+    className?: string
+    type?: 'button' | 'submit' | 'reset'
 }
 
 /**
@@ -52,14 +52,14 @@ interface ButtonProps {
  * @see ButtonBar - Component that uses multiple Button instances for selection
  */
 export const Button = ({
-	children,
-	variant = "base",
-	onClick,
-	disabled = false,
-	className = "",
-	type = "button",
+    children,
+    variant = 'base',
+    onClick,
+    disabled = false,
+    className = '',
+    type = 'button',
 }: ButtonProps) => {
-	const baseClasses = `
+    const baseClasses = `
     h-10
     px-2
     rounded-2xl 
@@ -67,40 +67,41 @@ export const Button = ({
     border-solid
     font-inter 
     font-semlibod 
-    text-xl 
-    md:text-2xl 
+	text-lg
+	md:text-xl
     tracking-normal
     transition-all 
     duration-200 
     cursor-pointer
     disabled:cursor-not-allowed
     disabled:opacity-50
-  `;
+	whitespace-nowrap
+  `
 
-	const variantClasses = {
-		base: `
+    const variantClasses = {
+        base: `
       bg-white-06 
       border-dark-grey 
       text-clear-grey
       hover:bg-white-10
 	  backdrop-blur-md
     `,
-		selected: `
+        selected: `
       bg-white 
       border-dark-grey 
       text-black
       hover:bg-white/90
     `,
-	};
+    }
 
-	return (
-		<button
-			type={type}
-			onClick={onClick}
-			disabled={disabled}
-			className={`${baseClasses} ${variantClasses[variant]} ${className}`}
-		>
-			{children}
-		</button>
-	);
-};
+    return (
+        <button
+            type={type}
+            onClick={onClick}
+            disabled={disabled}
+            className={`${baseClasses} ${variantClasses[variant]} ${className}`}
+        >
+            {children}
+        </button>
+    )
+}

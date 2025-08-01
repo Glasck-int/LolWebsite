@@ -45,6 +45,8 @@
 	"Calendar":{
 		"today":"Aujourd'hui",
 		"tomorrow":"Demain",
-		"yesterday":"Hier"
+		"yesterday":"Hier",
+		"hotGame":"Match Chaud",
+		"live":"En live"
 	}
 }

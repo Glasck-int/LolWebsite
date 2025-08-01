@@ -203,6 +203,9 @@ export default function Home() {
                                     </div>
                                         <p>- BUG : dans tableEntity quand je passe de tab all activée a non active, ca me reset ma season a la derniere</p>
                                         <p>- Click sur Glasck sur la page principal doit scroll</p>
+                                        <p>- le search doit se relfter dans un parametre de l'url</p>
+                                        <p>- sauvergader la date aussi dans l'url</p>
+                                        <p>- generaliser les querie parameter pur les tabs et autres ? </p>
                                 </CardBodyMultipleContent>
                                 <CardBodyMultipleContent>
                                     <p>body 2</p>
@@ -217,6 +220,12 @@ export default function Home() {
             </div>
             ---
             <ChoseDate {...calendar}/>
+            <Card>
+                <h3>INFO</h3>
+                <p>Live: {calendar.isLive ? "true" : "false"}</p>
+                <p>MatchChaud: {calendar.matchChaud ? "true" : "false"}</p>
+                <p>Search: '{calendar.search}'</p>
+            </Card>
             ---
             <Card>
                 <CardContext>

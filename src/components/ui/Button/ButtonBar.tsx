@@ -57,7 +57,7 @@ export const ButtonBar = (props: ButtonBarProps) => {
 		props.onButtonChange(newValue);
 	};
 	return (
-		<div className="flex flex-row gap-2">
+		<div className="flex flex-row gap-2 w-fit">
 			{options.map((option, index) => (
 				<Button
 					key={index}
