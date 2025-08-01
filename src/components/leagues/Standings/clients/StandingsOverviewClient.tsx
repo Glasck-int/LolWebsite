@@ -8,6 +8,7 @@ import {
     CardHeader,
     CardSort,
     CardHeaderBase,
+    CardContext,
 } from '@/components/ui/card/index'
 import { ProcessedStanding } from '../utils/StandingsDataProcessor'
 import { SortedRows } from '../utils/SortedRows'
@@ -51,8 +52,9 @@ export const StandingsOverviewClient = ({
 
     return (
         <Card className="flex flex-col ">
-            <CardSort>
-                <CardBody>
+            <CardContext>
+                <CardSort>
+                    <CardBody>
                             <div className="flex flex-col w-full h-full ">
                                 <CardHeader>
                                     <CardHeaderBase>
@@ -96,8 +98,9 @@ export const StandingsOverviewClient = ({
                                     />
                                 </div>
                             </div>
-                </CardBody>
-            </CardSort>
+                    </CardBody>
+                </CardSort>
+            </CardContext>
         </Card>
     )
 }

@@ -1,6 +1,23 @@
-import { useEffect, useCallback, ReactElement, cloneElement, isValidElement } from 'react'
+import { useCallback, ReactElement, cloneElement, isValidElement, ReactNode } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { useTableEntityStore } from '@/store/tableEntityStore'
+import { useTableEntityStore, SeasonData } from '@/store/tableEntityStore'
+
+interface CardFooterProps {
+    children: ReactNode
+}
+
+interface PElementProps {
+    children: string
+    className?: string
+    style?: React.CSSProperties
+    onClick?: () => void
+}
+
+interface CardFooterContentProps {
+    children: ReactElement<PElementProps>
+    className?: string
+    style?: React.CSSProperties
+}
 
 /**
  * Hook for automatic tab detection and management
@@ -9,7 +26,7 @@ import { useTableEntityStore } from '@/store/tableEntityStore'
 export const useAutoTabs = () => {
     const searchParams = useSearchParams()
     const { 
-        autoRegisterTabs, 
+        registerTab, 
         setActiveTab, 
         getActiveTabIndex, 
         syncFromUrl 
@@ -20,7 +37,7 @@ export const useAutoTabs = () => {
      * @param cardFooter - The CardFooter JSX element
      * @returns Array of tab display names
      */
-    const extractTabNames = useCallback((cardFooter: ReactElement): string[] => {
+    const extractTabNames = useCallback((cardFooter: ReactElement<CardFooterProps>): string[] => {
         const tabNames: string[] = []
         
         if (cardFooter && cardFooter.props.children) {
@@ -28,12 +45,10 @@ export const useAutoTabs = () => {
                 ? cardFooter.props.children 
                 : [cardFooter.props.children]
             
-            children.forEach((child: any) => {
-                if (isValidElement(child) && child.props.children) {
+            children.forEach((child: ReactNode) => {
+                if (isValidElement<CardFooterContentProps>(child) && child.props.children) {
                     // Look for <p> element inside CardFooterContent
-                    const pElement = isValidElement(child.props.children) 
-                        ? child.props.children 
-                        : null
+                    const pElement = child.props.children
                     
                     if (pElement && typeof pElement.props.children === 'string') {
                         tabNames.push(pElement.props.children)
@@ -50,29 +65,30 @@ export const useAutoTabs = () => {
      * @param cardFooter - The CardFooter JSX element
      * @returns Enhanced CardFooter with click handlers
      */
-    const injectTabHandlers = useCallback((cardFooter: ReactElement): ReactElement => {
+    const injectTabHandlers = useCallback((cardFooter: ReactElement<CardFooterProps>): ReactElement<CardFooterProps> => {
         if (!cardFooter || !cardFooter.props.children) return cardFooter
         
         const children = Array.isArray(cardFooter.props.children) 
             ? cardFooter.props.children 
             : [cardFooter.props.children]
         
-        const enhancedChildren = children.map((child: any, index: number) => {
-            if (isValidElement(child)) {
+        const enhancedChildren = children.map((child: ReactNode, index: number) => {
+            if (isValidElement<CardFooterContentProps>(child)) {
                 // Clone the CardFooterContent and add onClick to the <p> element
+                const pElement = child.props.children
+                const enhancedPElement = cloneElement(pElement, {
+                    ...pElement.props,
+                    onClick: () => setActiveTab(index),
+                    className: `${pElement.props.className || ''} cursor-pointer hover:text-white`,
+                    style: { 
+                        ...pElement.props.style,
+                        transition: 'color 0.2s ease'
+                    }
+                })
+                
                 const enhancedChild = cloneElement(child, {
                     ...child.props,
-                    children: isValidElement(child.props.children) 
-                        ? cloneElement(child.props.children, {
-                            ...child.props.children.props,
-                            onClick: () => setActiveTab(index),
-                            className: `${child.props.children.props.className || ''} cursor-pointer hover:text-white`,
-                            style: { 
-                                ...child.props.children.props.style,
-                                transition: 'color 0.2s ease'
-                            }
-                        })
-                        : child.props.children
+                    children: enhancedPElement
                 })
                 return enhancedChild
             }
@@ -91,22 +107,24 @@ export const useAutoTabs = () => {
      * @param seasons - Optional seasons data for URL sync
      */
     const registerTabsFromJSX = useCallback((
-        cardFooterElement: ReactElement, 
-        seasons?: any[]
+        cardFooterElement: ReactElement<CardFooterProps>, 
+        seasons?: SeasonData[]
     ) => {
         // Extract tab names from the JSX structure
         const tabNames = extractTabNames(cardFooterElement)
         
         if (tabNames.length > 0) {
             // Register tabs in the store
-            autoRegisterTabs(tabNames)
+            tabNames.forEach((displayName, index) => {
+                registerTab(index, displayName)
+            })
             
             // Sync from URL if seasons are available
             if (seasons && seasons.length > 0) {
                 syncFromUrl(searchParams, seasons)
             }
         }
-    }, [extractTabNames, autoRegisterTabs, syncFromUrl, searchParams])
+    }, [extractTabNames, registerTab, syncFromUrl, searchParams])
 
     return {
         /**

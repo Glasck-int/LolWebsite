@@ -1,6 +1,6 @@
 'use client'
 
-export default function PlayerAndTeam({players, team}: {players: string, team: string}) {
+export default function PlayerAndTeam() {
 
     return (
         <div>

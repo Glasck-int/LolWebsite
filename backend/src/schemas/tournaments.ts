@@ -303,9 +303,7 @@ const TeamInStandingsSchema = Type.Object({
         format: 'date-time',
         description: 'Last update date of the standings in db',
     }),
-    Team: Type.Optional(TeamInStandingsSchema, {
-        description: 'Team information including tournament groups'
-    }),
+    Team: Type.Optional(TeamInStandingsSchema),
 })
 
 const TournamentGamesListResponse = Type.Object({

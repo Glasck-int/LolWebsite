@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import { useCard } from './Card'
-import DropDownArrow, { getStateArrow } from '../Button/DropDownArrow'
+import DropDownArrow, { useDropdownArrow } from '../Button/DropDownArrow'
 
 interface classNameProps{
     className?:string
@@ -10,7 +10,7 @@ interface classNameProps{
 
 export const HideCard = ({ className = '' }: classNameProps) => {
     const {setIsHide, isHide} = useCard()
-    const {isDown, setIsDown} = getStateArrow()
+    const {isDown, setIsDown} = useDropdownArrow()
 
     return (
         <div

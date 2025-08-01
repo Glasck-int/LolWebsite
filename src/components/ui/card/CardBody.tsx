@@ -40,45 +40,53 @@ import { motion, AnimatePresence } from 'framer-motion';
 export const CardBody = ({ children, className = '' }: ChildAndClassname) => {
     const hasBeenToggled = useRef(false);
     
+    // Try to get context, but don't fail if it doesn't exist
+    let isHide = false;
     try {
-        const { isHide } = useCard()
-        
-        if (isHide) {
-            hasBeenToggled.current = true;
-        }
-        
-        return (
-            <AnimatePresence>
-                {!isHide && (
-                    <motion.div
-                        className={`flex grow-1 ${className ?? ''}`}
-                        initial={hasBeenToggled.current ? 
-                            { height: 0, opacity: 0 } : 
-                            { height: 'auto', opacity: 1 }
-                        }
-                        animate={{ 
-                            height: 'auto', 
-                            opacity: 1,
-                        }}
-                        exit={{ 
-                            opacity: 0,
-                            height: 0,
-                        }}
-                        transition={{
-                            duration: 0.7,
-                            ease: "easeOut",
-                            opacity: { duration: 0.2 },
-                            height: { delay: 0.2 },
-                        }}
-                    >
-                        {children}
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        )
+        const context = useCard();
+        isHide = context.isHide;
     } catch {
-        return <div className={`flex grow-1 ${className ?? ''}`}>{children}</div>
+        // No context available, render as a simple div
+        return (
+            <div className={`flex grow-1 ${className ?? ''}`}>
+                {children}
+            </div>
+        );
     }
+    
+    if (isHide) {
+        hasBeenToggled.current = true;
+    }
+    
+    return (
+        <AnimatePresence>
+            {!isHide && (
+                <motion.div
+                    className={`flex grow-1 ${className ?? ''}`}
+                    initial={hasBeenToggled.current ? 
+                        { height: 0, opacity: 0 } : 
+                        { height: 'auto', opacity: 1 }
+                    }
+                    animate={{ 
+                        height: 'auto', 
+                        opacity: 1,
+                    }}
+                    exit={{ 
+                        opacity: 0,
+                        height: 0,
+                    }}
+                    transition={{
+                        duration: 0.7,
+                        ease: "easeOut",
+                        opacity: { duration: 0.2 },
+                        height: { delay: 0.2 },
+                    }}
+                >
+                    {children}
+                </motion.div>
+            )}
+        </AnimatePresence>
+    )
 }
 
 /**
@@ -107,7 +115,15 @@ export const CardBody = ({ children, className = '' }: ChildAndClassname) => {
  * @see useCard
  */
 export const CardBodyMultiple = ({ children }: ChildAndClassname) => {
-    const { activeIndex } = useCard()
+    let activeIndex = 0;
+    try {
+        const context = useCard();
+        activeIndex = context.activeIndex;
+    } catch {
+        // No context available, show first child by default
+        activeIndex = 0;
+    }
+    
     return (
         <div className="h-full w-full">
                 {React.Children.map(children, (child, index) => {

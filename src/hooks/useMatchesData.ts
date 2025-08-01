@@ -5,7 +5,7 @@ import { getTeamsByNames } from '@/lib/api/teams'
 import { getTeamImage } from '@/lib/api/image'
 import { MatchSchedule } from '@/generated/prisma'
 
-interface NextMatchesData {
+export interface NextMatchesData {
     matches: MatchSchedule[]
     teamsData: Array<{
         short?: string | null

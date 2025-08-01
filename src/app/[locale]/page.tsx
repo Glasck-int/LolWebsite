@@ -46,7 +46,6 @@ import {
 } from '@/components/utils/Selector'
 import { useIndexState } from '@/lib/hooks/useIndexState'
 import { HideCard } from '@/components/ui/card/HideCard'
-import Image from 'next/image'
 
 const seasons = [
     {
@@ -232,32 +231,34 @@ export default function Home() {
             ---
             <div>
                 <Card>
-                    <CardHeader>
-                        <CardHeaderBase className="px-[15px] justify-between">
-                            <SubTitle>Header</SubTitle>
-                            <Switch
-                                activeIndex={switchActiveIndex}
-                                setActiveIndex={setSwitchActiveIndex}
-                            >
-                                <SwitchContent>
-                                    <p className="text-inherit">@15</p>
-                                </SwitchContent>
-                                <SwitchContent>
-                                    <p className="text-inherit">Tout</p>
-                                </SwitchContent>
-                            </Switch>
-                        </CardHeaderBase>
-                    </CardHeader>
-                    <CardBody className="px-[15px]">
-                        <SwitchBodyMultiple activeIndex={switchActiveIndex}>
-                            <SwitchBodyMultipleContent>
-                                <p>BODY 1</p>
-                            </SwitchBodyMultipleContent>
-                            <SwitchBodyMultipleContent>
-                                <p>BODY 2</p>
-                            </SwitchBodyMultipleContent>
-                        </SwitchBodyMultiple>
-                    </CardBody>
+                    <CardContext>
+                        <CardHeader>
+                            <CardHeaderBase className="px-[15px] justify-between">
+                                <SubTitle>Header</SubTitle>
+                                <Switch
+                                    activeIndex={switchActiveIndex}
+                                    setActiveIndex={setSwitchActiveIndex}
+                                >
+                                    <SwitchContent>
+                                        <p className="text-inherit">@15</p>
+                                    </SwitchContent>
+                                    <SwitchContent>
+                                        <p className="text-inherit">Tout</p>
+                                    </SwitchContent>
+                                </Switch>
+                            </CardHeaderBase>
+                        </CardHeader>
+                        <CardBody className="px-[15px]">
+                            <SwitchBodyMultiple activeIndex={switchActiveIndex}>
+                                <SwitchBodyMultipleContent>
+                                    <p>BODY 1</p>
+                                </SwitchBodyMultipleContent>
+                                <SwitchBodyMultipleContent>
+                                    <p>BODY 2</p>
+                                </SwitchBodyMultipleContent>
+                            </SwitchBodyMultiple>
+                        </CardBody>
+                    </CardContext>
                 </Card>
             </div>
             ---
@@ -265,15 +266,16 @@ export default function Home() {
                 <TableEntityLayout>
                     {/* header */}
                     <Card>
-                        <CardBody>
+                        <CardContext>
+                            <CardBody>
                             <div className="hidden md:flex p-[15px] h-[130px] gap-3 w-[250px]">
-                                <Image
+                                {/* <Image
                                     src=""
                                     className="rounded-full"
                                     alt="Shreckus"
                                     width={100}
                                     height={100}
-                                />
+                                /> */}
                                 <div className="py-[15px]">
                                     <h2>Shreckus</h2>
                                     <SubTitle>BGteams</SubTitle>
@@ -292,6 +294,7 @@ export default function Home() {
                                 <p className="text-inherit">right</p>
                             </CardFooterContent>
                         </CardFooter>
+                        </CardContext>
                     </Card>
                     {/* body */}
                     <TableEntityBody>
@@ -310,32 +313,34 @@ export default function Home() {
             ---
             <div>
                 <Card>
-                    <CardHeader>
-                        <CardHeaderBase className="justify-between">
-                            <SubTitle>Header</SubTitle>
-                            <SelectorIcon
-                                activeIndex={selectorActiveIndex}
-                                setActiveIndex={setSelectorActiveIndex}
-                            >
-                                <Annoyed />
-                                <Annoyed />
-                                <Annoyed />
-                            </SelectorIcon>
-                        </CardHeaderBase>
-                    </CardHeader>
-                    <CardBody>
-                        <SelectorBody activeIndex={selectorActiveIndex}>
-                            <SelectorContent>
-                                <p>BODY 1</p>
-                            </SelectorContent>
-                            <SelectorContent>
-                                <p>Body 2</p>
-                            </SelectorContent>
-                            <SelectorContent>
-                                <p>Body 3</p>
-                            </SelectorContent>
-                        </SelectorBody>
-                    </CardBody>
+                    <CardContext>
+                        <CardHeader>
+                            <CardHeaderBase className="justify-between">
+                                <SubTitle>Header</SubTitle>
+                                <SelectorIcon
+                                    activeIndex={selectorActiveIndex}
+                                    setActiveIndex={setSelectorActiveIndex}
+                                >
+                                    <Annoyed />
+                                    <Annoyed />
+                                    <Annoyed />
+                                </SelectorIcon>
+                            </CardHeaderBase>
+                        </CardHeader>
+                        <CardBody>
+                            <SelectorBody activeIndex={selectorActiveIndex}>
+                                <SelectorContent>
+                                    <p>BODY 1</p>
+                                </SelectorContent>
+                                <SelectorContent>
+                                    <p>Body 2</p>
+                                </SelectorContent>
+                                <SelectorContent>
+                                    <p>Body 3</p>
+                                </SelectorContent>
+                            </SelectorBody>
+                        </CardBody>
+                    </CardContext>
                 </Card>
             </div>
             ---

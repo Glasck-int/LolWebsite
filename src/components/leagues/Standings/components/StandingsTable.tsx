@@ -36,7 +36,7 @@ export const StandingsTable: React.FC<StandingsTableProps> = ({
     
     // Function to determine if a row should be highlighted
     const isRowHighlighted = (item: ProcessedStanding) => {
-        return highlightedTeam && item.standing.team === highlightedTeam
+        return Boolean(highlightedTeam && item.standing.team === highlightedTeam)
     }
 
     return (
@@ -46,6 +46,7 @@ export const StandingsTable: React.FC<StandingsTableProps> = ({
             isRowHighlighted={isRowHighlighted}
             className={className}
             caption={`Classement ${config.type === 'matches' ? 'des matches' : 'des jeux'}`}
+            getRowKey={(item) => item.standing.team}
         />
     )
 }
@@ -87,7 +88,7 @@ export const CombinedStandingsTable: React.FC<CombinedStandingsTableProps> = ({
     
     // Function to determine if a row should be highlighted
     const isRowHighlighted = (item: ProcessedStanding) => {
-        return highlightedTeam && item.standing.team === highlightedTeam
+        return Boolean(highlightedTeam && item.standing.team === highlightedTeam)
     }
 
     return (
@@ -98,6 +99,7 @@ export const CombinedStandingsTable: React.FC<CombinedStandingsTableProps> = ({
             className={className}
             caption="Classement combiné des matches et jeux"
             showSectionHeaders={showSectionHeaders}
+            getRowKey={(item) => item.standing.team}
         />
     )
 }

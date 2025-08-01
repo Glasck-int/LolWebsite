@@ -179,7 +179,7 @@ export const processStandingsData = (
 
         // Extract group information from team data
         // Check if standing.Team includes TournamentGroups (from API include)
-        const standingTeam = (standing as any).Team
+        const standingTeam = (standing as { Team?: { TournamentGroups?: { groupName: string; groupDisplay?: string; groupN?: number }[] } }).Team
         const tournamentGroups = standingTeam?.TournamentGroups
         const groupInfo = tournamentGroups?.[0] ? {
             groupName: tournamentGroups[0].groupName,

@@ -1,10 +1,11 @@
 'use client'
 
-import React, { useState, useMemo, ReactNode } from 'react'
+import React, { useMemo, ReactNode } from 'react'
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from './Table'
-import { CardHeaderBase, CardHeaderSortContent, CardSort, useSort } from '@/components/ui/card'
+import { CardHeaderSortContent, CardSort, useSort } from '@/components/ui/card'
 import { SubTitle } from '@/components/ui/text/SubTitle'
 import { cn } from '@/lib/utils'
+import { useFlipAnimation } from '@/components/leagues/Standings/hooks/useFlipAnimation'
 
 /**
  * Determines background CSS classes for columns based on their statistical category.
@@ -20,10 +21,11 @@ const getColumnBackgroundClass = (columnKey: string) => {
     return ''
 }
 
+
 /**
  * Column configuration for SortableTable
  */
-export interface TableColumn<T = any> {
+export interface TableColumn<T = unknown> {
     /** Unique key for the column */
     key: string
     /** Header content */
@@ -31,7 +33,7 @@ export interface TableColumn<T = any> {
     /** Tooltip for header */
     tooltip?: string
     /** Cell renderer function */
-    cell?: (item: T, index: number) => ReactNode
+    cell?: (item: T, position: number) => ReactNode
     /** Whether column is sortable */
     sortable?: boolean
     /** CSS classes for header */
@@ -41,16 +43,11 @@ export interface TableColumn<T = any> {
     /** Sort function for custom sorting */
     sortFn?: (a: T, b: T) => number
     /** Accessor function to get sortable value */
-    accessor?: (item: T) => any
+    accessor?: (item: T) => unknown
+    /** Default sort direction - 'desc' for values where higher is better (winrates, wins) */
+    defaultSortDirection?: 'asc' | 'desc'
 }
 
-/**
- * Sort configuration
- */
-interface SortConfig {
-    key: string | null
-    direction: 'asc' | 'desc'
-}
 
 /**
  * Props for SortableTable component
@@ -61,7 +58,7 @@ interface SortableTableProps<T> {
     /** Column configurations */
     columns: TableColumn<T>[]
     /** Optional function to determine if row should be highlighted */
-    isRowHighlighted?: (item: T, index: number) => boolean
+    isRowHighlighted?: (item: T, position: number) => boolean
     /** Optional class name for table container */
     className?: string
     /** Optional table caption for accessibility */
@@ -70,24 +67,27 @@ interface SortableTableProps<T> {
     emptyState?: ReactNode
     /** Whether to show section headers (MATCHES/GAMES) */
     showSectionHeaders?: boolean
+    /** Optional function to get unique key for each row (needed for animations) */
+    getRowKey?: (item: T) => string
 }
 
 /**
  * Generic sortable table component with semantic HTML and the original Card styling.
  * Uses CardHeaderSortContent for sorting to match the original system exactly.
  */
-export function SortableTable<T = any>({
+export function SortableTable<T = unknown>({
     data,
     columns,
     isRowHighlighted,
     className,
     caption,
     emptyState = "Aucune donnée disponible",
-    showSectionHeaders = true
+    showSectionHeaders = true,
+    getRowKey
 }: SortableTableProps<T>) {
     if (!data.length) {
         return (
-            <div className="flex items-center justify-center p-8 text-muted-foreground">
+            <div className="flex items-center justify-center p-8 text-muted-foreground ">
                 {emptyState}
             </div>
         )
@@ -102,77 +102,154 @@ export function SortableTable<T = any>({
                 className={className}
                 caption={caption}
                 showSectionHeaders={showSectionHeaders}
+                getRowKey={getRowKey}
             />
         </CardSort>
     )
 }
 
+// Type for sort state from the card module
+type SortState = {
+    key: string | null
+    direction: 'asc' | 'desc' | null
+}
+
+/**
+ * Adapter to make any data compatible with useFlipAnimation
+ */
+function useGenericFlipAnimation<T>(activeSort: SortState, data: T[], getRowKey?: (item: T) => string) {
+    // Convert generic data to a format that useFlipAnimation expects
+    const flipData = useMemo(() => {
+        if (!getRowKey) return []
+        
+        return data.map(item => ({
+            // Create a minimal object that satisfies the hook's type requirements
+            team: getRowKey(item),
+            teamImage: '',
+            totalGames: 0,
+            wins: 0,
+            losses: 0,
+            winRate: 0,
+            gamesStats: {
+                totalGames: 0,
+                wins: 0,
+                losses: 0,
+                winRate: 0
+            }
+        }))
+    }, [data, getRowKey])
+    
+    return useFlipAnimation(activeSort, flipData)
+}
+
 /**
  * Internal component that uses the sort context from CardSort
  */
-function SortableTableContent<T = any>({
+function SortableTableContent<T = unknown>({
     data,
     columns,
     isRowHighlighted,
     className,
     caption,
-    showSectionHeaders = true
+    showSectionHeaders = true,
+    getRowKey
 }: Omit<SortableTableProps<T>, 'emptyState'>) {
     const { activeSort } = useSort()
 
     // Sort data based on current sort configuration
     const sortedData = useMemo(() => {
-        if (!activeSort.key) return data
+        if (!activeSort.key) {
+            // No sorting applied, return data as-is
+            return data
+        }
 
         const column = columns.find(col => col.key === activeSort.key)
         if (!column) return data
 
         return [...data].sort((a, b) => {
-            let aVal, bVal
+            let direction = activeSort.direction
+            if (!direction) return 0
+
+            // For columns with defaultSortDirection='desc' (like winrates), 
+            // we need to adjust the sorting logic
+            const shouldInvertSort = column.defaultSortDirection === 'desc'
 
             // Use custom sort function if provided
             if (column.sortFn) {
-                const result = column.sortFn(a, b)
-                return activeSort.direction === 'desc' ? -result : result
+                const comparison = column.sortFn(a, b)
+                let result = direction === 'desc' ? -comparison : comparison
+                return shouldInvertSort ? -result : result
             }
 
-            // Use accessor function if provided
+            // Use accessor function if provided (this should be the main path)
             if (column.accessor) {
-                aVal = column.accessor(a)
-                bVal = column.accessor(b)
-            } else {
-                // Default: try to access property by key
-                aVal = (a as any)[column.key]
-                bVal = (b as any)[column.key]
+                const aVal = column.accessor(a)
+                const bVal = column.accessor(b)
+                
+                // Handle null/undefined values
+                if (aVal == null && bVal == null) return 0
+                if (aVal == null) return 1
+                if (bVal == null) return -1
+
+                let comparison = 0
+                // Numeric comparison
+                if (typeof aVal === 'number' && typeof bVal === 'number') {
+                    comparison = aVal - bVal
+                } else {
+                    // String comparison
+                    comparison = String(aVal).localeCompare(String(bVal))
+                }
+                
+                let result = direction === 'desc' ? -comparison : comparison
+                return shouldInvertSort ? -result : result
             }
 
-            // Handle null/undefined values
+            // Fallback: try to access the property directly from the object
+            const aVal = (a as Record<string, unknown>)[activeSort.key!]
+            const bVal = (b as Record<string, unknown>)[activeSort.key!]
+            
             if (aVal == null && bVal == null) return 0
             if (aVal == null) return 1
             if (bVal == null) return -1
 
-            // Numeric comparison
+            let comparison = 0
             if (typeof aVal === 'number' && typeof bVal === 'number') {
-                const result = aVal - bVal
-                return activeSort.direction === 'desc' ? -result : result
+                comparison = aVal - bVal
+            } else {
+                comparison = String(aVal).localeCompare(String(bVal))
             }
-
-            // String comparison
-            const result = String(aVal).localeCompare(String(bVal))
-            return activeSort.direction === 'desc' ? -result : result
+            
+            let result = direction === 'desc' ? -comparison : comparison
+            return shouldInvertSort ? -result : result
         })
-    }, [data, columns, activeSort]) 
+    }, [data, columns, activeSort])
+
+    // Calculate positions for each row based on current display order
+    const rowPositions = useMemo(() => {
+        // Visual positions based on current sort direction
+        // Ascending: 1, 2, 3, 4, 5...
+        // Descending: 5, 4, 3, 2, 1... (reverse order)
+        if (activeSort.direction === 'desc') {
+            // For descending order, reverse the positions
+            return sortedData.map((_, index) => sortedData.length - index)
+        }
+        // For ascending or no sort, positions are 1, 2, 3, 4, 5...
+        return sortedData.map((_, index) => index + 1)
+    }, [sortedData, activeSort.direction])
+
+    // Use the FLIP animation hook with sorted data
+    const { containerRef } = useGenericFlipAnimation(activeSort, sortedData, getRowKey)
 
     return (
-        <>
+        <div ref={containerRef}>
             {/* Vraie table HTML avec header intégré */}
-            <Table className={cn("standings-table bg-transparent w-full table-auto", className)}>
+            <Table className={cn("standings-table bg-transparent w-full table-auto ", className)}>
                 {caption && <caption className="sr-only">{caption}</caption>}
                 
                 <TableHeader className="bg-white-04 ">
                     {/* Section headers row for combined table */}
                     {showSectionHeaders && columns.some(col => col.key.startsWith('matches') || col.key.startsWith('games')) && (
-                        <TableRow className="hover:bg-transparent border-b border-0 bg-white-04">
+                        <TableRow className="border-b border-0 bg-white-04">
                             <TableHead className="text-center"></TableHead> {/* Place */}
                             <TableHead className="text-left"></TableHead> {/* Team */}
                             <TableHead colSpan={4} className="text-center py-2">
@@ -232,14 +309,17 @@ function SortableTableContent<T = any>({
                 </TableHeader>
 
                 <TableBody>
-                    {sortedData.map((item, index) => (
-                        <TableRow
-                            key={`${index}-${activeSort.key}-${activeSort.direction}`}
-                            className={cn(
-                                "hover:bg-white/5 transition-colors h-full",
-                                isRowHighlighted?.(item, index) && "bg-accent/20 hover:bg-accent/30"
-                            )}
-                        >
+                    {sortedData.map((item, index) => {
+                        const rowKey = getRowKey ? getRowKey(item) : `row-${index}`
+                        return (
+                            <TableRow
+                                key={rowKey}
+                                data-team-key={rowKey}
+                                className={cn(
+                                    "hover:bg-white/5 transition-colors h-full",
+                                    isRowHighlighted?.(item, rowPositions[index]) && "bg-accent/20 hover:bg-accent/30"
+                                )}
+                            >
                             {columns.map((column) => {
                                 const backgroundClass = getColumnBackgroundClass(column.key)
                                 return (
@@ -252,15 +332,16 @@ function SortableTableContent<T = any>({
                                             column.cellClassName
                                         )}
                                     >
-                                        {column.cell ? column.cell(item, index) : (item as any)[column.key]}
+                                        {column.cell ? column.cell(item, rowPositions[index]) : String((item as Record<string, unknown>)[column.key] ?? '')}
                                     </TableCell>
                                 )
                             })}
-                        </TableRow>
-                    ))}
+                            </TableRow>
+                        )
+                    })}
                 </TableBody>
             </Table>
-        </>
+        </div>
     )
 }
 

@@ -10,14 +10,12 @@ import {
     CardHeaderTab, 
     CardHeaderContent, 
     CardBodyMultipleContent, 
-    CardSort, 
-    CardHeaderBase 
+    CardSort
 } from '@/components/ui/card'
 import { useTranslate } from '@/lib/hooks/useTranslate'
 import { ProcessedStanding } from '../utils/StandingsDataProcessor'
 import { StandingsTable, CombinedStandingsTable } from './StandingsTable'
 import { groupStandingsData } from '../utils/StandingsDataProcessor'
-import { SubTitle } from '@/components/ui/text/SubTitle'
 
 interface StandingsWithTabsProps {
     /** Processed standings data */
@@ -109,7 +107,7 @@ export const StandingsWithTabs: React.FC<StandingsWithTabsProps> = ({
                                                 config={{
                                                     type: 'matches',
                                                     groupName: groupDisplayName,
-                                                    includeForm: true,
+                                                    includeForm: false,
                                                     sortable: true
                                                 }}
                                                 highlightedTeam={highlightedTeam}
@@ -149,7 +147,7 @@ export const StandingsWithTabs: React.FC<StandingsWithTabsProps> = ({
                                                 config={{
                                                     type: 'games',
                                                     groupName: groupDisplayName,
-                                                    includeForm: true,
+                                                    includeForm: false,
                                                     sortable: true
                                                 }}
                                                 highlightedTeam={highlightedTeam}

@@ -13,6 +13,7 @@ import {
 import {
     Card,
     CardBody,
+    CardContext,
 } from '@/components/ui/card'
 import { SmartCardFooter, SmartCardFooterContent, useSmartTabsInit } from '@/components/ui/SmartTabs'
 import {
@@ -66,8 +67,9 @@ const LeagueTableEntityContent = ({
     const selectedTournamentId = activeId.length > 0 ? activeId[0] : null
     const t = useTranslate('Tabs')
     // Initialize from URL once all tabs are registered
+    const hasSeasons = seasons.length > 0
     useEffect(() => {
-        if (seasons.length > 0) {
+        if (hasSeasons) {
             // Small delay to ensure all tabs are registered first
             const timer = setTimeout(() => {
                 initializeFromUrl(searchParams, seasons)
@@ -75,12 +77,13 @@ const LeagueTableEntityContent = ({
             
             return () => clearTimeout(timer)
         }
-    }, [seasons.length > 0, initializeFromUrl, searchParams, seasons])
+    }, [hasSeasons, initializeFromUrl, searchParams, seasons])
 
     return (
         <>
             <Card>
-                <CardBody>
+                <CardContext>
+                    <CardBody>
                     <div className="hidden md:flex p-[15px] h-[130px] gap-3 w-[250px] items-center justify-center">
                         {league && (
                             <LeagueDescription
@@ -105,6 +108,7 @@ const LeagueTableEntityContent = ({
                         <p className="text-inherit">{t('Tournaments')}</p>
                     </SmartCardFooterContent>
                 </SmartCardFooter>
+                </CardContext>
             </Card>
             {/* Body avec le contenu des différents onglets */}
             <TableEntityBody>

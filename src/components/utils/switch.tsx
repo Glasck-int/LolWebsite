@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState, useContext } from 'react'
-import { ChildAndClassname, useCard } from '../ui/card/Card'
+import React from 'react'
+import { ChildAndClassname } from '../ui/card/Card'
 
 interface SwitchProps extends ChildAndClassname {
     activeIndex: number

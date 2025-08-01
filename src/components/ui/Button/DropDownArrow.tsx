@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { ChevronUp } from 'lucide-react'
 
 interface DropDownProps {
@@ -8,8 +8,9 @@ interface DropDownProps {
     setIsDown: (value: boolean) => void
 }
 
-export const getStateArrow = (isDownByDefault:boolean = true ) => {
-    const [isDown, setIsDown] = useState(isDownByDefault)
+// Custom hook for managing dropdown arrow state
+export const useDropdownArrow = (isDownByDefault: boolean = true) => {
+    const [isDown, setIsDown] = React.useState(isDownByDefault)
 
     return {
         isDown,

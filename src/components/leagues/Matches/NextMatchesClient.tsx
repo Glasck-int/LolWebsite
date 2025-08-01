@@ -13,6 +13,7 @@ import {
     CardBody,
     CardHeader,
     CardHeaderBase,
+    CardContext,
 } from '@/components/ui/card/index'
 import { MatchSkeleton } from '@/components/ui/skeleton/MatchSkeleton'
 import SpoilerWrapper from '@/components/leagues/Matches/SpoilerWrapper'
@@ -244,7 +245,8 @@ export const NextMatchesClient = ({
     if (!isHeader && !initialData && currentData.matches.length > 0) {
         return (
             <Card>
-                <CardHeader>
+                <CardContext>
+                    <CardHeader>
                     <CardHeaderBase>
                         <div className="flex flex-row justify-between items-center w-full">
                             <SubTitle>
@@ -287,7 +289,8 @@ export const NextMatchesClient = ({
                             })}
                         </div>
                     </div>
-                </CardBody>
+                    </CardBody>
+                </CardContext>
             </Card>
         )
     }

@@ -199,8 +199,9 @@ export const createCacheHelpers = <T>(
         cache: Record<K, CacheItem<T>>
     ): Record<K, CacheItem<T>> => {
         return Object.entries(cache).reduce((acc, [key, value]) => {
-            if (value && isCacheValid(value.cachedAt)) {
-                acc[key as K] = value as CacheItem<T>
+            const cacheItem = value as CacheItem<T>
+            if (cacheItem && isCacheValid(cacheItem.cachedAt)) {
+                acc[key as K] = cacheItem
             }
             return acc
         }, {} as Record<K, CacheItem<T>>)
@@ -217,8 +218,9 @@ export const createCacheHelpers = <T>(
         cache: Record<K, CacheItem<T>>,
         key: K
     ): Record<K, CacheItem<T>> => {
-        const { [key]: _, ...rest } = cache
-        return rest
+        const newCache = { ...cache }
+        delete newCache[key]
+        return newCache
     }
 
     return {

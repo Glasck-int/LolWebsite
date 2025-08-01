@@ -1,6 +1,6 @@
 import React from 'react'
 import Image from 'next/image'
-import { TableColumn } from '@/components/ui/table'
+import { TableColumn } from '@/components/ui/table/SortableTable'
 import { Form } from '@/components/utils/Form'
 import { useTranslate } from '@/lib/hooks/useTranslate'
 import { ProcessedStanding } from '../utils/StandingsDataProcessor'
@@ -18,6 +18,8 @@ export interface StandingsTableConfig {
     /** Whether columns should be sortable */
     sortable?: boolean
 }
+    const baseCellClassName =
+        'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14    '
 
 /**
  * Simplified hook for generating standings table columns.
@@ -41,10 +43,11 @@ export const useStandingsTableColumns = (config: StandingsTableConfig): TableCol
             header: '#',
             tooltip: t('#'),
             sortable,
-            headerClassName: 'text-left w-12 md:w-16 cursor-pointer flex items-center justify-start pl-2',
-            cellClassName: 'text-left font-medium cursor-pointer flex-shrink-0 w-12 md:w-16 pl-2',
+            headerClassName:
+                baseCellClassName,
+            cellClassName: baseCellClassName,
             accessor: (item) => item.standing.place,
-            cell: (item, index) => `${item.standing.place}.`
+            cell: (item, position) => `${position}.`,
         },
         {
             key: 'team',
@@ -73,8 +76,8 @@ export const useStandingsTableColumns = (config: StandingsTableConfig): TableCol
                         {item.teamData?.short || item.standing.team}
                     </p>
                 </div>
-            )
-        }
+            ),
+        },
     ]
 
     // Statistics columns based on type
@@ -84,8 +87,8 @@ export const useStandingsTableColumns = (config: StandingsTableConfig): TableCol
             header: 'J',
             tooltip: t('MatchesPlayedTooltip'),
             sortable,
-            headerClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
-            cellClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
+            headerClassName: baseCellClassName,
+            cellClassName: baseCellClassName,
             accessor: (item) => item.totalMatches,
             cell: (item) => item.totalMatches
         },
@@ -94,18 +97,19 @@ export const useStandingsTableColumns = (config: StandingsTableConfig): TableCol
             header: 'W',
             tooltip: t('WinsTooltip'),
             sortable,
-            headerClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
-            cellClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
+            headerClassName: baseCellClassName,
+            cellClassName: baseCellClassName,
             accessor: (item) => item.standing.winSeries,
-            cell: (item) => item.standing.winSeries
+            cell: (item) => item.standing.winSeries,
+            defaultSortDirection: 'desc'
         },
         {
             key: 'losses',
             header: 'L', 
             tooltip: t('LossesTooltip'),
             sortable,
-            headerClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
-            cellClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
+            headerClassName: baseCellClassName,
+            cellClassName: baseCellClassName,
             accessor: (item) => item.standing.lossSeries,
             cell: (item) => item.standing.lossSeries
         },
@@ -114,10 +118,11 @@ export const useStandingsTableColumns = (config: StandingsTableConfig): TableCol
             header: 'WR',
             tooltip: t('WRTooltip'),
             sortable,
-            headerClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
-            cellClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
+            headerClassName: baseCellClassName,
+            cellClassName: baseCellClassName,
             accessor: (item) => item.matchWinRate,
-            cell: (item) => `${item.matchWinRate}%`
+            cell: (item) => `${item.matchWinRate}%`,
+            defaultSortDirection: 'desc'
         }
     ] : [
         {
@@ -125,8 +130,8 @@ export const useStandingsTableColumns = (config: StandingsTableConfig): TableCol
             header: 'J',
             tooltip: t('GamesPlayedTooltip'),
             sortable,
-            headerClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
-            cellClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
+            headerClassName: baseCellClassName,
+            cellClassName: baseCellClassName,
             accessor: (item) => item.gamesStats.totalGames,
             cell: (item) => item.gamesStats.totalGames
         },
@@ -135,18 +140,19 @@ export const useStandingsTableColumns = (config: StandingsTableConfig): TableCol
             header: 'W',
             tooltip: t('WinsTooltip'),
             sortable,
-            headerClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
-            cellClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
+            headerClassName: baseCellClassName,
+            cellClassName: baseCellClassName,
             accessor: (item) => item.gamesStats.wins,
-            cell: (item) => item.gamesStats.wins
+            cell: (item) => item.gamesStats.wins,
+            defaultSortDirection: 'desc'
         },
         {
             key: 'losses',
             header: 'L',
             tooltip: t('LossesTooltip'),
             sortable,
-            headerClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
-            cellClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
+            headerClassName: baseCellClassName,
+            cellClassName: baseCellClassName,
             accessor: (item) => item.gamesStats.losses,
             cell: (item) => item.gamesStats.losses
         },
@@ -155,10 +161,11 @@ export const useStandingsTableColumns = (config: StandingsTableConfig): TableCol
             header: 'WR',
             tooltip: t('WRTooltip'),
             sortable,
-            headerClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
-            cellClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
+            headerClassName: baseCellClassName,
+            cellClassName: baseCellClassName,
             accessor: (item) => item.gamesStats.winRate,
-            cell: (item) => `${item.gamesStats.winRate}%`
+            cell: (item) => `${item.gamesStats.winRate}%`,
+            defaultSortDirection: 'desc'
         }
     ]
 
@@ -209,10 +216,10 @@ export const useCombinedStandingsTableColumns = (config: Omit<StandingsTableConf
             header: '#',
             tooltip: t('#'),
             sortable,
-            headerClassName: 'text-left w-12 md:w-16 pl-2',
-            cellClassName: 'text-left font-medium w-12 md:w-16 pl-2',
+            headerClassName: baseCellClassName,
+            cellClassName: baseCellClassName,
             accessor: (item) => item.standing.place,
-            cell: (item) => `${item.standing.place}.`
+            cell: (item, position) => `${position}.`
         },
         {
             key: 'team',
@@ -250,8 +257,8 @@ export const useCombinedStandingsTableColumns = (config: Omit<StandingsTableConf
             header: 'J',
             tooltip: t('MatchesPlayedTooltip'),
             sortable,
-            headerClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
-            cellClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
+            headerClassName: baseCellClassName,
+            cellClassName: baseCellClassName,
             accessor: (item) => item.totalMatches,
             cell: (item) => item.totalMatches
         },
@@ -260,18 +267,19 @@ export const useCombinedStandingsTableColumns = (config: Omit<StandingsTableConf
             header: 'W',
             tooltip: t('WinsTooltip'),
             sortable,
-            headerClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
-            cellClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
+            headerClassName: baseCellClassName,
+            cellClassName: baseCellClassName,
             accessor: (item) => item.standing.winSeries,
-            cell: (item) => item.standing.winSeries
+            cell: (item) => item.standing.winSeries,
+            defaultSortDirection: 'desc'
         },
         {
             key: 'matchesLosses',
             header: 'L',
             tooltip: t('LossesTooltip'),
             sortable,
-            headerClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
-            cellClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
+            headerClassName: baseCellClassName,
+            cellClassName: baseCellClassName,
             accessor: (item) => item.standing.lossSeries,
             cell: (item) => item.standing.lossSeries
         },
@@ -280,10 +288,11 @@ export const useCombinedStandingsTableColumns = (config: Omit<StandingsTableConf
             header: 'WR',
             tooltip: t('WRTooltip'),
             sortable,
-            headerClassName: 'text-center px-0 w-12 md:px-1 lg:px-2', 
-            cellClassName: 'text-center px-0 w-12 md:px-1 lg:px-2',
+            headerClassName: baseCellClassName,
+            cellClassName: baseCellClassName,
             accessor: (item) => item.matchWinRate,
-            cell: (item) => `${item.matchWinRate}%`
+            cell: (item) => `${item.matchWinRate}%`,
+            defaultSortDirection: 'desc'
         },
 
         // Games stats  
@@ -292,8 +301,8 @@ export const useCombinedStandingsTableColumns = (config: Omit<StandingsTableConf
             header: 'J',
             tooltip: t('GamesPlayedTooltip'),
             sortable,
-            headerClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
-            cellClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
+            headerClassName: baseCellClassName,
+            cellClassName: baseCellClassName,
             accessor: (item) => item.gamesStats.totalGames,
             cell: (item) => item.gamesStats.totalGames
         },
@@ -302,18 +311,19 @@ export const useCombinedStandingsTableColumns = (config: Omit<StandingsTableConf
             header: 'W',
             tooltip: t('WinsTooltip'),
             sortable,
-            headerClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
-            cellClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
+            headerClassName: baseCellClassName,
+            cellClassName: baseCellClassName,
             accessor: (item) => item.gamesStats.wins,
-            cell: (item) => item.gamesStats.wins
+            cell: (item) => item.gamesStats.wins,
+            defaultSortDirection: 'desc'
         },
         {
             key: 'gamesLosses',
             header: 'L',
             tooltip: t('LossesTooltip'),
             sortable,
-            headerClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
-            cellClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
+            headerClassName: baseCellClassName,
+            cellClassName: baseCellClassName,
             accessor: (item) => item.gamesStats.losses,
             cell: (item) => item.gamesStats.losses
         },
@@ -322,10 +332,11 @@ export const useCombinedStandingsTableColumns = (config: Omit<StandingsTableConf
             header: 'WR',
             tooltip: t('WRTooltip'),
             sortable,
-            headerClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
-            cellClassName: 'text-center px-1 w-12 md:px-3 lg:px-4 md:min-w-14',
+            headerClassName: baseCellClassName,
+            cellClassName: baseCellClassName,
             accessor: (item) => item.gamesStats.winRate,
-            cell: (item) => `${item.gamesStats.winRate}%`
+            cell: (item) => `${item.gamesStats.winRate}%`,
+            defaultSortDirection: 'desc'
         },
 
         // Form column
@@ -334,8 +345,8 @@ export const useCombinedStandingsTableColumns = (config: Omit<StandingsTableConf
             header: t('Form'),
             tooltip: t('FormTooltip'),
             sortable: false,
-            headerClassName: 'text-left pl-2 hidden md:block min-w-[100px]',
-            cellClassName: 'text-left pl-2 hidden md:block min-w-[100px] flex items-center justify-start',
+            headerClassName: baseCellClassName,
+            cellClassName: baseCellClassName,
             cell: (item) => {
                 if (item.teamsRecentMatches) {
                     return (

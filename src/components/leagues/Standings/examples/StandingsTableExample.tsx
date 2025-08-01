@@ -1,9 +1,11 @@
 'use client'
 
 import React from 'react'
-import { SortableTable, TableColumn } from '@/components/ui/table'
+import { SortableTable } from '@/components/ui/table'
+import { TableColumn } from '@/components/ui/table/SortableTable'
 import { StandingsTable, CombinedStandingsTable } from '../components/StandingsTable'
 import { NewStandingsWithTabsClient } from '../clients/NewStandingsWithTabsClient'
+import { ProcessedStanding } from '../utils/StandingsDataProcessor'
 
 /**
  * Examples showing how to use the new table system
@@ -81,7 +83,7 @@ export const GenericTableExample = () => (
 )
 
 // Example 2: Simple standings table
-export const SimpleStandingsExample = ({ data }: { data: any[] }) => (
+export const SimpleStandingsExample = ({ data }: { data: ProcessedStanding[] }) => (
     <div className="p-4">
         <h3 className="text-lg font-semibold mb-4">Tableau de classement simple</h3>
         <StandingsTable
@@ -97,7 +99,7 @@ export const SimpleStandingsExample = ({ data }: { data: any[] }) => (
 )
 
 // Example 3: Combined standings table  
-export const CombinedStandingsExample = ({ data }: { data: any[] }) => (
+export const CombinedStandingsExample = ({ data }: { data: ProcessedStanding[] }) => (
     <div className="p-4">
         <h3 className="text-lg font-semibold mb-4">Tableau de classement combiné</h3>
         <CombinedStandingsTable
@@ -109,7 +111,7 @@ export const CombinedStandingsExample = ({ data }: { data: any[] }) => (
 )
 
 // Example 4: Full standings with tabs (replacement for the complex component)
-export const CompleteStandingsExample = ({ data }: { data: any[] }) => (
+export const CompleteStandingsExample = ({ data }: { data: ProcessedStanding[] }) => (
     <div className="p-4">
         <h3 className="text-lg font-semibold mb-4">Classement complet avec onglets</h3>
         <NewStandingsWithTabsClient

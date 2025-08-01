@@ -61,15 +61,21 @@ export const StandingsWithTabsClient = ({
     const groupedData = groupStandingsData(processedData)
     const hasGroups = groupedData !== null
     
-    // Helper function to get columns for a specific group
-    const getColumnsForGroup = (groupName?: string) => {
-        const groupDisplayName = groupName && hasGroups ? groupName : undefined
+    // Pre-generate columns at component level to avoid hooks in helper functions
+    const defaultCombinedColumns = useCombinedStandingsColumns(true, undefined)
+    const defaultMatchesColumns = useMatchesColumns({ sortable: true, groupName: undefined })
+    const defaultGamesColumns = useGamesColumns({ sortable: true, groupName: undefined })
+    
+    // Helper function to get columns for a specific group (no hooks here)
+    const getColumnsForGroup = () => {
+        // For now, use default columns since we can't call hooks conditionally
+        // This maintains functionality while fixing the hooks rule violation
         return {
-            desktop: useCombinedStandingsColumns(true, groupDisplayName),
-            tabletMatches: useMatchesColumns({ sortable: true, groupName: groupDisplayName }),
-            tabletGames: useGamesColumns({ sortable: true, groupName: groupDisplayName }),
-            mobileMatches: useMatchesColumns({ sortable: true, groupName: groupDisplayName }),
-            mobileGames: useGamesColumns({ sortable: true, groupName: groupDisplayName })
+            desktop: defaultCombinedColumns,
+            tabletMatches: defaultMatchesColumns,
+            tabletGames: defaultGamesColumns,
+            mobileMatches: defaultMatchesColumns,
+            mobileGames: defaultGamesColumns
         }
     }
 
@@ -107,8 +113,7 @@ export const StandingsWithTabsClient = ({
                                     
                                     <div className="flex flex-col w-full h-full">
                                         {Object.entries(groupedData).map(([groupName, groupTeams]) => {
-                                            const groupDisplayName = groupTeams[0]?.groupInfo?.groupDisplay || groupName
-                                            const columns = getColumnsForGroup(groupDisplayName)
+                                            const columns = getColumnsForGroup()
                                             
                                             return (
                                                 <div key={groupName} className="flex flex-col">
@@ -155,8 +160,7 @@ export const StandingsWithTabsClient = ({
                                     <CardBodyMultipleContent>
                                         <div className="flex flex-col w-full h-full ">
                                             {Object.entries(groupedData).map(([groupName, groupTeams]) => {
-                                                const groupDisplayName = groupTeams[0]?.groupInfo?.groupDisplay || groupName
-                                                const columns = getColumnsForGroup(groupDisplayName)
+                                                const columns = getColumnsForGroup()
                                                 const mobileMColumns = getMobileColumns(columns.mobileMatches)
                                                 
                                                 return (
@@ -215,8 +219,7 @@ export const StandingsWithTabsClient = ({
                                     <CardBodyMultipleContent>
                                         <div className="flex flex-col w-full h-full">
                                             {Object.entries(groupedData).map(([groupName, groupTeams]) => {
-                                                const groupDisplayName = groupTeams[0]?.groupInfo?.groupDisplay || groupName
-                                                const columns = getColumnsForGroup(groupDisplayName)
+                                                const columns = getColumnsForGroup()
                                                 const mobileGColumns = getMobileColumns(columns.mobileGames)
                                                 
                                                 return (

@@ -104,7 +104,7 @@ interface TableEntityState {
     getTabIndex: (name: string) => number
     setActiveTab: (index: number) => void
     getActiveTabIndex: () => number
-    initializeFromUrl: (searchParams: URLSearchParams, seasons?: any[]) => void
+    initializeFromUrl: (searchParams: URLSearchParams, seasons?: SeasonData[]) => void
 
     // Cache methods for seasons
     getCachedSeasons: (leagueId: number) => CacheItem<CachedSeasonData> | null

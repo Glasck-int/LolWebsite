@@ -115,7 +115,7 @@ export const SmartCardFooter = ({ children, className }: SmartCardFooterProps) =
                 }
             })
         }
-    }, [registerTab]) // Only registerTab as dependency
+    }, [registerTab, children])
 
     return (
         <BaseCardFooter className={className}>
