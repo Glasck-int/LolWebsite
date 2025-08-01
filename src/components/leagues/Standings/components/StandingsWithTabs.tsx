@@ -49,9 +49,10 @@ export const StandingsWithTabs: React.FC<StandingsWithTabsProps> = ({
             <CardBody>
                 <div className="flex flex-col w-full h-full">
                     {hasGroups ? (
-                        // Grouped data
-                        Object.entries(groupedData).map(([groupName, groupTeams]) => {
+                        // Grouped data - show section headers only on first group
+                        Object.entries(groupedData).map(([groupName, groupTeams], index) => {
                             const groupDisplayName = groupTeams[0]?.groupInfo?.groupDisplay || groupName
+                            const isFirstGroup = index === 0
                             
                             return (
                                 <div key={groupName} className="flex flex-col">
@@ -60,16 +61,18 @@ export const StandingsWithTabs: React.FC<StandingsWithTabsProps> = ({
                                         groupName={groupDisplayName}
                                         highlightedTeam={highlightedTeam}
                                         maxRows={maxRows}
+                                        showSectionHeaders={isFirstGroup}
                                     />
                                 </div>
                             )
                         })
                     ) : (
-                        // No groups
+                        // No groups - show section headers
                         <CombinedStandingsTable
                             data={processedData}
                             highlightedTeam={highlightedTeam}
                             maxRows={maxRows}
+                            showSectionHeaders={true}
                         />
                     )}
                 </div>
@@ -106,7 +109,7 @@ export const StandingsWithTabs: React.FC<StandingsWithTabsProps> = ({
                                                 config={{
                                                     type: 'matches',
                                                     groupName: groupDisplayName,
-                                                    includeForm: false,
+                                                    includeForm: true,
                                                     sortable: true
                                                 }}
                                                 highlightedTeam={highlightedTeam}
@@ -146,7 +149,7 @@ export const StandingsWithTabs: React.FC<StandingsWithTabsProps> = ({
                                                 config={{
                                                     type: 'games',
                                                     groupName: groupDisplayName,
-                                                    includeForm: false,
+                                                    includeForm: true,
                                                     sortable: true
                                                 }}
                                                 highlightedTeam={highlightedTeam}

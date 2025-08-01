@@ -68,6 +68,8 @@ interface SortableTableProps<T> {
     caption?: string
     /** Optional empty state content */
     emptyState?: ReactNode
+    /** Whether to show section headers (MATCHES/GAMES) */
+    showSectionHeaders?: boolean
 }
 
 /**
@@ -80,7 +82,8 @@ export function SortableTable<T = any>({
     isRowHighlighted,
     className,
     caption,
-    emptyState = "Aucune donnée disponible"
+    emptyState = "Aucune donnée disponible",
+    showSectionHeaders = true
 }: SortableTableProps<T>) {
     if (!data.length) {
         return (
@@ -98,6 +101,7 @@ export function SortableTable<T = any>({
                 isRowHighlighted={isRowHighlighted}
                 className={className}
                 caption={caption}
+                showSectionHeaders={showSectionHeaders}
             />
         </CardSort>
     )
@@ -111,7 +115,8 @@ function SortableTableContent<T = any>({
     columns,
     isRowHighlighted,
     className,
-    caption
+    caption,
+    showSectionHeaders = true
 }: Omit<SortableTableProps<T>, 'emptyState'>) {
     const { activeSort } = useSort()
 
@@ -156,7 +161,7 @@ function SortableTableContent<T = any>({
             const result = String(aVal).localeCompare(String(bVal))
             return activeSort.direction === 'desc' ? -result : result
         })
-    }, [data, columns, activeSort])
+    }, [data, columns, activeSort]) 
 
     return (
         <>
@@ -166,15 +171,19 @@ function SortableTableContent<T = any>({
                 
                 <TableHeader className="bg-white-04 ">
                     {/* Section headers row for combined table */}
-                    {columns.some(col => col.key.startsWith('matches') || col.key.startsWith('games')) && (
+                    {showSectionHeaders && columns.some(col => col.key.startsWith('matches') || col.key.startsWith('games')) && (
                         <TableRow className="hover:bg-transparent border-b border-0 bg-white-04">
                             <TableHead className="text-center"></TableHead> {/* Place */}
                             <TableHead className="text-left"></TableHead> {/* Team */}
-                            <TableHead colSpan={4} className="text-center py-2 ">
-                                <SubTitle className="text-clear-grey">MATCHES</SubTitle>
+                            <TableHead colSpan={4} className="text-center py-2">
+                                <div className="flex justify-center w-full">
+                                    <SubTitle className="text-clear-grey">MATCHES</SubTitle>
+                                </div>
                             </TableHead>
-                            <TableHead colSpan={4} className="text-center py-2 ">
-                                <SubTitle className="text-clear-grey">GAMES</SubTitle>
+                            <TableHead colSpan={4} className="text-center py-2">
+                                <div className="flex justify-center w-full">
+                                    <SubTitle className="text-clear-grey">GAMES</SubTitle>
+                                </div>
                             </TableHead>
                             <TableHead className="text-center"></TableHead> {/* Form */}
                         </TableRow>
@@ -187,7 +196,7 @@ function SortableTableContent<T = any>({
                                 key={column.key}
                                 className={cn(
                                     // Styles des headers existants récupérés de CardHeaderBase
-                                    "text-clear-grey font-medium text-sm px-4 py-3",
+                                    "text-clear-grey font-medium text-sm px-2 py-2 md:px-4 md:py-3",
                                     "content-center min-h-[40px] md:min-h-[45px] text-center",
                                     column.headerClassName
                                 )}
@@ -195,7 +204,7 @@ function SortableTableContent<T = any>({
                             >
                                 <div className={cn(
                                     "flex items-center w-full h-full",
-                                    column.key === 'team' || column.key === 'group' ? "justify-start" : "justify-center"
+                                    column.key === 'team' || column.key === 'group' || column.key === 'form' ? "justify-start" : "justify-center"
                                 )}>
                                     {column.sortable ? (
                                         <CardHeaderSortContent
@@ -203,7 +212,7 @@ function SortableTableContent<T = any>({
                                             tooltip={column.tooltip}
                                             className={cn(
                                                 "w-full h-full flex items-center",
-                                                column.key === 'team' || column.key === 'group' ? "justify-start" : "justify-center"
+                                                column.key === 'team' || column.key === 'group' || column.key === 'form' ? "justify-start" : "justify-center"
                                             )}
                                         >
                                             {column.header}
@@ -211,7 +220,7 @@ function SortableTableContent<T = any>({
                                     ) : (
                                         <SubTitle className={cn(
                                             "w-full h-full flex items-center text-clear-grey",
-                                            column.key === 'team' || column.key === 'group' ? "justify-start" : "justify-center"
+                                            column.key === 'team' || column.key === 'group' || column.key === 'form' ? "justify-start" : "justify-center"
                                         )} tooltip={column.tooltip}>
                                             {column.header as string}
                                         </SubTitle>
@@ -227,7 +236,7 @@ function SortableTableContent<T = any>({
                         <TableRow
                             key={`${index}-${activeSort.key}-${activeSort.direction}`}
                             className={cn(
-                                "hover:bg-muted/30 transition-colors ",
+                                "hover:bg-white/5 transition-colors h-full",
                                 isRowHighlighted?.(item, index) && "bg-accent/20 hover:bg-accent/30"
                             )}
                         >
@@ -237,7 +246,8 @@ function SortableTableContent<T = any>({
                                     <TableCell
                                         key={column.key}
                                         className={cn(
-                                            "px-4 py-3 align-middle text-sm text-white text-center",
+                                            "px-2 py-3 md:px-6 md:py-4 align-middle text-white h-full",
+                                            column.key === 'team' || column.key === 'group' || column.key === 'form' ? "text-left" : "text-center",
                                             backgroundClass,
                                             column.cellClassName
                                         )}

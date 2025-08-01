@@ -85,7 +85,7 @@
 		@apply text-white;
 	}
 	.standings-table td {
-		@apply text-white;
+		@apply text-white text-base md:text-lg;
 	}
 	.standings-table th {
 		@apply text-clear-grey;
@@ -93,6 +93,7 @@
 	.standings-table .team-name {
 		@apply hover:text-clear-violet/80 transition-all duration-200;
 	}
+	
 }
 
 @layer utilities {

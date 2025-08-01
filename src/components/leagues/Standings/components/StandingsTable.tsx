@@ -63,6 +63,8 @@ interface CombinedStandingsTableProps {
     maxRows?: number | null
     /** Whether columns should be sortable */
     sortable?: boolean
+    /** Whether to show section headers (MATCHES/GAMES) */
+    showSectionHeaders?: boolean
 }
 
 /**
@@ -75,7 +77,8 @@ export const CombinedStandingsTable: React.FC<CombinedStandingsTableProps> = ({
     highlightedTeam,
     className,
     maxRows,
-    sortable = true
+    sortable = true,
+    showSectionHeaders = true
 }) => {
     const columns = useCombinedStandingsTableColumns({ groupName, sortable })
     
@@ -94,6 +97,7 @@ export const CombinedStandingsTable: React.FC<CombinedStandingsTableProps> = ({
             isRowHighlighted={isRowHighlighted}
             className={className}
             caption="Classement combiné des matches et jeux"
+            showSectionHeaders={showSectionHeaders}
         />
     )
 }
