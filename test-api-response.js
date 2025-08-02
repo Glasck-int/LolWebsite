@@ -4,7 +4,7 @@ const http = require('http');
 
 async function testPlayerStatsAPI() {
     return new Promise((resolve, reject) => {
-        const req = http.get('http://127.0.0.1:3001/api/tournaments/LEC%2F2025%20Season%2FSpring%20Season/player-stats', (response) => {
+        const req = http.get('http://127.0.0.1:3000/api/tournaments/LEC%2F2025%20Season%2FSpring%20Season/player-stats', (response) => {
             let data = '';
             
             response.on('data', (chunk) => {

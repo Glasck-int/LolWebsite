@@ -25,7 +25,7 @@ Glasck is a full-stack esports application for League of Legends data visualizat
 ## Architecture
 
 ### Backend Structure
-- **Server**: Fastify with TypeScript, running on port 3001
+- **Server**: Fastify with TypeScript, running on port 3000
 - **Database**: PostgreSQL with Prisma ORM
 - **Caching**: Redis integration for API responses
 - **API**: RESTful endpoints with Swagger documentation
@@ -72,7 +72,7 @@ The Prisma schema includes comprehensive League of Legends esports data:
 ### Environment Setup
 - Backend requires PostgreSQL database and Redis
 - Configure `DATABASE_URL` environment variable for Prisma
-- Image optimization configured for localhost:3001 static assets
+- Image optimization configured for localhost:3000 static assets
 
 ### Key Configuration Files
 - `next.config.ts` - Next.js configuration with image optimization

@@ -14,6 +14,7 @@
 		"lint": "next lint"
 	},
 	"dependencies": {
+		"@glasck-int/glasck-types": "npm:@Glasck-int/glasck-types@^1.12.0",
 		"@Glasck-int/glasck-types": "^1.12.0",
 		"@heroui/calendar": "^2.2.24",
 		"@heroui/skeleton": "^2.2.15",
