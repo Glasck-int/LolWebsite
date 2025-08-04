@@ -22,6 +22,7 @@ import {
     StandingsOverviewFetch,
     StandingsWithTabsFetch,
 } from '@/components/leagues'
+import { ChampionStatistics } from './ChampionStatistics'
 import { NewStandingsWithTabsFetch } from '@/components/leagues/Standings/views/NewStandingsWithTabsFetch'
 import {
     League,
@@ -155,7 +156,18 @@ const LeagueTableEntityContent = ({
                     </div>
                 </TableEntityContent>
                 <TableEntityContent>
-
+                    <div className="space-y-4">
+                        {selectedTournamentId ? (
+                            <ChampionStatistics tournamentId={selectedTournamentId} />
+                        ) : (
+                            <div className="p-4 bg-gray-700 rounded-lg">
+                                <h3 className="text-lg font-semibold mb-2">
+                                    Champion Statistics
+                                </h3>
+                                <p>Select a tournament to view champion statistics</p>
+                            </div>
+                        )}
+                    </div>
                 </TableEntityContent>
                 <TableEntityContent>
                     <div className="space-y-4">

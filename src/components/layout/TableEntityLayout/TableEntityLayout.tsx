@@ -551,7 +551,7 @@ export const TableEntityBody = ({ children, className = '' }: MainProps) => {
 
 export const TableEntityContent = ({
     children,
-    className = '',
+    className = '', 
 }: MainProps) => {
     return (
         <div className="w-full h-full">

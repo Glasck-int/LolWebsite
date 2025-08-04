@@ -326,7 +326,7 @@ function SortableTableContent<T = unknown>({
                                     <TableCell
                                         key={column.key}
                                         className={cn(
-                                            "px-2 py-3 md:px-6 md:py-4 align-middle text-white h-full",
+                                            "px-0 py-1 md:px-0 md:py-2 align-middle text-white h-full",
                                             column.key === 'team' || column.key === 'group' || column.key === 'form' ? "text-left" : "text-center",
                                             backgroundClass,
                                             column.cellClassName

@@ -114,3 +114,84 @@ Error starting server: Error: listen EADDRINUSE: address already in use 0.0.0.0:
 [INFO] 15:45:26 Restarting: C:\Users\joaqu\Documents\newrepo\backend\src\utils\playerUtils.ts has been modified
 [dotenv@17.2.0] injecting env (4) from .env (tip: ⚙️  enable debug logging with { debug: true })
 Server listening on 127.0.0.1:3001
+Found 10 standings for tournament: LEC/2025 Season/Spring Season
+[INFO] 16:04:29 Restarting: C:\Users\joaqu\Documents\newrepo\backend\src\services\championStatsService.ts has been modified
+[dotenv@17.2.0] injecting env (4) from .env (tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit)
+Error starting server: Error: listen EADDRINUSE: address already in use 0.0.0.0:3001
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at node:net:2205:7
+    at processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3001
+}
+[INFO] 16:04:39 Restarting: C:\Users\joaqu\Documents\newrepo\backend\src\services\championStatsService.ts has been modified
+[dotenv@17.2.0] injecting env (4) from .env (tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit)
+Error starting server: Error: listen EADDRINUSE: address already in use 0.0.0.0:3001
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at node:net:2205:7
+    at processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3001
+}
+[INFO] 16:04:50 Restarting: C:\Users\joaqu\Documents\newrepo\backend\src\services\championStatsService.ts has been modified
+[dotenv@17.2.0] injecting env (4) from .env (tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild)
+Server listening on 127.0.0.1:3001
+[INFO] 16:05:12 Restarting: C:\Users\joaqu\Documents\newrepo\backend\src\schemas\params.ts has been modified
+[dotenv@17.2.0] injecting env (4) from .env (tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild)
+Server listening on 127.0.0.1:3001
+[INFO] 16:05:32 Restarting: C:\Users\joaqu\Documents\newrepo\backend\src\schemas\params.ts has been modified
+[dotenv@17.2.0] injecting env (4) from .env (tip: ⚙️  write to custom object with { processEnv: myObject })
+Error starting server: Error: listen EADDRINUSE: address already in use 0.0.0.0:3001
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at node:net:2205:7
+    at processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3001
+}
+[INFO] 16:05:57 Restarting: C:\Users\joaqu\Documents\newrepo\backend\src\schemas\params.ts has been modified
+[dotenv@17.2.0] injecting env (4) from .env (tip: ⚙️  write to custom object with { processEnv: myObject })
+Error starting server: Error: listen EADDRINUSE: address already in use 0.0.0.0:3001
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at node:net:2205:7
+    at processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3001
+}
+[INFO] 16:06:28 Restarting: C:\Users\joaqu\Documents\newrepo\backend\src\routes\champions\champions.ts has been modified
+[dotenv@17.2.0] injecting env (4) from .env (tip: ⚙️  override existing env vars with { override: true })
+Server listening on 127.0.0.1:3001
+[INFO] 16:06:44 Restarting: C:\Users\joaqu\Documents\newrepo\backend\src\routes\champions\champions.ts has been modified
+[dotenv@17.2.0] injecting env (4) from .env (tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`)
+Server listening on 127.0.0.1:3001
+[INFO] 16:07:00 Restarting: C:\Users\joaqu\Documents\newrepo\backend\src\routes\champions\champions.ts has been modified
+[dotenv@17.2.0] injecting env (4) from .env (tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' })
+Server listening on 127.0.0.1:3001
+[INFO] 16:07:06 Restarting: C:\Users\joaqu\Documents\newrepo\backend\src\routes\champions\champions.ts has been modified
+[dotenv@17.2.0] injecting env (4) from .env (tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit)
+Error starting server: Error: listen EADDRINUSE: address already in use 0.0.0.0:3001
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at node:net:2205:7
+    at processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3001
+}

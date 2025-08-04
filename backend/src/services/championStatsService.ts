@@ -1,6 +1,7 @@
 import prisma from './prisma'
 import { FastifyRedis } from '@fastify/redis'
 import { getPlayerRedirectNames, PlayerNotFoundError } from '../utils/playerUtils'
+import { getTournamentConditions } from '../utils/tournamentUtils'
 
 export interface ChampionStatsFilter {
     tournament?: string
@@ -171,14 +172,8 @@ export class ChampionStatsService {
 
         // Handle tournament filter
         if (filter.tournament) {
-            // Try to find data by tournament field first, then by overviewPage
-            const tournamentConditions = [
-                { tournament: filter.tournament },
-                { 
-                    // Match games where overviewPage contains the tournament identifier
-                    overviewPage: { contains: filter.tournament }
-                }
-            ]
+            // Get tournament conditions that handle both ID and name
+            const tournamentConditions = await getTournamentConditions(filter.tournament)
             
             // If we have other filters, combine them properly
             if (filter.player || filter.team) {
@@ -295,21 +290,13 @@ export class ChampionStatsService {
         // Calculate total games for pick rate (only for tournament context)
         let totalGames: number | undefined
         if (filter.tournament && !filter.player && !filter.team) {
-            // Try to count by tournament field first, then by overviewPage
-            const tournamentGames = await prisma.scoreboardGame.count({
-                where: { tournament: filter.tournament }
-            })
+            // Get tournament conditions for counting games
+            const tournamentConditions = await getTournamentConditions(filter.tournament)
             
-            if (tournamentGames === 0) {
-                // If no games found by tournament field, try by overviewPage
-                totalGames = await prisma.scoreboardGame.count({
-                    where: { 
-                        overviewPage: { contains: filter.tournament }
-                    }
-                })
-            } else {
-                totalGames = tournamentGames
-            }
+            // Count games using the resolved conditions
+            totalGames = await prisma.scoreboardGame.count({
+                where: { OR: tournamentConditions }
+            })
         }
 
         // Prepare presence data for tournament-level statistics

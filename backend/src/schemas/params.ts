@@ -41,14 +41,14 @@ export const TeamNameParamSchema = Type.Object({
 })
 
 /**
- * Tournament identifier parameter
+ * Tournament identifier parameter - supports both name and numeric ID
  */
 export const TournamentParamSchema = Type.Object({
     tournament: Type.String({
         minLength: 1,
         maxLength: 100,
-        description: 'Tournament identifier',
-        examples: ['LEC_2024_Spring', 'Worlds_2024']
+        description: 'Tournament identifier (name or numeric ID)',
+        examples: ['LEC_2024_Spring', 'Worlds_2024', '123', '456']
     })
 })
 
@@ -126,8 +126,8 @@ export const TeamTournamentParamsSchema = Type.Object({
     tournament: Type.String({
         minLength: 1,
         maxLength: 100,
-        description: 'Tournament identifier',
-        examples: ['LEC_2024_Spring', 'Worlds_2024']
+        description: 'Tournament identifier (name or numeric ID)',
+        examples: ['LEC_2024_Spring', 'Worlds_2024', '123', '456']
     })
 })
 
@@ -178,8 +178,8 @@ export const PlayerTournamentParamsSchema = Type.Object({
     tournament: Type.String({
         minLength: 1,
         maxLength: 100,
-        description: 'Tournament identifier',
-        examples: ['LEC_2024_Spring', 'Worlds_2024']
+        description: 'Tournament identifier (name or numeric ID)',
+        examples: ['LEC_2024_Spring', 'Worlds_2024', '123', '456']
     })
 })
 
@@ -208,7 +208,7 @@ export const TeamTournamentCombinedParamsSchema = Type.Object({
     tournament: Type.String({
         minLength: 1,
         maxLength: 100,
-        description: 'Tournament identifier',
-        examples: ['LEC_2024_Spring', 'Worlds_2024']
+        description: 'Tournament identifier (name or numeric ID)',
+        examples: ['LEC_2024_Spring', 'Worlds_2024', '123', '456']
     })
 })

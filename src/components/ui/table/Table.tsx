@@ -11,11 +11,11 @@ const Table = forwardRef<
     HTMLTableElement,
     HTMLAttributes<HTMLTableElement>
 >(({ className, ...props }, ref) => (
-    <div className="relative w-full overflow-auto">
+    <div className="relative w-full">
         <table
             ref={ref}
             className={cn(
-                "w-full caption-bottom text-sm border-collapse",
+                "w-full caption-bottom text-sm border-collapse table-fixed",
                 className
             )}
             {...props}
@@ -94,7 +94,7 @@ const TableHead = forwardRef<
     <th
         ref={ref}
         className={cn(
-            "h-12 px-4 text-left align-middle font-medium text-muted-foreground",
+            "h-12 px-1 text-left align-middle font-medium text-muted-foreground",
             "[&:has([role=checkbox])]:pr-0",
             sortable && "cursor-pointer select-none hover:text-foreground transition-colors",
             sorted && "text-foreground",
@@ -143,7 +143,7 @@ const TableCell = forwardRef<
     <td
         ref={ref}
         className={cn(
-            "p-4 align-middle [&:has([role=checkbox])]:pr-0",
+            "p-1 align-middle [&:has([role=checkbox])]:pr-0",
             className
         )}
         {...props}

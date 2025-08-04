@@ -77,7 +77,8 @@
 		@apply text-white hover:text-gray-300 transition-colors duration-200 block w-full text-right px-4;
 	}
 	.body-container {
-		@apply max-w-[1440px] mx-auto md:px-24 px-4  flex flex-col gap-1 h-full w-full pt-24;
+        @apply max-w-[1440px] mx-auto md:px-24 px-4  flex flex-col gap-1 h-full w-full pt-24;
+		/* @apply w-full md:px-24 px-4 flex flex-col gap-1 h-full pt-24; */
 	}
 	
 	/* Standings table styling to match original */
@@ -137,6 +138,9 @@
     }
     p {
         @apply font-inter text-white tracking-normal text-base md:text-lg;
+    }
+    tr {
+        @apply text-white  select-none;
     }
 }
 
