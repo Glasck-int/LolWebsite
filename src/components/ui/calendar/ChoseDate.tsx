@@ -1,4 +1,5 @@
-import React, { useRef, useState, useEffect } from 'react'
+import { useQueryDate } from '@/lib/hooks/createQueryState'
+import React, { useRef, useState, useEffect, useCallback } from 'react'
 import DropDownArrow, { getStateArrow } from '../Button/DropDownArrow'
 import ArrowButton from '../Button/ArrowButton'
 import { Calendar } from '@heroui/calendar'
@@ -29,7 +30,6 @@ export interface ChoseDateActions {
     setIsLive: (isLive: boolean) => void
     setMatchChaud: (matchChaud: boolean) => void
     setSearch: (search: string) => void
-    resetFilters: () => void
 }
 
 export interface ChoseDateHelpers {
@@ -41,25 +41,60 @@ export interface ChoseDateProps
         ChoseDateActions,
         ChoseDateHelpers {
     className?: string
+    weekDisplay?:boolean
 }
 
+/**
+ * Custom hook to manage the state and logic for the ChoseDate component.
+ *
+ * Handles selected date, "live" status, "hot match" toggle, and search query. It also provides a helper to convert JS dates to `CalendarDate`.
+ *
+ * @returns An object containing the selected date state, update functions, and a date conversion helper.
+ *
+ * @example
+ * ```ts
+ * const {
+ *   selectedDate, setSelectedDate,
+ *   isLive, setIsLive,
+ *   matchChaud, setMatchChaud,
+ *   search, setSearch,
+ *   dateToCalendarDate
+ * } = useChoseDate();
+ * ```
+ *
+ * @remarks
+ * Useful as a state provider for the `<ChoseDate />` component, especially when composing or testing logic separately.
+ *
+ * @see `ChoseDate` component
+ */
 export function useChoseDate() {
-    const [selectedDate, setSelectedDate] = useState(new Date())
+    const [selectedDate, setSelectedDate] = useQueryDate("date", new Date())
     const [isLive, setIsLive] = useState(false)
     const [matchChaud, setMatchChaud] = useState(false)
     const [search, setSearch] = useState('')
-
-    const resetFilters = () => {
-        setIsLive(false)
-        setMatchChaud(false)
-        setSearch('')
-    }
-
+    
+    
+    /**
+     * Converts a JavaScript Date to a CalendarDate format used by @internationalized/date.
+     *
+     * @param date - A standard JavaScript Date object
+     * @returns A CalendarDate object if the input is valid, otherwise null
+     *
+     * @example
+     * ```ts
+     * const calendarDate = dateToCalendarDate(new Date());
+     * ```
+     *
+     * @remarks
+     * Useful for adapting native dates to the Calendar component’s expected format.
+     *
+     * @see fromDate, toCalendarDate
+     */
     const dateToCalendarDate = (date: Date): CalendarDate | null => {
         if (!date) return null
         return toCalendarDate(fromDate(date, getLocalTimeZone()))
     }
-
+    
     return {
         // States
         selectedDate,
@@ -72,22 +107,45 @@ export function useChoseDate() {
         setMatchChaud,
         setSearch,
         // Helpers
-        resetFilters,
         dateToCalendarDate,
     }
 }
 
+/**
+ * UI component allowing users to select a date, toggle filters like "live" or "hot match", and perform a search.
+ *
+ * Includes navigation buttons to shift days, a calendar popover, and an optional week-based display mode.
+ *
+ * @param selectedDate - The currently selected date.
+ * @param setSelectedDate - Function to update the selected date.
+ * @param setIsLive - Function to toggle the "live" match filter.
+ * @param setMatchChaud - Function to toggle the "hot match" filter.
+ * @param setSearch - Function to set the search query.
+ * @param dateToCalendarDate - Helper function to convert a JS Date to `CalendarDate`.
+ * @param className - Optional className for custom styling.
+ * @param weekDisplay - Whether to display the calendar with week grouping (not used internally yet).
+ * @returns A nav element rendering the full interactive date chooser UI.
+ *
+ * @example
+ * ```tsx
+ * calendarData = useChoseDate()
+ * <ChoseDate {...calendarData} />
+ * ```
+ *
+ * @remarks
+ * Combines state, internationalization, animation, and accessibility using tools like `@heroui/calendar`, `framer-motion`, and `@react-aria/i18n`.
+ *
+ * @see `useChoseDate` for the state hook usually used alongside this component
+ */
 export default function ChoseDate({
     selectedDate,
     setSelectedDate,
-    isLive,
     setIsLive,
-    matchChaud,
     setMatchChaud,
-    search,
     setSearch,
     className = '',
     dateToCalendarDate,
+    weekDisplay = false
 }: ChoseDateProps) {
     const { isDown, setIsDown } = getStateArrow()
     const calendarRef = useRef<HTMLDivElement>(null)
@@ -111,7 +169,7 @@ export default function ChoseDate({
         if (!selectedDate) return ''
 
         const today = new Date()
-        const dayMs = 86400000 // 1 jour en ms
+        const dayMs = 86400000
         const diff =
             selectedDate.setHours(0, 0, 0, 0) - today.setHours(0, 0, 0, 0)
 
@@ -172,41 +230,15 @@ export default function ChoseDate({
         setSearch(term)
     }
 
-    const strings = ['LEC', 'KCORP', 'LCK', 'La ligue francaise']
-
-    const [placeholder, setPlaceholder] = useState('')
-    const [stringIndex, setStringIndex] = useState(0)
-
-    // useEffect(() => {
-    //     let currentString = strings[stringIndex]
-    //     let charIndex = 0
-
-    //     const typeInterval = setInterval(() => {
-    //         if (charIndex < currentString.length) {
-    //             setPlaceholder((prev) => prev + currentString[charIndex])
-    //             charIndex++
-    //         } else {
-    //             clearInterval(typeInterval)
-
-    //             setTimeout(() => {
-    //                 setPlaceholder('')
-    //                 setStringIndex((prev) => (prev + 1) % strings.length)
-    //             }, 5000)
-    //         }
-    //     }, 300)
-
-    //     return () => clearInterval(typeInterval)
-    // }, [stringIndex])
-
     return (
-        <div className="w-full h-31 md:bg-white/6 flex flex-col pt-[5px] pb-[10px] px-[10px] relative default-border-radius">
+        <nav className={`w-full h-31 md:bg-white/6 flex flex-col pt-[5px] pb-[10px] px-[10px] relative default-border-radius ${className}`}>
             <ArrowButton
                 className="flex-1"
                 onLeftClick={() => setSelectedDate(removeOneDay(selectedDate))}
                 onRightClick={() => setSelectedDate(addOneDay(selectedDate))}
             >
                 <div className="flex items-center gap-3">
-                    <h3 className="text-clear-grey">{formatSelectedDate()}</h3>
+                    <h3 className="text-clear-grey"><time>{formatSelectedDate()}</time></h3>
                     <DropDownArrow
                         size={15}
                         sizeMd={20}
@@ -274,11 +306,10 @@ export default function ChoseDate({
                             searchLogo="textSearch"
                             className="h-[40px] !rounded-2xl border md:border-none border-solid border-dark-grey bg-white-06"
                             onSearch={handleSearch}
-                            placeholder={placeholder}
                         />
                     </div>
                 </div>
             </div>
-        </div>
+        </nav>
     )
 }

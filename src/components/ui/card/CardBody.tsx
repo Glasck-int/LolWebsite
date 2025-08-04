@@ -50,8 +50,8 @@ export const CardBody = ({ children, className = '' }: ChildAndClassname) => {
         return (
             <AnimatePresence>
                 {!isHide && (
-                    <motion.div
-                        className={`flex grow-1 ${className ?? ''}`}
+                    <motion.article
+                        className={`flex grow-1 ${className}`}
                         initial={hasBeenToggled.current ? 
                             { height: 0, opacity: 0 } : 
                             { height: 'auto', opacity: 1 }
@@ -72,12 +72,12 @@ export const CardBody = ({ children, className = '' }: ChildAndClassname) => {
                         }}
                     >
                         {children}
-                    </motion.div>
+                    </motion.article>
                 )}
             </AnimatePresence>
         )
     } catch {
-        return <div className={`flex grow-1 ${className ?? ''}`}>{children}</div>
+        return <article className={`flex grow-1 ${className ?? ''}`}>{children}</article>
     }
 }
 
@@ -157,5 +157,5 @@ export const CardBodyMultipleContent = ({
     children,
     className = '',
 }: ChildAndClassname) => {
-    return <div className={'w-full h-full' + ' ' + className}>{children}</div>
+    return <article className={'w-full h-full' + ' ' + className}>{children}</article>
 }
