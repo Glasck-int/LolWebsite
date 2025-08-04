@@ -566,129 +566,6 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
         }
     )
 
-    fastify.get<{ Params: { tournamentId: string } }>(
-        '/tournaments/:tournamentId/next-matches',
-        {
-            schema: {
-                description: 'Get the next three matches for a tournament by overview page',
-                tags: ['tournaments'],
-                params: TournamentIdParamSchema,
-                response: {
-                    200: MatchScheduleListResponse,
-                    404: ErrorResponseSchema,
-                    500: ErrorResponseSchema,
-                },
-            },
-        },
-        async (request, reply) => {
-            try {
-                const { tournamentId } = request.params
-                const cacheKey = `tournament_next_matches:${tournamentId}`
-
-                // Check cache first
-                const cached = await redis.get(cacheKey)
-                if (cached) {
-                    return JSON.parse(cached)
-                }
-
-                const today = new Date()
-
-                // Get next three matches
-                const nextMatches = await prisma.matchSchedule.findMany({
-                    where: {
-                        Tournament: {
-                            id: parseInt(tournamentId)
-                        },
-                        dateTime_UTC: {
-                            gte: today
-                        }
-                    },
-                    orderBy: {
-                        dateTime_UTC: 'asc'
-                    },
-                    take: 3
-                })
-
-                if (nextMatches.length === 0) {
-                    return reply.status(404).send({
-                        error: 'No next matches found for this tournament',
-                    })
-                }
-
-                // Cache for 1 hour (3600 seconds)
-                await redis.setex(cacheKey, 3600, JSON.stringify(nextMatches))
-                return nextMatches || []
-
-            } catch (error) {
-                console.error('Error in tournament next matches route:', error)
-                return reply
-                    .status(500)
-                    .send({ error: 'Internal server error' })
-            }
-        }
-    )
-
-    fastify.get<{ Params: { tournamentId: string } }>(
-        '/tournaments/:tournamentId/last-matches',
-        {
-            schema: {
-                description:
-                    'Get the last three matches for a tournament by overview page',
-                tags: ['tournaments'],
-                params: TournamentIdParamSchema,
-                response: {
-                    200: MatchScheduleListResponse,
-                    404: ErrorResponseSchema,
-                    500: ErrorResponseSchema,
-                },
-            },
-        },
-        async (request, reply) => {
-            try {
-                const { tournamentId } = request.params
-                const cacheKey = `tournament_last_matches:${tournamentId}`
-
-                // Check cache first
-                const cached = await redis.get(cacheKey)
-                if (cached) {
-                    return JSON.parse(cached)
-                }
-
-                const today = new Date()
-
-                // Get last three matches
-                const lastMatches = await prisma.matchSchedule.findMany({
-                    where: {
-                        Tournament: {
-                            id: parseInt(tournamentId),
-                        },
-                        dateTime_UTC: {
-                            lte: today,
-                        },
-                    },
-                    orderBy: {
-                        dateTime_UTC: 'desc',
-                    },
-                    take: 3,
-                })
-
-                if (lastMatches.length === 0) {
-                    return reply.status(404).send({
-                        error: 'No last matches found for this tournament',
-                    })
-                }
-
-                // Cache for 1 hour (3600 seconds)
-                await redis.setex(cacheKey, 3600, JSON.stringify(lastMatches))
-                return lastMatches || []
-            } catch (error) {
-                console.error('Error in tournament next matches route:', error)
-                return reply
-                    .status(500)
-                    .send({ error: 'Internal server error' })
-            }
-        }
-    )
 
     // Player stats aggregation endpoint using tournamentId
     fastify.get<{ Params: { tournamentId: string } }>(
@@ -867,20 +744,40 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
         }
     )
 
-    // Combined route that tries next matches first, then last matches
-    fastify.get<{ Params: { tournamentId: string } }>(
+    // Flexible matches route with query parameters
+    fastify.get<{ 
+        Params: { tournamentId: string },
+        Querystring: { type?: 'next' | 'last' | 'auto', limit?: number }
+    }>(
         '/tournaments/:tournamentId/matches',
         {
             schema: {
-                description: 'Get matches for a tournament (next matches prioritized, fallback to last matches)',
+                description: 'Get matches for a tournament with flexible filtering',
                 tags: ['tournaments'],
                 params: TournamentIdParamSchema,
+                querystring: {
+                    type: 'object',
+                    properties: {
+                        type: { 
+                            type: 'string', 
+                            enum: ['next', 'last', 'auto'],
+                            description: 'Type of matches to fetch: next (upcoming), last (past), auto (smart fallback)'
+                        },
+                        limit: { 
+                            type: 'number', 
+                            minimum: 0,
+                            description: 'Maximum number of matches to return (0 = no limit)'
+                        }
+                    },
+                    additionalProperties: false
+                },
                 response: {
                     200: {
                         type: 'object',
                         properties: {
                             data: MatchScheduleListResponse,
-                            type: { type: 'string', enum: ['next', 'last'] }
+                            type: { type: 'string', enum: ['next', 'last'] },
+                            total: { type: 'number', description: 'Total matches found' }
                         }
                     },
                     404: ErrorResponseSchema,
@@ -891,7 +788,10 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
         async (request, reply) => {
             try {
                 const { tournamentId } = request.params
-                const cacheKey = `tournament_matches:${tournamentId}`
+                const { type = 'auto', limit = 3 } = request.query || {}
+                
+                // Create cache key that includes query parameters
+                const cacheKey = `tournament_matches:${tournamentId}:${type}:${limit}`
 
                 // Check cache first
                 const cached = await redis.get(cacheKey)
@@ -900,55 +800,100 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
                 }
 
                 const today = new Date()
+                const takeLimit = limit === 0 ? undefined : limit
 
-                // Try to get next matches first
-                const nextMatches = await prisma.matchSchedule.findMany({
-                    where: {
-                        Tournament: {
-                            id: parseInt(tournamentId)
+                let matches = []
+                let matchType = 'next'
+
+                if (type === 'next') {
+                    // Get upcoming matches only
+                    matches = await prisma.matchSchedule.findMany({
+                        where: {
+                            Tournament: {
+                                id: parseInt(tournamentId)
+                            },
+                            dateTime_UTC: {
+                                gte: today
+                            }
                         },
-                        dateTime_UTC: {
-                            gte: today
-                        }
-                    },
-                    orderBy: {
-                        dateTime_UTC: 'asc'
-                    },
-                    take: 3
-                })
+                        orderBy: {
+                            dateTime_UTC: 'asc'
+                        },
+                        take: takeLimit
+                    })
+                    matchType = 'next'
+                } else if (type === 'last') {
+                    // Get past matches only
+                    matches = await prisma.matchSchedule.findMany({
+                        where: {
+                            Tournament: {
+                                id: parseInt(tournamentId),
+                            },
+                            dateTime_UTC: {
+                                lte: today,
+                            },
+                        },
+                        orderBy: {
+                            dateTime_UTC: 'desc',
+                        },
+                        take: takeLimit
+                    })
+                    matchType = 'last'
+                } else {
+                    // Auto mode: try next matches first, then last matches
+                    const nextMatches = await prisma.matchSchedule.findMany({
+                        where: {
+                            Tournament: {
+                                id: parseInt(tournamentId)
+                            },
+                            dateTime_UTC: {
+                                gte: today
+                            }
+                        },
+                        orderBy: {
+                            dateTime_UTC: 'asc'
+                        },
+                        take: takeLimit
+                    })
 
-                // If we have next matches, return them
-                if (nextMatches.length > 0) {
-                    const result = { data: nextMatches, type: 'next' }
-                    await redis.setex(cacheKey, 3600, JSON.stringify(result))
-                    return result
+                    if (nextMatches.length > 0) {
+                        matches = nextMatches
+                        matchType = 'next'
+                    } else {
+                        // Get last matches
+                        matches = await prisma.matchSchedule.findMany({
+                            where: {
+                                Tournament: {
+                                    id: parseInt(tournamentId),
+                                },
+                                dateTime_UTC: {
+                                    lte: today,
+                                },
+                            },
+                            orderBy: {
+                                dateTime_UTC: 'desc',
+                            },
+                            take: takeLimit
+                        })
+                        matchType = 'last'
+                    }
                 }
 
-                // Otherwise, get last matches
-                const lastMatches = await prisma.matchSchedule.findMany({
-                    where: {
-                        Tournament: {
-                            id: parseInt(tournamentId),
-                        },
-                        dateTime_UTC: {
-                            lte: today,
-                        },
-                    },
-                    orderBy: {
-                        dateTime_UTC: 'asc',
-                    },
-                    take: 3,
-                })
-
-                if (lastMatches.length === 0) {
+                if (matches.length === 0) {
                     return reply.status(404).send({
-                        error: 'No matches found for this tournament',
+                        error: `No ${type === 'auto' ? '' : type + ' '}matches found for this tournament`,
                     })
                 }
 
-                const result = { data: lastMatches, type: 'last' }
-                // Cache for 1 hour (3600 seconds)
-                await redis.setex(cacheKey, 3600, JSON.stringify(result))
+                const result = { 
+                    data: matches, 
+                    type: matchType,
+                    total: matches.length
+                }
+                
+                // Dynamic cache time based on type
+                const cacheTime = matchType === 'next' ? 1800 : 3600 // 30min for upcoming, 1h for past
+                await redis.setex(cacheKey, cacheTime, JSON.stringify(result))
                 return result
 
             } catch (error) {

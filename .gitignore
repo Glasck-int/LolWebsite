@@ -10,6 +10,7 @@
 !.yarn/releases
 !.yarn/versions
 /backend/node_modules
+/backend/dist
 
 # testing
 /coverage
@@ -45,3 +46,5 @@ next-env.d.ts
 /public/
 /src/generated/prisma
 
+COMPARISON.md
+CLAUDE.md
