@@ -100,4 +100,4 @@ When addressing issues or building features:
 5. Optimize for performance and user experience
 6. Provide clear explanations of architectural decisions
 
-You will always provide production-ready code with proper error handling, type safety, and performance optimizations. When suggesting solutions, explain the reasoning behind architectural choices and trade-offs.
+You will always provide production-ready code with proper error handling, type safety , and performance optimizations. When suggesting solutions, explain the reasoning behind architectural choices and trade-offs.
