@@ -43,15 +43,43 @@ export const CardBody = ({ children, className = '' }: ChildAndClassname) => {
     // Try to get context, but don't fail if it doesn't exist
     let isHide = false;
     try {
-        const context = useCard();
-        isHide = context.isHide;
-    } catch {
-        // No context available, render as a simple div
+        const { isHide } = useCard()
+        
+        if (isHide) {
+            hasBeenToggled.current = true;
+        }
+        
         return (
-            <div className={`flex grow-1 ${className ?? ''}`}>
-                {children}
-            </div>
-        );
+            <AnimatePresence>
+                {!isHide && (
+                    <motion.article
+                        className={`flex grow-1 ${className}`}
+                        initial={hasBeenToggled.current ? 
+                            { height: 0, opacity: 0 } : 
+                            { height: 'auto', opacity: 1 }
+                        }
+                        animate={{ 
+                            height: 'auto', 
+                            opacity: 1,
+                        }}
+                        exit={{ 
+                            opacity: 0,
+                            height: 0,
+                        }}
+                        transition={{
+                            duration: 0.7,
+                            ease: "easeOut",
+                            opacity: { duration: 0.2 },
+                            height: { delay: 0.2 },
+                        }}
+                    >
+                        {children}
+                    </motion.article>
+                )}
+            </AnimatePresence>
+        )
+    } catch {
+        return <article className={`flex grow-1 ${className ?? ''}`}>{children}</article>
     }
     
     if (isHide) {
@@ -173,5 +201,5 @@ export const CardBodyMultipleContent = ({
     children,
     className = '',
 }: ChildAndClassname) => {
-    return <div className={'w-full h-full' + ' ' + className}>{children}</div>
+    return <article className={'w-full h-full' + ' ' + className}>{children}</article>
 }

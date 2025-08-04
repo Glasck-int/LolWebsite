@@ -1,4 +1,4 @@
-import { useEffect, RefObject } from "react";
+import { useEffect, RefObject } from 'react'
 
 /**
  * Custom hook to handle clicks outside of a specified element
@@ -13,7 +13,7 @@ import { useEffect, RefObject } from "react";
  * @example
  * ```ts
  * const dropdownRef = useRef<HTMLDivElement>(null);
- * 
+ *
  * useClickOutside(dropdownRef, () => {
  *   setIsOpen(false);
  * });
@@ -27,21 +27,23 @@ import { useEffect, RefObject } from "react";
  * @see LocaleSwitcherSelect - Component that uses this hook for dropdown behavior
  * @see DropdownMenu - Component that implements similar click outside functionality
  */
-export const useClickOutside = <T extends HTMLElement>(
-	ref: RefObject<T>,
-	callback: () => void
+export const useClickOutside = (
+    ref: RefObject<HTMLElement | null>,
+    callback: () => void
 ): void => {
-	useEffect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			if (ref.current && !ref.current.contains(event.target as Node)) {
-				callback();
-			}
-		};
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (ref.current && !ref.current.contains(event.target as Node)) {
+                setTimeout(() => {
+                    callback()
+                }, 150)
+            }
+        }
 
-		document.addEventListener("mousedown", handleClickOutside);
+        document.addEventListener('mousedown', handleClickOutside)
 
-		return () => {
-			document.removeEventListener("mousedown", handleClickOutside);
-		};
-	}, [ref, callback]);
-};
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+        }
+    }, [ref, callback])
+}

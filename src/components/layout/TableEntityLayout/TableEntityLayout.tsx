@@ -208,9 +208,9 @@ const getIdsBySeason = (seasonKey: string, seasons: SeasonData[]): number[] => {
  */
 export const TableEntityLayout = ({ children, className = '' }: MainProps) => {
     return (
-        <div className={`flex flex-col gap-4 ${className}`}>
+        <section className={`flex flex-col gap-4 ${className}`}>
             {children}
-        </div>
+        </section>
     )
 }
 
@@ -270,7 +270,7 @@ export const TableEntityHeader = ({
     }, [activeSplit, seasons, isAllActive, updateTournamentBySplit])
 
     return (
-        <div className={`flex flex-col w-full ${className}`}>
+        <nav className={`flex flex-col w-full ${className}`}>
             <TableEntityRawSelect
                 data={seasonTab}
                 isAllActive={isAllActive}
@@ -288,7 +288,7 @@ export const TableEntityHeader = ({
             {tournamentTab.length > 0 && (
                 <TableEntityRawTournament data={tournamentTab} />
             )}
-        </div>
+        </nav>
     )
 }
 

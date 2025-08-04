@@ -53,5 +53,12 @@
 		"Matches": "Matchs",
 		"Statistics": "Statistiques",
 		"Tournaments": "Tournois"
+	},
+	"Calendar":{
+		"today":"Aujourd'hui",
+		"tomorrow":"Demain",
+		"yesterday":"Hier",
+		"hotGame":"Match Chaud",
+		"live":"En live"
 	}
 }

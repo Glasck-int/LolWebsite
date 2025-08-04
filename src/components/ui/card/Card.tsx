@@ -75,14 +75,14 @@ export const useCard = () => {
  */
 export const Card = ({ children, className = '' }: ChildAndClassname) => {
     return (
-        <div
+        <section
             className={
                 'bg-white-06 default-border-radius h-full w-full flex flex-col justify-evenly backdrop-blur overflow-hidden ' +
                 className
             }
         >
             {children}
-        </div>
+        </section>
     )
 }
 
@@ -121,10 +121,8 @@ export const CardContext = ({
     return (
         <CardContextP.Provider value={{ activeIndex, setActiveIndex, isHide, setIsHide }}>
             <div
-                className={ "h-full w-full"
-                    +
-                    className
-                }
+                className={`h-full w-full ${className}`}
+
             >
                 {children}
             </div>

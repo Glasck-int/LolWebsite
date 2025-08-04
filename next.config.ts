@@ -11,8 +11,8 @@ const nextConfig: NextConfig = {
                 pathname: '/static/**',
             },
             {
-                protocol: 'https',
-                hostname: '127.0.0.1',
+                protocol: 'http',
+                hostname: '49.13.26.198',
                 port: '3001',
                 pathname: '/static/**',
             },
