@@ -1,4 +1,30 @@
 import prisma from '../services/prisma'
+import type { Player, PlayerRedirect, PlayerImage, Prisma } from '../generated/prisma'
+
+/**
+ * Type for PlayerRedirect with PlayerImage include
+ */
+type PlayerRedirectWithImages = Prisma.PlayerRedirectGetPayload<{
+    include: { PlayerImage: true }
+}>
+
+/**
+ * Type for Player with PlayerRedirect include
+ */
+type PlayerWithRedirects = Prisma.PlayerGetPayload<{
+    include: { PlayerRedirect: true }
+}>
+
+/**
+ * Type for Player with PlayerRedirect that includes PlayerImage
+ */
+type PlayerWithRedirectsAndImages = Prisma.PlayerGetPayload<{
+    include: { 
+        PlayerRedirect: {
+            include: { PlayerImage: true }
+        }
+    }
+}>
 
 /**
  * Player resolution result containing the resolved player information
@@ -9,11 +35,11 @@ export interface PlayerResolution {
     /** All redirect names that point to this player */
     redirectNames: string[]
     /** The full Player object (if requested) */
-    player?: any
+    player?: Player | PlayerWithRedirects | PlayerWithRedirectsAndImages
     /** All PlayerRedirect objects for this player (if requested) */
-    redirects?: any[]
+    redirects?: PlayerRedirect[] | PlayerRedirectWithImages[]
     /** All images associated with this player (if requested) */
-    images?: any[]
+    images?: PlayerImage[]
 }
 
 /**
@@ -83,70 +109,94 @@ export async function resolvePlayer(
 
     const overviewPage = playerRedirect.overviewPage
 
-    // Get all redirect names that point to the same player
-    const allRedirects = await prisma.playerRedirect.findMany({
-        where: { overviewPage },
-        ...(includeImages && {
-            include: {
-                PlayerImage: true
-            }
-        })
-    })
-
-    const redirectNames = allRedirects.map(redirect => redirect.name)
-
     // Initialize the result with the basic information
     const result: PlayerResolution = {
         overviewPage,
-        redirectNames
+        redirectNames: [] // Will be populated below
     }
 
-    // Include redirects if requested
+    // Handle redirects - fetch with or without images based on options
     if (includeRedirects) {
-        result.redirects = allRedirects
+        if (includeImages) {
+            const redirectsWithImages = await prisma.playerRedirect.findMany({
+                where: { overviewPage },
+                include: { PlayerImage: true }
+            })
+            result.redirects = redirectsWithImages
+            result.redirectNames = redirectsWithImages.map(redirect => redirect.name)
+        } else {
+            const redirects = await prisma.playerRedirect.findMany({
+                where: { overviewPage }
+            })
+            result.redirects = redirects
+            result.redirectNames = redirects.map(redirect => redirect.name)
+        }
+    } else {
+        // Just get redirect names for the basic case
+        const redirectNames = await prisma.playerRedirect.findMany({
+            where: { overviewPage },
+            select: { name: true }
+        })
+        result.redirectNames = redirectNames.map(redirect => redirect.name)
     }
 
-    // Include the full Player object if requested
+    // Handle player data
     if (includePlayer) {
-        const player = await prisma.player.findUnique({
-            where: { overviewPage },
-            ...(includeRedirects && {
+        if (includeRedirects && includeImages) {
+            // Include player with redirects and images
+            const player = await prisma.player.findUnique({
+                where: { overviewPage },
                 include: {
                     PlayerRedirect: {
-                        ...(includeImages && {
-                            include: {
-                                PlayerImage: true
-                            }
-                        })
+                        include: { PlayerImage: true }
                     }
                 }
             })
-        })
-
-        if (!player) {
-            throw new PlayerNotFoundError(playerName)
+            if (!player) {
+                throw new PlayerNotFoundError(playerName)
+            }
+            result.player = player
+        } else if (includeRedirects) {
+            // Include player with redirects only
+            const player = await prisma.player.findUnique({
+                where: { overviewPage },
+                include: { PlayerRedirect: true }
+            })
+            if (!player) {
+                throw new PlayerNotFoundError(playerName)
+            }
+            result.player = player
+        } else {
+            // Include basic player only
+            const player = await prisma.player.findUnique({
+                where: { overviewPage }
+            })
+            if (!player) {
+                throw new PlayerNotFoundError(playerName)
+            }
+            result.player = player
         }
-
-        result.player = player
     }
 
-    // Collect images if requested
+    // Handle images
     if (includeImages) {
-        if (includeRedirects && result.redirects) {
-            // If we already have redirects with images, extract them
-            result.images = result.redirects.flatMap((redirect: any) => redirect.PlayerImage || [])
-        } else if (includePlayer && result.player?.PlayerRedirect) {
-            // If we have player with redirects, extract images
-            result.images = result.player.PlayerRedirect.flatMap((redirect: any) => redirect.PlayerImage || [])
+        if (result.redirects && result.redirects.length > 0 && 'PlayerImage' in result.redirects[0]) {
+            // Extract images from redirects we already fetched
+            const redirectsWithImages = result.redirects as PlayerRedirectWithImages[]
+            result.images = redirectsWithImages.flatMap(redirect => redirect.PlayerImage || [])
+        } else if (result.player && 'PlayerRedirect' in result.player) {
+            // Extract images from player redirects we already fetched
+            const playerWithRedirects = result.player as PlayerWithRedirectsAndImages
+            result.images = playerWithRedirects.PlayerRedirect.flatMap(redirect => 
+                'PlayerImage' in redirect ? redirect.PlayerImage || [] : []
+            )
         } else {
-            // Otherwise, fetch images separately
+            // Fetch images separately
             const redirectsWithImages = await prisma.playerRedirect.findMany({
                 where: { overviewPage },
-                include: {
-                    PlayerImage: true
-                }
+                include: { PlayerImage: true }
             })
-            result.images = redirectsWithImages.flatMap((redirect: any) => redirect.PlayerImage || [])
+            result.images = redirectsWithImages.flatMap(redirect => redirect.PlayerImage || [])
         }
     }
 
@@ -203,7 +253,7 @@ export async function playerExists(playerName: string): Promise<boolean> {
     try {
         await resolvePlayer(playerName)
         return true
-    } catch (error) {
+    } catch (error: unknown) {
         if (error instanceof PlayerNotFoundError) {
             return false
         }

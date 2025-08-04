@@ -155,6 +155,9 @@ const LeagueTableEntityContent = ({
                     </div>
                 </TableEntityContent>
                 <TableEntityContent>
+
+                </TableEntityContent>
+                <TableEntityContent>
                     <div className="space-y-4">
                         {/* Nouveau système de tableaux avec vraies balises HTML */}
                         {selectedTournamentId ? (
@@ -168,24 +171,6 @@ const LeagueTableEntityContent = ({
                                     Statistiques
                                 </h3>
                                 <p>Sélectionnez un tournoi pour voir les statistiques détaillées</p>
-                            </div>
-                        )}
-                    </div>
-                </TableEntityContent>
-                <TableEntityContent>
-                    <div className="space-y-4">
-                        {/* Players KDA et Standings With Tabs */}
-                        {selectedTournamentId ? (
-                            <StandingsWithTabsFetch
-                                tournamentId={selectedTournamentId}
-                                maxRows={null}
-                            />
-                        ) : (
-                            <div className="p-4 bg-gray-700 rounded-lg">
-                                <h3 className="text-lg font-semibold mb-2">
-                                    Statistiques
-                                </h3>
-                                <p>Sélectionnez un tournoi pour voir les statistiques</p>
                             </div>
                         )}
                     </div>

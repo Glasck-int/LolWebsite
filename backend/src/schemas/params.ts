@@ -152,3 +152,63 @@ export const GameIdParamSchema = Type.Object({
         examples: ['123', '456']
     })
 })
+
+/**
+ * Player name parameter
+ */
+export const PlayerNameParamSchema = Type.Object({
+    player: Type.String({
+        minLength: 1,
+        maxLength: 100,
+        description: 'Player name',
+        examples: ['Caps', 'Faker', 'Jankos']
+    })
+})
+
+/**
+ * Player and tournament parameters combined
+ */
+export const PlayerTournamentParamsSchema = Type.Object({
+    player: Type.String({
+        minLength: 1,
+        maxLength: 100,
+        description: 'Player name',
+        examples: ['Caps', 'Faker', 'Jankos']
+    }),
+    tournament: Type.String({
+        minLength: 1,
+        maxLength: 100,
+        description: 'Tournament identifier',
+        examples: ['LEC_2024_Spring', 'Worlds_2024']
+    })
+})
+
+/**
+ * Team name parameter (alternative for champions routes)
+ */
+export const TeamParamSchema = Type.Object({
+    team: Type.String({
+        minLength: 1,
+        maxLength: 100,
+        description: 'Team name',
+        examples: ['G2 Esports', 'T1', 'Fnatic']
+    })
+})
+
+/**
+ * Team and tournament parameters combined
+ */
+export const TeamTournamentCombinedParamsSchema = Type.Object({
+    team: Type.String({
+        minLength: 1,
+        maxLength: 100,
+        description: 'Team name',
+        examples: ['G2 Esports', 'T1', 'Fnatic']
+    }),
+    tournament: Type.String({
+        minLength: 1,
+        maxLength: 100,
+        description: 'Tournament identifier',
+        examples: ['LEC_2024_Spring', 'Worlds_2024']
+    })
+})
