@@ -8,6 +8,7 @@ import {
     PlayerRedirectListResponse,
     PlayerImageListResponse
 } from '../../schemas/players'
+import { resolvePlayer, PlayerNotFoundError } from '../../utils/playerUtils'
 
 export default async function playersRoutes(fastify: FastifyInstance) {
     const redis = fastify.redis
@@ -68,43 +69,25 @@ export default async function playersRoutes(fastify: FastifyInstance) {
             const { playerName } = request.params as { playerName: string }
             customMetric.inc({ operation: 'get_player_by_name' })
 
-            // First, try to find the player redirect
-            const playerRedirect = await prisma.playerRedirect.findUnique({
-                where: { name: playerName }
+            // Use the player utility to resolve the player with all data
+            const resolution = await resolvePlayer(playerName, {
+                includePlayer: true,
+                includeRedirects: true,
+                includeImages: true
             })
-
-            if (!playerRedirect) {
-                return reply.status(404).send({ error: 'Player not found' })
-            }
-
-            // Get the actual player using the overviewPage from redirect
-            const player = await prisma.player.findUnique({
-                where: { overviewPage: playerRedirect.overviewPage },
-                include: {
-                    PlayerRedirect: {
-                        include: {
-                            PlayerImage: true // Include images for each redirect
-                        }
-                    }
-                }
-            })
-
-            if (!player) {
-                return reply.status(404).send({ error: 'Player not found' })
-            }
-
-            // Collect all images from all redirects
-            const allImages = player.PlayerRedirect.flatMap(redirect => redirect.PlayerImage || [])
 
             // Format response to match schema
             const response = {
-                ...player,
-                redirects: player.PlayerRedirect,
-                images: allImages
+                ...resolution.player,
+                redirects: resolution.redirects,
+                images: resolution.images
             }
 
             return response
         } catch (error) {
+            if (error instanceof PlayerNotFoundError) {
+                return reply.status(404).send({ error: 'Player not found' })
+            }
             fastify.log.error(error)
             return reply.status(500).send({ error: 'Internal server error' })
         }
@@ -266,28 +249,16 @@ export default async function playersRoutes(fastify: FastifyInstance) {
             const { playerName } = request.params as { playerName: string }
             customMetric.inc({ operation: 'get_player_images' })
 
-            // First, find the player redirect
-            const playerRedirect = await prisma.playerRedirect.findUnique({
-                where: { name: playerName }
+            // Use the player utility to resolve the player and get images
+            const resolution = await resolvePlayer(playerName, {
+                includeImages: true
             })
 
-            if (!playerRedirect) {
+            return resolution.images
+        } catch (error) {
+            if (error instanceof PlayerNotFoundError) {
                 return reply.status(404).send({ error: 'Player not found' })
             }
-
-            // Get all redirects for this player (to get all images)
-            const allRedirects = await prisma.playerRedirect.findMany({
-                where: { overviewPage: playerRedirect.overviewPage },
-                include: {
-                    PlayerImage: true
-                }
-            })
-
-            // Collect all images from all redirects
-            const allImages = allRedirects.flatMap(redirect => redirect.PlayerImage || [])
-
-            return allImages
-        } catch (error) {
             fastify.log.error(error)
             return reply.status(500).send({ error: 'Internal server error' })
         }
