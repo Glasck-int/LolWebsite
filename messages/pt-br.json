@@ -1,0 +1,91 @@
+{
+	"Homepage": {
+		"Title": "Olá Brasil",
+		"Description": "Nós somos os melhores"
+	},
+	"SearchBar": {
+		"Title": "Buscar"
+	},
+	"DropdownMenu": {
+		"Roadmap": "Roadmap",
+		"Description": "Nos Apoie",
+		"Language": "Idioma"
+	},
+	"LocaleSwitcher": {
+		"label": "Alterar idioma",
+		"locale": "{locale, select, en {En} fr {Fr} es {Es} de {De} ja {Ja} ko {Ko} zhcn {中} zhtw {繁} ptbr {Pt} ru {Ru} tr {Tr} vi {Vi} it {It} pl {Pl} other {Desconhecido}}"
+	},
+	"Footer": {
+		"Matchs": "Partidas",
+		"Leagues": "Ligas"
+	},
+	"NextMatches": {
+		"Title": "Próxima Partida",
+		"BestOf": "Bo"
+	},
+	"Standings": {
+		"tabs": {
+			"matches": "PARTIDAS",
+			"games": "JOGOS"
+		},
+		"Team": "Times",
+		"Group": "Grupo",
+		"#": "Posição",
+		"Form": "Forma",
+		"GroupTooltip": "Grupo",
+		"MatchesPlayedTooltip": "Número de partidas jogadas",
+		"WinsTooltip": "Partidas ganhas",
+		"LossesTooltip": "Partidas perdidas",
+		"WRTooltip": "Taxa de vitórias/partidas",
+		"FormTooltip": "Forma da equipe nas últimas 5 partidas",
+		"GamesPlayedTooltip": "Número de jogos jogados"
+	},
+	"playersKda": {
+		"title": "Melhor KDA",
+		"tooltip": "Jogadores com o melhor KDA no torneio"
+	},
+	"Tournaments": {
+		"lastMatch": "Última Partida",
+		"nextMatch": "Próxima Partida"
+	},
+	"Tabs": {
+		"Overview": "Visão Geral",
+		"Matches": "Partidas",
+		"Statistics": "Estatísticas",
+		"Tournaments": "Torneios"
+	},
+	"ChampionStatistics": {
+		"title": "Estatísticas de Campeões",
+		"loading": "Carregando estatísticas de campeões...",
+		"error": "Erro",
+		"noData": "Nenhuma estatística de campeão disponível para este torneio",
+		"emptyState": "Nenhum dado de campeão disponível",
+		"games": "jogos",
+		"uniqueChampions": "campeões únicos",
+		"tooltips": {
+			"gamesPlayed": "Jogos Disputados",
+			"uniquePlayers": "Número de Jogadores Únicos",
+			"presenceRate": "Taxa de Presença no Torneio (Picks + Bans)",
+			"winRate": "Porcentagem de Vitórias",
+			"wins": "Vitórias",
+			"losses": "Derrotas",
+			"avgGold": "Ouro Médio por Jogo",
+			"avgCs": "CS Médio por Jogo",
+			"avgDamagePerMinute": "Dano Médio por Minuto",
+			"pickRate": "Porcentagem de Seleção",
+			"banRate": "Porcentagem de Banimento",
+			"kda": "Razão Kill/Death/Assist",
+			"avgKills": "Kills Médias por Jogo",
+			"avgDeaths": "Mortes Médias por Jogo",
+			"avgAssists": "Assistências Médias por Jogo",
+			"avgKillParticipation": "Porcentagem Média de Participação em Kills"
+		}
+	},
+	"SortableTable": {
+		"emptyState": "Nenhum dado disponível",
+		"sectionHeaders": {
+			"matches": "PARTIDAS",
+			"games": "JOGOS"
+		}
+	}
+}

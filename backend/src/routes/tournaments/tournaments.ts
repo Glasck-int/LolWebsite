@@ -749,7 +749,7 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
         Params: { tournamentId: string },
         Querystring: { type?: 'next' | 'last' | 'auto', limit?: number }
     }>(
-        '/tournaments/:tournamentId/matches',
+        '/tournaments/id/:tournamentId/matches',
         {
             schema: {
                 description: 'Get matches for a tournament with flexible filtering',
@@ -898,6 +898,160 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
 
             } catch (error) {
                 console.error('Error in tournament matches route:', error)
+                return reply
+                    .status(500)
+                    .send({ error: 'Internal server error' })
+            }
+        }
+    )
+
+    // Get match schedules by tournament overviewPage
+    fastify.get<{ 
+        Params: { tournamentOverviewPage: string },
+        Querystring: { type?: 'next' | 'last' | 'auto', limit?: number }
+    }>(
+        '/tournaments/:tournamentOverviewPage/matches',
+        {
+            schema: {
+                description: 'Get matches for a tournament by overview page with flexible filtering',
+                tags: ['tournaments'],
+                params: TournamentOverviewPageParamSchema,
+                querystring: {
+                    type: 'object',
+                    properties: {
+                        type: { 
+                            type: 'string', 
+                            enum: ['next', 'last', 'auto'],
+                            description: 'Type of matches to fetch: next (upcoming), last (past), auto (smart fallback)'
+                        },
+                        limit: { 
+                            type: 'number', 
+                            minimum: 0,
+                            description: 'Maximum number of matches to return (0 = no limit)'
+                        }
+                    },
+                    additionalProperties: false
+                },
+                response: {
+                    200: {
+                        type: 'object',
+                        properties: {
+                            data: MatchScheduleListResponse,
+                            type: { type: 'string', enum: ['next', 'last'] },
+                            total: { type: 'number', description: 'Total matches found' }
+                        }
+                    },
+                    404: ErrorResponseSchema,
+                    500: ErrorResponseSchema,
+                },
+            },
+        },
+        async (request, reply) => {
+            try {
+                const { tournamentOverviewPage } = request.params
+                const { type = 'auto', limit = 3 } = request.query || {}
+                
+                // Decode the overviewPage parameter to handle URL encoding
+                const decodedOverviewPage = decodeURIComponent(tournamentOverviewPage)
+                const cacheKey = `tournament_matches_overview:${decodedOverviewPage}:${type}:${limit}`
+
+                // Check cache first
+                const cached = await redis.get(cacheKey)
+                if (cached) {
+                    return JSON.parse(cached)
+                }
+
+                const today = new Date()
+                const takeLimit = limit === 0 ? undefined : limit
+
+                let matches = []
+                let matchType = 'next'
+
+                if (type === 'next') {
+                    // Get upcoming matches only
+                    matches = await prisma.matchSchedule.findMany({
+                        where: {
+                            overviewPage: decodedOverviewPage,
+                            dateTime_UTC: {
+                                gte: today
+                            }
+                        },
+                        orderBy: {
+                            dateTime_UTC: 'asc'
+                        },
+                        take: takeLimit
+                    })
+                    matchType = 'next'
+                } else if (type === 'last') {
+                    // Get past matches only
+                    matches = await prisma.matchSchedule.findMany({
+                        where: {
+                            overviewPage: decodedOverviewPage,
+                            dateTime_UTC: {
+                                lte: today,
+                            },
+                        },
+                        orderBy: {
+                            dateTime_UTC: 'desc',
+                        },
+                        take: takeLimit
+                    })
+                    matchType = 'last'
+                } else {
+                    // Auto mode: try next matches first, then last matches
+                    const nextMatches = await prisma.matchSchedule.findMany({
+                        where: {
+                            overviewPage: decodedOverviewPage,
+                            dateTime_UTC: {
+                                gte: today
+                            }
+                        },
+                        orderBy: {
+                            dateTime_UTC: 'asc'
+                        },
+                        take: takeLimit
+                    })
+
+                    if (nextMatches.length > 0) {
+                        matches = nextMatches
+                        matchType = 'next'
+                    } else {
+                        // Get last matches
+                        matches = await prisma.matchSchedule.findMany({
+                            where: {
+                                overviewPage: decodedOverviewPage,
+                                dateTime_UTC: {
+                                    lte: today,
+                                },
+                            },
+                            orderBy: {
+                                dateTime_UTC: 'desc',
+                            },
+                            take: takeLimit
+                        })
+                        matchType = 'last'
+                    }
+                }
+
+                if (matches.length === 0) {
+                    return reply.status(404).send({
+                        error: `No ${type === 'auto' ? '' : type + ' '}matches found for this tournament`,
+                    })
+                }
+
+                const result = { 
+                    data: matches, 
+                    type: matchType,
+                    total: matches.length
+                }
+                
+                // Dynamic cache time based on type
+                const cacheTime = matchType === 'next' ? 1800 : 3600 // 30min for upcoming, 1h for past
+                await redis.setex(cacheKey, cacheTime, JSON.stringify(result))
+                return result
+
+            } catch (error) {
+                console.error('Error in tournament matches by overview page route:', error)
                 return reply
                     .status(500)
                     .send({ error: 'Internal server error' })

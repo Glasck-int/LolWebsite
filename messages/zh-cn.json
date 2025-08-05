@@ -1,0 +1,91 @@
+{
+	"Homepage": {
+		"Title": "你好中国",
+		"Description": "我们是最好的"
+	},
+	"SearchBar": {
+		"Title": "搜索"
+	},
+	"DropdownMenu": {
+		"Roadmap": "路线图",
+		"Description": "支持我们",
+		"Language": "语言"
+	},
+	"LocaleSwitcher": {
+		"label": "更改语言",
+		"locale": "{locale, select, en {En} fr {Fr} es {Es} de {De} ja {Ja} ko {Ko} zhcn {中} zhtw {繁} ptbr {Pt} ru {Ru} tr {Tr} vi {Vi} it {It} pl {Pl} other {未知}}"
+	},
+	"Footer": {
+		"Matchs": "比赛",
+		"Leagues": "联赛"
+	},
+	"NextMatches": {
+		"Title": "下一场比赛",
+		"BestOf": "Bo"
+	},
+	"Standings": {
+		"tabs": {
+			"matches": "比赛",
+			"games": "游戏"
+		},
+		"Team": "战队",
+		"Group": "小组",
+		"#": "排名",
+		"Form": "状态",
+		"GroupTooltip": "小组",
+		"MatchesPlayedTooltip": "已进行比赛数",
+		"WinsTooltip": "获胜比赛",
+		"LossesTooltip": "失败比赛",
+		"WRTooltip": "胜率",
+		"FormTooltip": "战队近5场比赛状态",
+		"GamesPlayedTooltip": "已进行游戏数"
+	},
+	"playersKda": {
+		"title": "最佳KDA",
+		"tooltip": "锦标赛中KDA最佳的选手"
+	},
+	"Tournaments": {
+		"lastMatch": "上一场比赛",
+		"nextMatch": "下一场比赛"
+	},
+	"Tabs": {
+		"Overview": "概览",
+		"Matches": "比赛",
+		"Statistics": "数据",
+		"Tournaments": "锦标赛"
+	},
+	"ChampionStatistics": {
+		"title": "英雄数据",
+		"loading": "正在加载英雄数据...",
+		"error": "错误",
+		"noData": "此锦标赛暂无英雄数据",
+		"emptyState": "暂无英雄数据",
+		"games": "局",
+		"uniqueChampions": "独特英雄",
+		"tooltips": {
+			"gamesPlayed": "游戏场次",
+			"uniquePlayers": "独特选手数量",
+			"presenceRate": "锦标赛出现率（选择+禁用）",
+			"winRate": "胜率百分比",
+			"wins": "胜利",
+			"losses": "失败",
+			"avgGold": "平均每局金币",
+			"avgCs": "平均每局补刀",
+			"avgDamagePerMinute": "平均每分钟伤害",
+			"pickRate": "选择率百分比",
+			"banRate": "禁用率百分比",
+			"kda": "KDA比率",
+			"avgKills": "平均每局击杀",
+			"avgDeaths": "平均每局死亡",
+			"avgAssists": "平均每局助攻",
+			"avgKillParticipation": "平均击杀参与率百分比"
+		}
+	},
+	"SortableTable": {
+		"emptyState": "暂无数据",
+		"sectionHeaders": {
+			"matches": "比赛",
+			"games": "游戏"
+		}
+	}
+}

@@ -1,0 +1,91 @@
+{
+	"Homepage": {
+		"Title": "Ciao Italia",
+		"Description": "Siamo i migliori"
+	},
+	"SearchBar": {
+		"Title": "Cerca"
+	},
+	"DropdownMenu": {
+		"Roadmap": "Roadmap",
+		"Description": "Supportaci",
+		"Language": "Lingua"
+	},
+	"LocaleSwitcher": {
+		"label": "Cambia lingua",
+		"locale": "{locale, select, en {En} fr {Fr} es {Es} de {De} ja {Ja} ko {Ko} zhcn {中} zhtw {繁} ptbr {Pt} ru {Ru} tr {Tr} vi {Vi} it {It} pl {Pl} other {Sconosciuto}}"
+	},
+	"Footer": {
+		"Matchs": "Partite",
+		"Leagues": "Leghe"
+	},
+	"NextMatches": {
+		"Title": "Prossima Partita",
+		"BestOf": "Bo"
+	},
+	"Standings": {
+		"tabs": {
+			"matches": "PARTITE",
+			"games": "GIOCHI"
+		},
+		"Team": "Squadre",
+		"Group": "Gruppo",
+		"#": "Posizione",
+		"Form": "Forma",
+		"GroupTooltip": "Gruppo",
+		"MatchesPlayedTooltip": "Numero di partite giocate",
+		"WinsTooltip": "Partite vinte",
+		"LossesTooltip": "Partite perse",
+		"WRTooltip": "Rapporto vittorie/partite",
+		"FormTooltip": "Forma della squadra nelle ultime 5 partite",
+		"GamesPlayedTooltip": "Numero di giochi giocati"
+	},
+	"playersKda": {
+		"title": "Migliori KDA",
+		"tooltip": "Giocatori con il miglior KDA nel torneo"
+	},
+	"Tournaments": {
+		"lastMatch": "Ultima Partita",
+		"nextMatch": "Prossima Partita"
+	},
+	"Tabs": {
+		"Overview": "Panoramica",
+		"Matches": "Partite",
+		"Statistics": "Statistiche",
+		"Tournaments": "Tornei"
+	},
+	"ChampionStatistics": {
+		"title": "Statistiche Campioni",
+		"loading": "Caricamento statistiche campioni...",
+		"error": "Errore",
+		"noData": "Nessuna statistica campione disponibile per questo torneo",
+		"emptyState": "Nessun dato campione disponibile",
+		"games": "giochi",
+		"uniqueChampions": "campioni unici",
+		"tooltips": {
+			"gamesPlayed": "Giochi Giocati",
+			"uniquePlayers": "Numero di Giocatori Unici",
+			"presenceRate": "Tasso di Presenza nel Torneo (Pick + Ban)",
+			"winRate": "Percentuale di Vittorie",
+			"wins": "Vittorie",
+			"losses": "Sconfitte",
+			"avgGold": "Oro Medio per Gioco",
+			"avgCs": "CS Medio per Gioco",
+			"avgDamagePerMinute": "Danno Medio per Minuto",
+			"pickRate": "Percentuale di Selezione",
+			"banRate": "Percentuale di Ban",
+			"kda": "Rapporto Kill/Morte/Assist",
+			"avgKills": "Kill Medi per Gioco",
+			"avgDeaths": "Morti Medie per Gioco",
+			"avgAssists": "Assist Medi per Gioco",
+			"avgKillParticipation": "Percentuale Media di Partecipazione ai Kill"
+		}
+	},
+	"SortableTable": {
+		"emptyState": "Nessun dato disponibile",
+		"sectionHeaders": {
+			"matches": "PARTITE",
+			"games": "GIOCHI"
+		}
+	}
+}

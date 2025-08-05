@@ -1,0 +1,91 @@
+{
+	"Homepage": {
+		"Title": "Xin chào Việt Nam",
+		"Description": "Chúng tôi là tuyệt nhất"
+	},
+	"SearchBar": {
+		"Title": "Tìm kiếm"
+	},
+	"DropdownMenu": {
+		"Roadmap": "Lộ trình",
+		"Description": "Ủng hộ chúng tôi",
+		"Language": "Ngôn ngữ"
+	},
+	"LocaleSwitcher": {
+		"label": "Thay đổi ngôn ngữ",
+		"locale": "{locale, select, en {En} fr {Fr} es {Es} de {De} ja {Ja} ko {Ko} zhcn {中} zhtw {繁} ptbr {Pt} ru {Ru} tr {Tr} vi {Vi} it {It} pl {Pl} other {Không xác định}}"
+	},
+	"Footer": {
+		"Matchs": "Trận đấu",
+		"Leagues": "Giải đấu"
+	},
+	"NextMatches": {
+		"Title": "Trận đấu tiếp theo",
+		"BestOf": "Bo"
+	},
+	"Standings": {
+		"tabs": {
+			"matches": "TRẬN ĐẤU",
+			"games": "GAME"
+		},
+		"Team": "Đội",
+		"Group": "Bảng",
+		"#": "Vị trí",
+		"Form": "Phong độ",
+		"GroupTooltip": "Bảng",
+		"MatchesPlayedTooltip": "Số trận đã đấu",
+		"WinsTooltip": "Trận thắng",
+		"LossesTooltip": "Trận thua",
+		"WRTooltip": "Tỷ lệ thắng/trận",
+		"FormTooltip": "Phong độ đội trong 5 trận gần nhất",
+		"GamesPlayedTooltip": "Số game đã chơi"
+	},
+	"playersKda": {
+		"title": "KDA tốt nhất",
+		"tooltip": "Tuyển thủ có KDA tốt nhất trong giải đấu"
+	},
+	"Tournaments": {
+		"lastMatch": "Trận đấu cuối",
+		"nextMatch": "Trận đấu tiếp theo"
+	},
+	"Tabs": {
+		"Overview": "Tổng quan",
+		"Matches": "Trận đấu",
+		"Statistics": "Thống kê",
+		"Tournaments": "Giải đấu"
+	},
+	"ChampionStatistics": {
+		"title": "Thống kê Tướng",
+		"loading": "Đang tải thống kê tướng...",
+		"error": "Lỗi",
+		"noData": "Không có thống kê tướng cho giải đấu này",
+		"emptyState": "Không có dữ liệu tướng",
+		"games": "game",
+		"uniqueChampions": "tướng độc nhất",
+		"tooltips": {
+			"gamesPlayed": "Game đã chơi",
+			"uniquePlayers": "Số lượng tuyển thủ độc nhất",
+			"presenceRate": "Tỷ lệ xuất hiện trong giải đấu (Chọn + Cấm)",
+			"winRate": "Tỷ lệ thắng phần trăm",
+			"wins": "Thắng",
+			"losses": "Thua",
+			"avgGold": "Vàng trung bình mỗi game",
+			"avgCs": "CS trung bình mỗi game",
+			"avgDamagePerMinute": "Sát thương trung bình mỗi phút",
+			"pickRate": "Tỷ lệ chọn phần trăm",
+			"banRate": "Tỷ lệ cấm phần trăm",
+			"kda": "Tỷ lệ Giết/Chết/Hỗ trợ",
+			"avgKills": "Giết trung bình mỗi game",
+			"avgDeaths": "Chết trung bình mỗi game",
+			"avgAssists": "Hỗ trợ trung bình mỗi game",
+			"avgKillParticipation": "Tỷ lệ tham gia giết trung bình phần trăm"
+		}
+	},
+	"SortableTable": {
+		"emptyState": "Không có dữ liệu",
+		"sectionHeaders": {
+			"matches": "TRẬN ĐẤU",
+			"games": "GAME"
+		}
+	}
+}

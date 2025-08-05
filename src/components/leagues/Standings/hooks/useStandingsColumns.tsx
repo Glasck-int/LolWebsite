@@ -130,7 +130,7 @@ export const useStandingsColumns = (config: StandingsColumnsConfig) => {
             key: 'team',
             header: groupName || t('Team'),
             cell: ({ standing, teamImage, teamData }) => (
-                <div className="flex items-center gap-2">
+                <div className="flex gap-2">
                     {teamImage ? (
                         <Image
                             src={teamImage}
@@ -155,7 +155,7 @@ export const useStandingsColumns = (config: StandingsColumnsConfig) => {
                 </div>
             ),
             tooltip: groupName ? `${t('GroupTooltip')}` : t('GroupTooltip'),
-            headerClassName: 'justify-start items-center flex-1 min-w-0',
+            headerClassName: 'justify-start  flex-1 min-w-0',
             className: 'justify-start items-center flex-1 min-w-0',
             sortable: false,
         },
@@ -479,7 +479,7 @@ export const useCombinedStandingsColumns = (
             key: 'team',
             header: groupName || t('Team'),
             cell: ({ standing, teamImage, teamData }) => (
-                <div className="flex items-center gap-2">
+                <div className="flex gap-2">
                     {teamImage ? (
                         <Image
                             src={teamImage}

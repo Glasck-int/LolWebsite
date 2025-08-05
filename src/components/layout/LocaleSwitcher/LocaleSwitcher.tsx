@@ -35,7 +35,7 @@ export default function LocaleSwitcher({ className }: { className?: string }) {
         >
             {locales.map((currentLocale) => (
                 <option key={currentLocale} value={currentLocale}>
-                    {t('locale', { params: { locale: currentLocale } })}
+                    {t('locale', { params: { locale: currentLocale.replace(/-/g, '') } })}
                 </option>
             ))}
         </LocaleSwitcherSelect>

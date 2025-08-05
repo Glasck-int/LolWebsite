@@ -6,6 +6,7 @@ import { CardHeaderSortContent, CardSort, useSort } from '@/components/ui/card'
 import { SubTitle } from '@/components/ui/text/SubTitle'
 import { cn } from '@/lib/utils'
 import { useFlipAnimation } from '@/components/leagues/Standings/hooks/useFlipAnimation'
+import { useTranslations } from 'next-intl'
 
 /**
  * Determines background CSS classes for columns based on their statistical category.
@@ -15,9 +16,9 @@ const getColumnBackgroundClass = (columnKey: string) => {
     if (['matchesPlayed', 'matchesWins', 'matchesLosses', 'matchesWinRate'].includes(columnKey)) {
         return 'bg-clear-violet/10'
     }
-    if (['gamesPlayed', 'gamesWins', 'gamesLosses', 'gamesWinRate'].includes(columnKey)) {
-        return 'bg-blue/10'
-    }
+    // if (['gamesPlayed', 'gamesWins', 'gamesLosses', 'gamesWinRate'].includes(columnKey)) {
+    //     return 'bg-blue/10'
+    // }
     return ''
 }
 
@@ -81,14 +82,15 @@ export function SortableTable<T = unknown>({
     isRowHighlighted,
     className,
     caption,
-    emptyState = "Aucune donnée disponible",
+    emptyState,
     showSectionHeaders = true,
     getRowKey
 }: SortableTableProps<T>) {
+    const t = useTranslations('SortableTable')
     if (!data.length) {
         return (
             <div className="flex items-center justify-center p-8 text-muted-foreground ">
-                {emptyState}
+                {emptyState || t('emptyState')}
             </div>
         )
     }
@@ -155,6 +157,7 @@ function SortableTableContent<T = unknown>({
     getRowKey
 }: Omit<SortableTableProps<T>, 'emptyState'>) {
     const { activeSort } = useSort()
+    const t = useTranslations('SortableTable')
 
     // Sort data based on current sort configuration
     const sortedData = useMemo(() => {
@@ -167,7 +170,7 @@ function SortableTableContent<T = unknown>({
         if (!column) return data
 
         return [...data].sort((a, b) => {
-            let direction = activeSort.direction
+            const direction = activeSort.direction
             if (!direction) return 0
 
             // For columns with defaultSortDirection='desc' (like winrates), 
@@ -177,7 +180,7 @@ function SortableTableContent<T = unknown>({
             // Use custom sort function if provided
             if (column.sortFn) {
                 const comparison = column.sortFn(a, b)
-                let result = direction === 'desc' ? -comparison : comparison
+                const result = direction === 'desc' ? -comparison : comparison
                 return shouldInvertSort ? -result : result
             }
 
@@ -200,7 +203,7 @@ function SortableTableContent<T = unknown>({
                     comparison = String(aVal).localeCompare(String(bVal))
                 }
                 
-                let result = direction === 'desc' ? -comparison : comparison
+                const result = direction === 'desc' ? -comparison : comparison
                 return shouldInvertSort ? -result : result
             }
 
@@ -219,7 +222,7 @@ function SortableTableContent<T = unknown>({
                 comparison = String(aVal).localeCompare(String(bVal))
             }
             
-            let result = direction === 'desc' ? -comparison : comparison
+            const result = direction === 'desc' ? -comparison : comparison
             return shouldInvertSort ? -result : result
         })
     }, [data, columns, activeSort])
@@ -254,12 +257,12 @@ function SortableTableContent<T = unknown>({
                             <TableHead className="text-left"></TableHead> {/* Team */}
                             <TableHead colSpan={4} className="text-center py-2">
                                 <div className="flex justify-center w-full">
-                                    <SubTitle className="text-clear-grey">MATCHES</SubTitle>
+                                    <SubTitle className="text-clear-grey">{t('sectionHeaders.matches')}</SubTitle>
                                 </div>
                             </TableHead>
                             <TableHead colSpan={4} className="text-center py-2">
                                 <div className="flex justify-center w-full">
-                                    <SubTitle className="text-clear-grey">GAMES</SubTitle>
+                                    <SubTitle className="text-clear-grey">{t('sectionHeaders.games')}</SubTitle>
                                 </div>
                             </TableHead>
                             <TableHead className="text-center"></TableHead> {/* Form */}

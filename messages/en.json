@@ -13,10 +13,79 @@
 	},
 	"LocaleSwitcher": {
 		"label": "Change language",
-		"locale": "{locale, select, en {En} fr {Fr} other {Unknown}}"
+		"locale": "{locale, select, en {En} fr {Fr} es {Es} de {De} ja {Ja} ko {Ko} zhcn {中} zhtw {繁} ptbr {Pt} ru {Ru} tr {Tr} vi {Vi} it {It} pl {Pl} other {Unknown}}"
 	},
 	"Footer": {
 		"Matchs": "Matchs",
 		"Leagues": "Leagues"
+	},
+	"NextMatches": {
+		"Title": "Next Match",
+		"BestOf": "Bo"
+	},
+	"Standings": {
+		"tabs": {
+			"matches": "MATCHES",
+			"games": "GAMES"
+		},
+		"Team": "Teams",
+		"Group": "Group",
+		"#": "Position",
+		"Form": "Form",
+		"GroupTooltip": "Group",
+		"MatchesPlayedTooltip": "Number of matches played",
+		"WinsTooltip": "Matches won",
+		"LossesTooltip": "Matches lost",
+		"WRTooltip": "Win/matches ratio",
+		"FormTooltip": "Team form on the last 5 matches",
+		"GamesPlayedTooltip": "Number of games played"
+	},
+	"playersKda": {
+		"title": "Best KDA",
+		"tooltip": "Players with the best KDA in the tournament"
+	},
+	"Tournaments": {
+		"lastMatch": "Last Match",
+		"nextMatch": "Next Match"
+	},
+	"Tabs": {
+		"Overview": "Overview",
+		"Matches": "Matches",
+		"Statistics": "Statistics",
+		"Tournaments": "Tournaments"
+	},
+	"ChampionStatistics": {
+		"title": "Champion Statistics",
+		"loading": "Loading champion statistics...",
+		"error": "Error",
+		"noData": "No champion statistics available for this tournament",
+		"emptyState": "No champion data available",
+		"games": "games",
+		"uniqueChampions": "unique champions",
+		"tooltips": {
+			"gamesPlayed": "Games Played",
+			"uniquePlayers": "Number of Unique Players",
+			"presenceRate": "Tournament Presence Rate (Picks + Bans)",
+			"winRate": "Win Rate Percentage",
+			"wins": "Wins",
+			"losses": "Losses",
+			"avgGold": "Average Gold per Game",
+			"avgCs": "Average Creep Score per Game",
+			"avgDamagePerMinute": "Average Damage per Minute",
+			"pickRate": "Pick Rate Percentage",
+			"banRate": "Ban Rate Percentage",
+			"kda": "Kill/Death/Assist Ratio",
+			"avgKills": "Average Kills per Game",
+			"avgDeaths": "Average Deaths per Game",
+			"avgAssists": "Average Assists per Game",
+			"avgKillParticipation": "Average Kill Participation Percentage"
+		}
+	},
+	"SortableTable": {
+		"emptyState": "No data available",
+		"sectionHeaders": {
+			"matches": "MATCHES",
+			"games": "GAMES"
+		}
 	}
 }

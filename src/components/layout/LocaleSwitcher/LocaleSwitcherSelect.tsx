@@ -79,6 +79,18 @@ export default function LocaleSwitcherSelect({
     const getFlagPath = (locale: string) => {
         if (locale === 'en') return '/flags/svg/us.svg'
         if (locale === 'fr') return '/flags/svg/fr.svg'
+        if (locale === 'es') return '/flags/svg/es.svg'
+        if (locale === 'de') return '/flags/svg/de.svg'
+        if (locale === 'ja') return '/flags/svg/jp.svg'
+        if (locale === 'ko') return '/flags/svg/kr.svg'
+        if (locale === 'zh-cn') return '/flags/svg/cn.svg'
+        if (locale === 'zh-tw') return '/flags/svg/tw.svg'
+        if (locale === 'pt-br') return '/flags/svg/br.svg'
+        if (locale === 'ru') return '/flags/svg/ru.svg'
+        if (locale === 'tr') return '/flags/svg/tr.svg'
+        if (locale === 'vi') return '/flags/svg/vn.svg'
+        if (locale === 'it') return '/flags/svg/it.svg'
+        if (locale === 'pl') return '/flags/svg/pl.svg'
         return '/flags/svg/us.svg' // fallback
     }
 
@@ -86,6 +98,18 @@ export default function LocaleSwitcherSelect({
     const getDisplayText = (locale: string) => {
         if (locale === 'en') return 'En'
         if (locale === 'fr') return 'Fr'
+        if (locale === 'es') return 'Es'
+        if (locale === 'de') return 'De'
+        if (locale === 'ja') return 'Ja'
+        if (locale === 'ko') return 'Ko'
+        if (locale === 'zh-cn') return '中'
+        if (locale === 'zh-tw') return '繁'
+        if (locale === 'pt-br') return 'Pt'
+        if (locale === 'ru') return 'Ru'
+        if (locale === 'tr') return 'Tr'
+        if (locale === 'vi') return 'Vi'
+        if (locale === 'it') return 'It'
+        if (locale === 'pl') return 'Pl'
         return locale
     }
 

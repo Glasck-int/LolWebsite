@@ -1,0 +1,91 @@
+{
+	"Homepage": {
+		"Title": "Привет Россия",
+		"Description": "Мы лучшие"
+	},
+	"SearchBar": {
+		"Title": "Поиск"
+	},
+	"DropdownMenu": {
+		"Roadmap": "Дорожная карта",
+		"Description": "Поддержать нас",
+		"Language": "Язык"
+	},
+	"LocaleSwitcher": {
+		"label": "Изменить язык",
+		"locale": "{locale, select, en {En} fr {Fr} es {Es} de {De} ja {Ja} ko {Ko} zhcn {中} zhtw {繁} ptbr {Pt} ru {Ru} tr {Tr} vi {Vi} it {It} pl {Pl} other {Неизвестно}}"
+	},
+	"Footer": {
+		"Matchs": "Матчи",
+		"Leagues": "Лиги"
+	},
+	"NextMatches": {
+		"Title": "Следующий Матч",
+		"BestOf": "Bo"
+	},
+	"Standings": {
+		"tabs": {
+			"matches": "МАТЧИ",
+			"games": "ИГРЫ"
+		},
+		"Team": "Команды",
+		"Group": "Группа",
+		"#": "Позиция",
+		"Form": "Форма",
+		"GroupTooltip": "Группа",
+		"MatchesPlayedTooltip": "Количество сыгранных матчей",
+		"WinsTooltip": "Выигранные матчи",
+		"LossesTooltip": "Проигранные матчи",
+		"WRTooltip": "Процент побед/матчей",
+		"FormTooltip": "Форма команды в последних 5 матчах",
+		"GamesPlayedTooltip": "Количество сыгранных игр"
+	},
+	"playersKda": {
+		"title": "Лучшие KDA",
+		"tooltip": "Игроки с лучшим KDA в турнире"
+	},
+	"Tournaments": {
+		"lastMatch": "Последний Матч",
+		"nextMatch": "Следующий Матч"
+	},
+	"Tabs": {
+		"Overview": "Обзор",
+		"Matches": "Матчи",
+		"Statistics": "Статистика",
+		"Tournaments": "Турниры"
+	},
+	"ChampionStatistics": {
+		"title": "Статистика Чемпионов",
+		"loading": "Загрузка статистики чемпионов...",
+		"error": "Ошибка",
+		"noData": "Нет статистики чемпионов для этого турнира",
+		"emptyState": "Нет данных о чемпионах",
+		"games": "игр",
+		"uniqueChampions": "уникальных чемпионов",
+		"tooltips": {
+			"gamesPlayed": "Сыгранные Игры",
+			"uniquePlayers": "Количество Уникальных Игроков",
+			"presenceRate": "Процент Присутствия в Турнире (Выборы + Баны)",
+			"winRate": "Процент Побед",
+			"wins": "Победы",
+			"losses": "Поражения",
+			"avgGold": "Среднее Золото за Игру",
+			"avgCs": "Средний CS за Игру",
+			"avgDamagePerMinute": "Средний Урон в Минуту",
+			"pickRate": "Процент Выбора",
+			"banRate": "Процент Банов",
+			"kda": "Соотношение Убийства/Смерти/Помощи",
+			"avgKills": "Средние Убийства за Игру",
+			"avgDeaths": "Средние Смерти за Игру",
+			"avgAssists": "Средние Помощи за Игру",
+			"avgKillParticipation": "Средний Процент Участия в Убийствах"
+		}
+	},
+	"SortableTable": {
+		"emptyState": "Нет доступных данных",
+		"sectionHeaders": {
+			"matches": "МАТЧИ",
+			"games": "ИГРЫ"
+		}
+	}
+}

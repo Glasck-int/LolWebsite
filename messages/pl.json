@@ -1,0 +1,91 @@
+{
+	"Homepage": {
+		"Title": "Cześć Polska",
+		"Description": "Jesteśmy najlepsi"
+	},
+	"SearchBar": {
+		"Title": "Szukaj"
+	},
+	"DropdownMenu": {
+		"Roadmap": "Mapa drogowa",
+		"Description": "Wspieraj nas",
+		"Language": "Język"
+	},
+	"LocaleSwitcher": {
+		"label": "Zmień język",
+		"locale": "{locale, select, en {En} fr {Fr} es {Es} de {De} ja {Ja} ko {Ko} zhcn {中} zhtw {繁} ptbr {Pt} ru {Ru} tr {Tr} vi {Vi} it {It} pl {Pl} other {Nieznany}}"
+	},
+	"Footer": {
+		"Matchs": "Mecze",
+		"Leagues": "Ligi"
+	},
+	"NextMatches": {
+		"Title": "Następny Mecz",
+		"BestOf": "Bo"
+	},
+	"Standings": {
+		"tabs": {
+			"matches": "MECZE",
+			"games": "GRY"
+		},
+		"Team": "Drużyny",
+		"Group": "Grupa",
+		"#": "Pozycja",
+		"Form": "Forma",
+		"GroupTooltip": "Grupa",
+		"MatchesPlayedTooltip": "Liczba rozegranych meczów",
+		"WinsTooltip": "Wygrane mecze",
+		"LossesTooltip": "Przegrane mecze",
+		"WRTooltip": "Stosunek wygranych/meczów",
+		"FormTooltip": "Forma drużyny w ostatnich 5 meczach",
+		"GamesPlayedTooltip": "Liczba rozegranych gier"
+	},
+	"playersKda": {
+		"title": "Najlepsze KDA",
+		"tooltip": "Gracze z najlepszym KDA w turnieju"
+	},
+	"Tournaments": {
+		"lastMatch": "Ostatni Mecz",
+		"nextMatch": "Następny Mecz"
+	},
+	"Tabs": {
+		"Overview": "Przegląd",
+		"Matches": "Mecze",
+		"Statistics": "Statystyki",
+		"Tournaments": "Turnieje"
+	},
+	"ChampionStatistics": {
+		"title": "Statystyki Mistrzów",
+		"loading": "Ładowanie statystyk mistrzów...",
+		"error": "Błąd",
+		"noData": "Brak statystyk mistrzów dla tego turnieju",
+		"emptyState": "Brak danych mistrzów",
+		"games": "gry",
+		"uniqueChampions": "unikalni mistrzowie",
+		"tooltips": {
+			"gamesPlayed": "Rozegrane Gry",
+			"uniquePlayers": "Liczba Unikalnych Graczy",
+			"presenceRate": "Wskaźnik Obecności w Turnieju (Wybory + Bany)",
+			"winRate": "Procent Wygranych",
+			"wins": "Wygrane",
+			"losses": "Przegrane",
+			"avgGold": "Średnie Złoto na Grę",
+			"avgCs": "Średnie CS na Grę",
+			"avgDamagePerMinute": "Średnie Obrażenia na Minutę",
+			"pickRate": "Procent Wyboru",
+			"banRate": "Procent Banów",
+			"kda": "Stosunek Zabójstwa/Śmierci/Asysty",
+			"avgKills": "Średnie Zabójstwa na Grę",
+			"avgDeaths": "Średnie Śmierci na Grę",
+			"avgAssists": "Średnie Asysty na Grę",
+			"avgKillParticipation": "Średni Procent Uczestnictwa w Zabójstwach"
+		}
+	},
+	"SortableTable": {
+		"emptyState": "Brak dostępnych danych",
+		"sectionHeaders": {
+			"matches": "MECZE",
+			"games": "GRY"
+		}
+	}
+}
