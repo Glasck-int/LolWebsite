@@ -1,0 +1,91 @@
+{
+	"Homepage": {
+		"Title": "Merhaba Türkiye",
+		"Description": "Biz en iyiyiz"
+	},
+	"SearchBar": {
+		"Title": "Ara"
+	},
+	"DropdownMenu": {
+		"Roadmap": "Yol Haritası",
+		"Description": "Bizi Destekle",
+		"Language": "Dil"
+	},
+	"LocaleSwitcher": {
+		"label": "Dil değiştir",
+		"locale": "{locale, select, en {En} fr {Fr} es {Es} de {De} ja {Ja} ko {Ko} zhcn {中} zhtw {繁} ptbr {Pt} ru {Ru} tr {Tr} vi {Vi} it {It} pl {Pl} other {Bilinmeyen}}"
+	},
+	"Footer": {
+		"Matchs": "Maçlar",
+		"Leagues": "Ligler"
+	},
+	"NextMatches": {
+		"Title": "Sonraki Maç",
+		"BestOf": "Bo"
+	},
+	"Standings": {
+		"tabs": {
+			"matches": "MAÇLAR",
+			"games": "OYUNLAR"
+		},
+		"Team": "Takımlar",
+		"Group": "Grup",
+		"#": "Pozisyon",
+		"Form": "Form",
+		"GroupTooltip": "Grup",
+		"MatchesPlayedTooltip": "Oynanan maç sayısı",
+		"WinsTooltip": "Kazanılan maçlar",
+		"LossesTooltip": "Kaybedilen maçlar",
+		"WRTooltip": "Galibiyet/maç oranı",
+		"FormTooltip": "Son 5 maçta takım formu",
+		"GamesPlayedTooltip": "Oynanan oyun sayısı"
+	},
+	"playersKda": {
+		"title": "En İyi KDA",
+		"tooltip": "Turnuvada en iyi KDA'ya sahip oyuncular"
+	},
+	"Tournaments": {
+		"lastMatch": "Son Maç",
+		"nextMatch": "Sonraki Maç"
+	},
+	"Tabs": {
+		"Overview": "Genel Bakış",
+		"Matches": "Maçlar",
+		"Statistics": "İstatistikler",
+		"Tournaments": "Turnuvalar"
+	},
+	"ChampionStatistics": {
+		"title": "Şampiyon İstatistikleri",
+		"loading": "Şampiyon istatistikleri yükleniyor...",
+		"error": "Hata",
+		"noData": "Bu turnuva için şampiyon istatistiği mevcut değil",
+		"emptyState": "Şampiyon verisi mevcut değil",
+		"games": "oyun",
+		"uniqueChampions": "benzersiz şampiyonlar",
+		"tooltips": {
+			"gamesPlayed": "Oynanan Oyunlar",
+			"uniquePlayers": "Benzersiz Oyuncu Sayısı",
+			"presenceRate": "Turnuva Mevcut Bulunma Oranı (Seçim + Yasaklama)",
+			"winRate": "Kazanma Oranı Yüzdesi",
+			"wins": "Galibiyetler",
+			"losses": "Mağlubiyetler",
+			"avgGold": "Oyun Başına Ortalama Altın",
+			"avgCs": "Oyun Başına Ortalama CS",
+			"avgDamagePerMinute": "Dakika Başına Ortalama Hasar",
+			"pickRate": "Seçim Oranı Yüzdesi",
+			"banRate": "Yasaklama Oranı Yüzdesi",
+			"kda": "Öldürme/Ölüm/Asist Oranı",
+			"avgKills": "Oyun Başına Ortalama Öldürme",
+			"avgDeaths": "Oyun Başına Ortalama Ölüm",
+			"avgAssists": "Oyun Başına Ortalama Asist",
+			"avgKillParticipation": "Ortalama Öldürme Katılım Yüzdesi"
+		}
+	},
+	"SortableTable": {
+		"emptyState": "Mevcut veri yok",
+		"sectionHeaders": {
+			"matches": "MAÇLAR",
+			"games": "OYUNLAR"
+		}
+	}
+}

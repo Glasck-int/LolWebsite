@@ -1,0 +1,91 @@
+{
+	"Homepage": {
+		"Title": "こんにちは日本",
+		"Description": "私たちは最高です"
+	},
+	"SearchBar": {
+		"Title": "検索"
+	},
+	"DropdownMenu": {
+		"Roadmap": "ロードマップ",
+		"Description": "サポートしてください",
+		"Language": "言語"
+	},
+	"LocaleSwitcher": {
+		"label": "言語を変更",
+		"locale": "{locale, select, en {En} fr {Fr} es {Es} de {De} ja {Ja} ko {Ko} zhcn {中} zhtw {繁} ptbr {Pt} ru {Ru} tr {Tr} vi {Vi} it {It} pl {Pl} other {不明}}"
+	},
+	"Footer": {
+		"Matchs": "マッチ",
+		"Leagues": "リーグ"
+	},
+	"NextMatches": {
+		"Title": "次のマッチ",
+		"BestOf": "Bo"
+	},
+	"Standings": {
+		"tabs": {
+			"matches": "マッチ",
+			"games": "ゲーム"
+		},
+		"Team": "チーム",
+		"Group": "グループ",
+		"#": "順位",
+		"Form": "調子",
+		"GroupTooltip": "グループ",
+		"MatchesPlayedTooltip": "プレイしたマッチ数",
+		"WinsTooltip": "勝利したマッチ",
+		"LossesTooltip": "敗北したマッチ",
+		"WRTooltip": "勝利/マッチ比率",
+		"FormTooltip": "過去5マッチのチーム調子",
+		"GamesPlayedTooltip": "プレイしたゲーム数"
+	},
+	"playersKda": {
+		"title": "最高のKDA",
+		"tooltip": "トーナメントで最高のKDAを持つプレイヤー"
+	},
+	"Tournaments": {
+		"lastMatch": "前回のマッチ",
+		"nextMatch": "次のマッチ"
+	},
+	"Tabs": {
+		"Overview": "概要",
+		"Matches": "マッチ",
+		"Statistics": "統計",
+		"Tournaments": "トーナメント"
+	},
+	"ChampionStatistics": {
+		"title": "チャンピオン統計",
+		"loading": "チャンピオン統計を読み込み中...",
+		"error": "エラー",
+		"noData": "このトーナメントのチャンピオン統計はありません",
+		"emptyState": "チャンピオンデータがありません",
+		"games": "ゲーム",
+		"uniqueChampions": "ユニークチャンピオン",
+		"tooltips": {
+			"gamesPlayed": "プレイしたゲーム",
+			"uniquePlayers": "ユニークプレイヤー数",
+			"presenceRate": "トーナメント出現率（ピック+バン）",
+			"winRate": "勝率パーセンテージ",
+			"wins": "勝利",
+			"losses": "敗北",
+			"avgGold": "ゲーム当たりの平均ゴールド",
+			"avgCs": "ゲーム当たりの平均CS",
+			"avgDamagePerMinute": "1分当たりの平均ダメージ",
+			"pickRate": "ピック率パーセンテージ",
+			"banRate": "バン率パーセンテージ",
+			"kda": "キル/デス/アシスト比率",
+			"avgKills": "ゲーム当たりの平均キル",
+			"avgDeaths": "ゲーム当たりの平均デス",
+			"avgAssists": "ゲーム当たりの平均アシスト",
+			"avgKillParticipation": "平均キル関与率パーセンテージ"
+		}
+	},
+	"SortableTable": {
+		"emptyState": "データがありません",
+		"sectionHeaders": {
+			"matches": "マッチ",
+			"games": "ゲーム"
+		}
+	}
+}

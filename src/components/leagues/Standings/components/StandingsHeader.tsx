@@ -170,12 +170,12 @@ export const StandingsHeader = <T,>({
 
     return (
         <CardHeaderBase
-            className={`flex flex-row justify-between items-center w-full ${className}`}
+            className={`flex flex-row justify-between  w-full ${className}`}
         >
-            <div className="flex items-center gap-8">
+            <div className="flex  gap-8">
                 {leftColumns.map(renderHeaderCell)}
             </div>
-            <div className="flex items-center md:gap-4 gap-2 flex-1 justify-end">
+            <div className="flex  md:gap-4 gap-2 flex-1 justify-end">
                 {rightColumns.map(renderHeaderCell)}
             </div>
         </CardHeaderBase>

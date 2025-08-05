@@ -1,0 +1,91 @@
+{
+	"Homepage": {
+		"Title": "Hallo Deutsche Welt",
+		"Description": "Wir sind die Besten"
+	},
+	"SearchBar": {
+		"Title": "Suchen"
+	},
+	"DropdownMenu": {
+		"Roadmap": "Roadmap",
+		"Description": "Unterstütze uns",
+		"Language": "Sprache"
+	},
+	"LocaleSwitcher": {
+		"label": "Sprache ändern",
+		"locale": "{locale, select, en {En} fr {Fr} es {Es} de {De} ja {Ja} ko {Ko} zhcn {中} zhtw {繁} ptbr {Pt} ru {Ru} tr {Tr} vi {Vi} it {It} pl {Pl} other {Unbekannt}}"
+	},
+	"Footer": {
+		"Matchs": "Spiele",
+		"Leagues": "Ligen"
+	},
+	"NextMatches": {
+		"Title": "Nächstes Spiel",
+		"BestOf": "Bo"
+	},
+	"Standings": {
+		"tabs": {
+			"matches": "SPIELE",
+			"games": "PARTIEN"
+		},
+		"Team": "Teams",
+		"Group": "Gruppe",
+		"#": "Position",
+		"Form": "Form",
+		"GroupTooltip": "Gruppe",
+		"MatchesPlayedTooltip": "Anzahl gespielter Spiele",
+		"WinsTooltip": "Gewonnene Spiele",
+		"LossesTooltip": "Verlorene Spiele",
+		"WRTooltip": "Siege/Spiele Verhältnis",
+		"FormTooltip": "Teamform der letzten 5 Spiele",
+		"GamesPlayedTooltip": "Anzahl gespielter Partien"
+	},
+	"playersKda": {
+		"title": "Beste KDA",
+		"tooltip": "Spieler mit der besten KDA im Turnier"
+	},
+	"Tournaments": {
+		"lastMatch": "Letztes Spiel",
+		"nextMatch": "Nächstes Spiel"
+	},
+	"Tabs": {
+		"Overview": "Übersicht",
+		"Matches": "Spiele",
+		"Statistics": "Statistiken",
+		"Tournaments": "Turniere"
+	},
+	"ChampionStatistics": {
+		"title": "Champion-Statistiken",
+		"loading": "Champion-Statistiken werden geladen...",
+		"error": "Fehler",
+		"noData": "Keine Champion-Statistiken für dieses Turnier verfügbar",
+		"emptyState": "Keine Champion-Daten verfügbar",
+		"games": "Spiele",
+		"uniqueChampions": "einzigartige Champions",
+		"tooltips": {
+			"gamesPlayed": "Gespielte Spiele",
+			"uniquePlayers": "Anzahl einzigartiger Spieler",
+			"presenceRate": "Turnier-Präsenzrate (Picks + Bans)",
+			"winRate": "Gewinnrate in Prozent",
+			"wins": "Siege",
+			"losses": "Niederlagen",
+			"avgGold": "Durchschnittliches Gold pro Spiel",
+			"avgCs": "Durchschnittliche Creep-Punkte pro Spiel",
+			"avgDamagePerMinute": "Durchschnittlicher Schaden pro Minute",
+			"pickRate": "Auswahl-Rate in Prozent",
+			"banRate": "Sperr-Rate in Prozent",
+			"kda": "Kills/Tode/Assists Verhältnis",
+			"avgKills": "Durchschnittliche Kills pro Spiel",
+			"avgDeaths": "Durchschnittliche Tode pro Spiel",
+			"avgAssists": "Durchschnittliche Assists pro Spiel",
+			"avgKillParticipation": "Durchschnittliche Kill-Beteiligung in Prozent"
+		}
+	},
+	"SortableTable": {
+		"emptyState": "Keine Daten verfügbar",
+		"sectionHeaders": {
+			"matches": "SPIELE",
+			"games": "PARTIEN"
+		}
+	}
+}

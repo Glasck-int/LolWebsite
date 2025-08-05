@@ -80,7 +80,9 @@ export default async function LocaleLayout({
 				<NextIntlClientProvider locale={locale} messages={messages}>
 					<SpoilerProvider>
 						<Header />
+                    <div className="pt-24 px-4 body-container">
 						{children}
+					</div>
 					</SpoilerProvider>
 				</NextIntlClientProvider>
 			</body>

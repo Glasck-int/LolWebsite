@@ -13,7 +13,7 @@
 	},
 	"LocaleSwitcher": {
 		"label": "Changer de langue",
-		"locale": "{locale, select, en {En} fr {Fr} other {Unknown}}"
+		"locale": "{locale, select, en {En} fr {Fr} es {Es} de {De} ja {Ja} ko {Ko} zhcn {中} zhtw {繁} ptbr {Pt} ru {Ru} tr {Tr} vi {Vi} it {It} pl {Pl} other {Inconnu}}"
 	},
 	"Footer": {
 		"Matchs": "Matchs",
@@ -53,5 +53,39 @@
 		"Matches": "Matchs",
 		"Statistics": "Statistiques",
 		"Tournaments": "Tournois"
+	},
+	"ChampionStatistics": {
+		"title": "Statistiques des Champions",
+		"loading": "Chargement des statistiques des champions...",
+		"error": "Erreur",
+		"noData": "Aucune statistique de champion disponible pour ce tournoi",
+		"emptyState": "Aucune donnée de champion disponible",
+		"games": "parties",
+		"uniqueChampions": "champions uniques",
+		"tooltips": {
+			"gamesPlayed": "Parties Jouées",
+			"uniquePlayers": "Nombre de Joueurs Uniques",
+			"presenceRate": "Taux de Présence dans le Tournoi (Picks + Bans)",
+			"winRate": "Pourcentage de Victoires",
+			"wins": "Victoires",
+			"losses": "Défaites",
+			"avgGold": "Or Moyen par Partie",
+			"avgCs": "Score de Creeps Moyen par Partie",
+			"avgDamagePerMinute": "Dégâts Moyens par Minute",
+			"pickRate": "Pourcentage de Sélection",
+			"banRate": "Pourcentage de Bannissement",
+			"kda": "Ratio Kills/Morts/Assistances",
+			"avgKills": "Kills Moyens par Partie",
+			"avgDeaths": "Morts Moyennes par Partie",
+			"avgAssists": "Assistances Moyennes par Partie",
+			"avgKillParticipation": "Pourcentage Moyen de Participation aux Kills"
+		}
+	},
+	"SortableTable": {
+		"emptyState": "Aucune donnée disponible",
+		"sectionHeaders": {
+			"matches": "MATCHS",
+			"games": "PARTIES"
+		}
 	}
 }

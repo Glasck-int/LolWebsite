@@ -129,7 +129,7 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
 
 
         return (
-            <div className="pt-24 body-container">
+            <div className="">
                 <div className="block md:hidden">
                     {league.data && <LeagueDescription league={league.data} imageData={leagueImage.data || ''} />}
                 </div>
@@ -207,7 +207,7 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
     } catch (error) {
         console.error('Unexpected error in LeaguePage:', error)
         return (
-            <div className="pt-24 body-container">
+            <div>
                 <div className="text-red-500">
                     <h1>Erreur inattendue</h1>
                     <p>

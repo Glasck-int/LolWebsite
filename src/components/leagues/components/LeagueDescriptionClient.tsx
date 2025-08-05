@@ -104,7 +104,7 @@ export const LeagueDescriptionClient = ({ league, imageData }: LeagueDescription
                     <Image
                         src={imageData}
                         alt={league.name || ''}
-                        className="object-contain w-full h-full drop-shadow-lg"
+                        className="object-contain drop-shadow-lg"
                         style={{
                             filter: `drop-shadow(0 0 8px ${dominantColor})`
                         }}

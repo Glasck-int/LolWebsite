@@ -168,7 +168,7 @@ export default function Home() {
         setActiveIndex: setSwitchActiveIndex,
     } = useIndexState()
     return (
-        <div className="body-container">
+        <div className="">
             <div className="">
                 <Card>
                     <CardContext>

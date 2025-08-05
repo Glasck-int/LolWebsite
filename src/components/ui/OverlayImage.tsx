@@ -26,7 +26,7 @@ export default function OverlayImage({
                 alt={mainAlt}
                 width={size}
                 height={size}
-                className="rounded-full object-cover aspect-square"
+                className="rounded-full object-contain aspect-square"
             />
             <div className="absolute -bottom-2 -left-2">
                 <Image 

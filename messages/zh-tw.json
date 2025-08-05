@@ -1,0 +1,91 @@
+{
+	"Homepage": {
+		"Title": "你好台灣",
+		"Description": "我們是最好的"
+	},
+	"SearchBar": {
+		"Title": "搜尋"
+	},
+	"DropdownMenu": {
+		"Roadmap": "路線圖",
+		"Description": "支持我們",
+		"Language": "語言"
+	},
+	"LocaleSwitcher": {
+		"label": "更改語言",
+		"locale": "{locale, select, en {En} fr {Fr} es {Es} de {De} ja {Ja} ko {Ko} zhcn {中} zhtw {繁} ptbr {Pt} ru {Ru} tr {Tr} vi {Vi} it {It} pl {Pl} other {未知}}"
+	},
+	"Footer": {
+		"Matchs": "比賽",
+		"Leagues": "聯賽"
+	},
+	"NextMatches": {
+		"Title": "下一場比賽",
+		"BestOf": "Bo"
+	},
+	"Standings": {
+		"tabs": {
+			"matches": "比賽",
+			"games": "遊戲"
+		},
+		"Team": "戰隊",
+		"Group": "小組",
+		"#": "排名",
+		"Form": "狀態",
+		"GroupTooltip": "小組",
+		"MatchesPlayedTooltip": "已進行比賽數",
+		"WinsTooltip": "獲勝比賽",
+		"LossesTooltip": "失敗比賽",
+		"WRTooltip": "勝率",
+		"FormTooltip": "戰隊近5場比賽狀態",
+		"GamesPlayedTooltip": "已進行遊戲數"
+	},
+	"playersKda": {
+		"title": "最佳KDA",
+		"tooltip": "錦標賽中KDA最佳的選手"
+	},
+	"Tournaments": {
+		"lastMatch": "上一場比賽",
+		"nextMatch": "下一場比賽"
+	},
+	"Tabs": {
+		"Overview": "概覽",
+		"Matches": "比賽",
+		"Statistics": "數據",
+		"Tournaments": "錦標賽"
+	},
+	"ChampionStatistics": {
+		"title": "英雄數據",
+		"loading": "正在載入英雄數據...",
+		"error": "錯誤",
+		"noData": "此錦標賽暫無英雄數據",
+		"emptyState": "暫無英雄數據",
+		"games": "局",
+		"uniqueChampions": "獨特英雄",
+		"tooltips": {
+			"gamesPlayed": "遊戲場次",
+			"uniquePlayers": "獨特選手數量",
+			"presenceRate": "錦標賽出現率（選擇+禁用）",
+			"winRate": "勝率百分比",
+			"wins": "勝利",
+			"losses": "失敗",
+			"avgGold": "平均每局金幣",
+			"avgCs": "平均每局補刀",
+			"avgDamagePerMinute": "平均每分鐘傷害",
+			"pickRate": "選擇率百分比",
+			"banRate": "禁用率百分比",
+			"kda": "KDA比率",
+			"avgKills": "平均每局擊殺",
+			"avgDeaths": "平均每局死亡",
+			"avgAssists": "平均每局助攻",
+			"avgKillParticipation": "平均擊殺參與率百分比"
+		}
+	},
+	"SortableTable": {
+		"emptyState": "暫無數據",
+		"sectionHeaders": {
+			"matches": "比賽",
+			"games": "遊戲"
+		}
+	}
+}

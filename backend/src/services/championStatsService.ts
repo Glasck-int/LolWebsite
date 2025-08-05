@@ -28,6 +28,7 @@ export class ChampionStatsService {
         const championsMap = new Map()
         const playersByChampion = new Map() // Track unique players per champion
         const gameLengthsByChampion = new Map() // Track game lengths for damage per minute calculation
+        const banCountByChampion = new Map() // Track ban counts per champion
 
         games.forEach(game => {
             const champion = game.champion
@@ -92,6 +93,29 @@ export class ChampionStatsService {
             }
         })
 
+        // Process ban data from gameData if available
+        if (gameData && gameData.length > 0) {
+            gameData.forEach(game => {
+                // Process team1Bans
+                if (game.team1Bans && Array.isArray(game.team1Bans)) {
+                    game.team1Bans.forEach((bannedChampion: string) => {
+                        if (bannedChampion) {
+                            banCountByChampion.set(bannedChampion, (banCountByChampion.get(bannedChampion) || 0) + 1)
+                        }
+                    })
+                }
+                
+                // Process team2Bans
+                if (game.team2Bans && Array.isArray(game.team2Bans)) {
+                    game.team2Bans.forEach((bannedChampion: string) => {
+                        if (bannedChampion) {
+                            banCountByChampion.set(bannedChampion, (banCountByChampion.get(bannedChampion) || 0) + 1)
+                        }
+                    })
+                }
+            })
+        }
+
         // Convert to array and calculate derived statistics
         const championsArray = Array.from(championsMap.values()).map(stats => {
             const champion = stats.champion
@@ -112,16 +136,18 @@ export class ChampionStatsService {
                 ? stats.totalDamageToChampions / stats.totalGameMinutes 
                 : 0
 
-            // Calculate pick rate and presence rate
+            // Calculate pick rate, ban rate, and presence rate
             const pickRate = totalGamesContext ? (stats.gamesPlayed / totalGamesContext) * 100 : undefined
+            const banCount = banCountByChampion.get(champion) || 0
+            const banRate = totalGamesContext ? (banCount / totalGamesContext) * 100 : undefined
             let presenceRate: number | undefined = undefined
             
             if (presenceData && totalGamesContext) {
                 const isPicked = presenceData.picks.has(champion)
                 const isBanned = presenceData.bans.has(champion)
                 const pickCount = isPicked ? stats.gamesPlayed : 0
-                const banCount = isBanned ? 1 : 0 // Simplified: if champion appears in bans, count as 1
-                const presenceCount = pickCount + (isBanned ? Math.max(1, Math.floor(totalGamesContext * 0.1)) : 0) // Estimate ban frequency
+                const actualBanCount = banCount // Use the actual ban count calculated above
+                const presenceCount = pickCount + actualBanCount
                 presenceRate = Math.min(100, (presenceCount / totalGamesContext) * 100)
             }
 
@@ -140,6 +166,7 @@ export class ChampionStatsService {
                 uniquePlayers,
                 avgDamagePerMinute: Math.round(avgDamagePerMinute * 10) / 10,
                 pickRate,
+                banRate: banRate !== undefined ? Math.round(banRate * 100) / 100 : undefined,
                 presenceRate: presenceRate !== undefined ? Math.round(presenceRate * 100) / 100 : undefined
             }
         })

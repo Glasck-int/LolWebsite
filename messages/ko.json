@@ -1,0 +1,91 @@
+{
+	"Homepage": {
+		"Title": "안녕하세요 한국",
+		"Description": "우리는 최고입니다"
+	},
+	"SearchBar": {
+		"Title": "검색"
+	},
+	"DropdownMenu": {
+		"Roadmap": "로드맵",
+		"Description": "후원하기",
+		"Language": "언어"
+	},
+	"LocaleSwitcher": {
+		"label": "언어 변경",
+		"locale": "{locale, select, en {En} fr {Fr} es {Es} de {De} ja {Ja} ko {Ko} zhcn {中} zhtw {繁} ptbr {Pt} ru {Ru} tr {Tr} vi {Vi} it {It} pl {Pl} other {알 수 없음}}"
+	},
+	"Footer": {
+		"Matchs": "경기",
+		"Leagues": "리그"
+	},
+	"NextMatches": {
+		"Title": "다음 경기",
+		"BestOf": "Bo"
+	},
+	"Standings": {
+		"tabs": {
+			"matches": "경기",
+			"games": "게임"
+		},
+		"Team": "팀",
+		"Group": "그룹",
+		"#": "순위",
+		"Form": "폼",
+		"GroupTooltip": "그룹",
+		"MatchesPlayedTooltip": "플레이한 경기 수",
+		"WinsTooltip": "승리한 경기",
+		"LossesTooltip": "패배한 경기",
+		"WRTooltip": "승리/경기 비율",
+		"FormTooltip": "최근 5경기 팀 폼",
+		"GamesPlayedTooltip": "플레이한 게임 수"
+	},
+	"playersKda": {
+		"title": "최고의 KDA",
+		"tooltip": "토너먼트에서 최고의 KDA를 가진 플레이어"
+	},
+	"Tournaments": {
+		"lastMatch": "지난 경기",
+		"nextMatch": "다음 경기"
+	},
+	"Tabs": {
+		"Overview": "개요",
+		"Matches": "경기",
+		"Statistics": "통계",
+		"Tournaments": "토너먼트"
+	},
+	"ChampionStatistics": {
+		"title": "챔피언 통계",
+		"loading": "챔피언 통계를 불러오는 중...",
+		"error": "오류",
+		"noData": "이 토너먼트에 대한 챔피언 통계가 없습니다",
+		"emptyState": "챔피언 데이터가 없습니다",
+		"games": "게임",
+		"uniqueChampions": "고유 챔피언",
+		"tooltips": {
+			"gamesPlayed": "플레이한 게임",
+			"uniquePlayers": "고유 플레이어 수",
+			"presenceRate": "토너먼트 출현율 (픽 + 밴)",
+			"winRate": "승률 퍼센트",
+			"wins": "승리",
+			"losses": "패배",
+			"avgGold": "게임당 평균 골드",
+			"avgCs": "게임당 평균 CS",
+			"avgDamagePerMinute": "분당 평균 데미지",
+			"pickRate": "픽률 퍼센트",
+			"banRate": "밴률 퍼센트",
+			"kda": "킬/데스/어시스트 비율",
+			"avgKills": "게임당 평균 킬",
+			"avgDeaths": "게임당 평균 데스",
+			"avgAssists": "게임당 평균 어시스트",
+			"avgKillParticipation": "평균 킬 관여율 퍼센트"
+		}
+	},
+	"SortableTable": {
+		"emptyState": "데이터가 없습니다",
+		"sectionHeaders": {
+			"matches": "경기",
+			"games": "게임"
+		}
+	}
+}
