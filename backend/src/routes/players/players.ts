@@ -9,6 +9,7 @@ import {
     PlayerImageListResponse
 } from '../../schemas/players'
 import { resolvePlayer, PlayerNotFoundError } from '../../utils/playerUtils'
+import { CleanName } from '../../utils/cleanName'
 
 export default async function playersRoutes(fastify: FastifyInstance) {
     const redis = fastify.redis
@@ -31,7 +32,14 @@ export default async function playersRoutes(fastify: FastifyInstance) {
         try {
             customMetric.inc({ operation: 'get_all_players' })
             const players = await prisma.player.findMany()
-            return players
+            
+            // Clean player names in the response
+            const cleanedPlayers = players.map(player => ({
+                ...player,
+                name: CleanName(player.name)
+            }))
+            
+            return cleanedPlayers
         } catch (error) {
             fastify.log.error(error)
             return reply.status(500).send({ error: 'Internal server error' })
@@ -76,10 +84,14 @@ export default async function playersRoutes(fastify: FastifyInstance) {
                 includeImages: true
             })
 
-            // Format response to match schema
+            // Format response to match schema with cleaned names
             const response = {
                 ...resolution.player,
-                redirects: resolution.redirects,
+                name: CleanName(resolution.player.name),
+                redirects: resolution.redirects?.map(redirect => ({
+                    ...redirect,
+                    name: CleanName(redirect.name)
+                })),
                 images: resolution.images
             }
 
@@ -144,7 +156,11 @@ export default async function playersRoutes(fastify: FastifyInstance) {
 
             const response = {
                 ...player,
-                redirects: player.PlayerRedirect,
+                name: CleanName(player.name),
+                redirects: player.PlayerRedirect.map(redirect => ({
+                    ...redirect,
+                    name: CleanName(redirect.name)
+                })),
                 images: allImages
             }
 
@@ -168,7 +184,14 @@ export default async function playersRoutes(fastify: FastifyInstance) {
         try {
             customMetric.inc({ operation: 'get_all_redirects' })
             const redirects = await prisma.playerRedirect.findMany()
-            return redirects
+            
+            // Clean player names in the redirects
+            const cleanedRedirects = redirects.map(redirect => ({
+                ...redirect,
+                name: CleanName(redirect.name)
+            }))
+            
+            return cleanedRedirects
         } catch (error) {
             fastify.log.error(error)
             return reply.status(500).send({ error: 'Internal server error' })
@@ -211,7 +234,13 @@ export default async function playersRoutes(fastify: FastifyInstance) {
                 take: 10 // Limit results
             })
 
-            return redirects
+            // Clean player names in the search results
+            const cleanedRedirects = redirects.map(redirect => ({
+                ...redirect,
+                name: CleanName(redirect.name)
+            }))
+
+            return cleanedRedirects
         } catch (error) {
             fastify.log.error(error)
             return reply.status(500).send({ error: 'Internal server error' })

@@ -2,6 +2,7 @@ import prisma from './prisma'
 import { FastifyRedis } from '@fastify/redis'
 import { getPlayerRedirectNames, PlayerNotFoundError } from '../utils/playerUtils'
 import { getTournamentConditions } from '../utils/tournamentUtils'
+import { CleanName } from '../utils/cleanName'
 
 export interface PlayerStatsFilter {
     tournament?: string
@@ -22,7 +23,7 @@ export class PlayerStatsService {
     /**
      * Calculate player statistics from scoreboard data
      */
-    static calculatePlayerStats(games: any[]) {
+    static calculatePlayerStats(games: any[], playerRoles: Map<string, string> = new Map()) {
         const playersMap = new Map()
         const gameLengthsByPlayer = new Map() // Track game lengths for per-minute calculations
         const championsByPlayer = new Map() // Track unique champions per player
@@ -33,7 +34,8 @@ export class PlayerStatsService {
 
             if (!playersMap.has(player)) {
                 playersMap.set(player, {
-                    player,
+                    player: CleanName(player),
+                    role: playerRoles.get(player) || null,
                     gamesPlayed: 0,
                     wins: 0,
                     losses: 0,
@@ -248,8 +250,34 @@ export class PlayerStatsService {
             return null
         }
 
+        // Get unique player names to fetch their roles
+        const uniquePlayerNames = Array.from(new Set(scoreboardData.map(game => game.link).filter((link): link is string => link !== null)))
+        
+        // Fetch player roles through PlayerRedirect relationships
+        const playerRoleData = uniquePlayerNames.length > 0 ? await prisma.playerRedirect.findMany({
+            where: {
+                name: { in: uniquePlayerNames }
+            },
+            select: {
+                name: true,
+                Player: {
+                    select: {
+                        role: true
+                    }
+                }
+            }
+        }) : []
+
+        // Create a map of player names to their roles
+        const playerRoles = new Map<string, string>()
+        playerRoleData.forEach(redirect => {
+            if (redirect.Player?.role) {
+                playerRoles.set(redirect.name, redirect.Player.role)
+            }
+        })
+
         // Get unique overviewPages to fetch game length data
-        const overviewPages = [...new Set(scoreboardData.map(game => game.overviewPage).filter((page): page is string => page !== null))]
+        const overviewPages = Array.from(new Set(scoreboardData.map(game => game.overviewPage).filter((page): page is string => page !== null)))
         
         // Fetch game length data for per-minute calculations
         const gameData = overviewPages.length > 0 ? await prisma.scoreboardGame.findMany({
@@ -277,7 +305,7 @@ export class PlayerStatsService {
         }))
 
         // Calculate player statistics
-        const playerStats = this.calculatePlayerStats(enrichedScoreboardData)
+        const playerStats = this.calculatePlayerStats(enrichedScoreboardData, playerRoles)
         const uniquePlayers = playerStats.length
 
         // For single player queries, return just the player's stats
@@ -290,7 +318,7 @@ export class PlayerStatsService {
             }
 
             const result = {
-                player: filter.player,
+                player: CleanName(filter.player),
                 tournament: filter.tournament,
                 totalGames: singlePlayerStats.gamesPlayed,
                 stats: singlePlayerStats,
@@ -308,7 +336,7 @@ export class PlayerStatsService {
         // For tournament or team queries, return all players
         const result = {
             tournament: filter.tournament,
-            team: filter.team,
+            team: filter.team ? CleanName(filter.team) : filter.team,
             totalGames: scoreboardData.length,
             uniquePlayers,
             players: playerStats,

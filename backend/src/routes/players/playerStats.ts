@@ -13,7 +13,7 @@ import {
     TeamTournamentCombinedParamsSchema
 } from '../../schemas/params'
 import { PlayerStatsService } from '../../services/playerStatsService'
-import { cleanTeamName } from '../../utils/teamName'
+import { CleanName } from '../../utils/cleanName'
 
 export default async function playerStatsRoutes(fastify: FastifyInstance) {
     const redis = fastify.redis
@@ -194,7 +194,7 @@ export default async function playerStatsRoutes(fastify: FastifyInstance) {
                 // Apply team name cleaning to the result
                 return {
                     ...result,
-                    team: cleanTeamName(team)
+                    team: CleanName(team)
                 }
             } catch (error) {
                 console.error('Error fetching team tournament player stats:', error)
@@ -242,7 +242,7 @@ export default async function playerStatsRoutes(fastify: FastifyInstance) {
                 // Apply team name cleaning to the result
                 return {
                     ...result,
-                    team: cleanTeamName(team)
+                    team: CleanName(team)
                 }
             } catch (error) {
                 console.error('Error fetching team all player stats:', error)

@@ -442,6 +442,14 @@ export const PlayerWithRedirectsSchema = Type.Object({
  */
 export const PlayerStatsSchema = Type.Object({
     player: Type.String({ description: 'Player name' }),
+    role: Type.Optional(
+        Type.String({
+            minLength: 1,
+            maxLength: 50,
+            description: 'Player role/position',
+            examples: ['Top', 'Jungle', 'Mid', 'ADC', 'Support'],
+        })
+    ),
     gamesPlayed: Type.Number({ description: 'Total games played' }),
     wins: Type.Number({ description: 'Total wins' }),
     losses: Type.Number({ description: 'Total losses' }),
