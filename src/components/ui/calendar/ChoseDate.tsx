@@ -1,5 +1,5 @@
 import { useQueryDate } from '@/lib/hooks/createQueryState'
-import React, { useRef, useState, useEffect, useCallback } from 'react'
+import React, { useRef, useState } from 'react'
 import DropDownArrow, { useDropdownArrow } from '../Button/DropDownArrow'
 import ArrowButton from '../Button/ArrowButton'
 import { Calendar } from '@heroui/calendar'
@@ -144,8 +144,7 @@ export default function ChoseDate({
     setMatchChaud,
     setSearch,
     className = '',
-    dateToCalendarDate,
-    weekDisplay = false
+    dateToCalendarDate
 }: ChoseDateProps) {
     const { isDown, setIsDown } = useDropdownArrow()
     const calendarRef = useRef<HTMLDivElement>(null)
@@ -168,10 +167,10 @@ export default function ChoseDate({
     const formatSelectedDate = () => {
         if (!selectedDate) return ''
 
-        const today = new Date()
+        const todayDate = new Date()
         const dayMs = 86400000
         const diff =
-            selectedDate.setHours(0, 0, 0, 0) - today.setHours(0, 0, 0, 0)
+            selectedDate.setHours(0, 0, 0, 0) - todayDate.setHours(0, 0, 0, 0)
 
         switch (diff) {
             case 0:

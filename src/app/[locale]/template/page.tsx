@@ -1,6 +1,7 @@
 'use client'
 
 import Footer from '@/components/layout/Footer/Footer'
+import Image from 'next/image'
 import {
     useQueryString,
     useQueryBoolean,
@@ -41,7 +42,7 @@ import {
     SwitchContent,
     SwitchBodyMultiple,
     SwitchBodyMultipleContent,
-} from '@/components/utils/Switch'
+} from '@/components/utils/switch'
 import { CardContext } from '@/components/ui/card/Card'
 import {
     SelectorIcon,
@@ -189,7 +190,7 @@ export default function Home() {
                     placeholder="change search"
                 />
             </div>
-            <p>Search = {search ? `'${search}'` : "''"}</p>
+            <p>Search = {search ? `&apos;${search}&apos;` : "&apos;&apos;"}</p>
             <button
                 onClick={() => setIsLive(!isLive)}
                 className="w-30 bg-white-06 default-border-radius cursor-pointer hover:bg-white/20"
@@ -197,7 +198,7 @@ export default function Home() {
                 <p>Toggle Live</p>
             </button>
             <p>{isLive ? 'true' : 'false'}</p>
-            <br></br>
+            <br />
             <h3>Tab Card</h3>
             <div className='w-full h-1 bg-white/40'/>
             <div className="">
@@ -248,7 +249,7 @@ export default function Home() {
                     </CardContext>
                 </Card>
             </div>
-            <br></br>
+            <br />
             <h3>Calendar</h3>
             <div className='w-full h-1 bg-white/40'/>
             <ChoseDate {...calendar} weekDisplay={true} />
@@ -256,9 +257,9 @@ export default function Home() {
                 <h3>INFO</h3>
                 <p>Live: {calendar.isLive ? "true" : "false"}</p>
                 <p>MatchChaud: {calendar.matchChaud ? "true" : "false"}</p>
-                <p>Search: '{calendar.search}'</p>
+                <p>Search: &apos;{calendar.search}&apos;</p>
             </Card>
-            <br></br>
+            <br />
             <h3>DropDown Card</h3>
             <div className='w-full h-1 bg-white/40'/>
             <Card>
@@ -276,7 +277,7 @@ export default function Home() {
                     </CardBody>
                 </CardContext>
             </Card>
-            <br></br>
+            <br />
             <h3>Switch Card</h3>
             <div className='w-full h-1 bg-white/40'/>
             <div>
@@ -309,7 +310,7 @@ export default function Home() {
                     </CardBody>
                 </Card>
             </div>
-            <br></br>
+            <br />
             <h3>Table Entity Layout</h3>
             <div className='w-full h-1 bg-white/40'/>
             <div>
@@ -318,9 +319,12 @@ export default function Home() {
                     <Card>
                         <CardBody>
                             <div className="hidden md:flex p-[15px] h-[130px] gap-3 w-[250px]">
-                                <img
+                                <Image
                                     src="https://content.imageresizer.com/images/memes/SLAY-ALL-DAY-meme-7fequ2.jpg"
                                     className="rounded-full"
+                                    alt="Team avatar"
+                                    width={100}
+                                    height={100}
                                 />
                                 <div className="py-[15px]">
                                     <h2>Shreckus</h2>
@@ -355,7 +359,7 @@ export default function Home() {
                     </TableEntityBody>
                 </TableEntityLayout>
             </div>
-            <br></br>
+            <br />
             <h3>SelectorIcon</h3>
             <div className='w-full h-1 bg-white/40'/>
             <div>
@@ -388,7 +392,7 @@ export default function Home() {
                     </CardBody>
                 </Card>
             </div>
-            <br></br>
+            <br />
             <h3>Sort In Card</h3>
             <div className='w-full h-1 bg-white/40'/>
             <div className="">

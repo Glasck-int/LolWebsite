@@ -51,7 +51,7 @@ export const FunctionalSearchBar: React.FC<FunctionalSearchBarProps> = ({
     const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
     const selectSearchLogo = () => {
-        let logoClass = 'w-5 h-5 text-gray-400 flex-shrink-0'
+        const logoClass = 'w-5 h-5 text-gray-400 flex-shrink-0'
 
         switch (searchLogo) {
             case 'loop':

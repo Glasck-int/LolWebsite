@@ -134,7 +134,6 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
                     {league.data && <LeagueDescription league={league.data} imageData={leagueImage.data || ''} />}
                 </div>
 
-                {/* Nouveau composant TableEntityLayout */}
                 {league.data && (
                     <LeagueTableEntityClient 
                         leagueId={league.data.id}

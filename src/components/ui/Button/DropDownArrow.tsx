@@ -1,6 +1,6 @@
 import React from 'react'
 import { ChevronUp } from 'lucide-react'
-import { getMediaQuery } from '@/lib/hooks/getMediaQuery'
+import { useMediaQuery } from '@/lib/hooks/getMediaQuery'
 
 interface DropDownProps {
     className?: string
@@ -31,7 +31,7 @@ export default function DropDownArrow({
     sizeMd = 20,
     ref
 }: DropDownProps) {
-    const isMd = getMediaQuery('(min-width: 768px)') 
+    const isMd = useMediaQuery('(min-width: 768px)') 
     const iconSize = isMd ? sizeMd : size
     return (
         <div

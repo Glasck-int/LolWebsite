@@ -8,6 +8,12 @@ import {
     Card,
     CardContext,
     CardBody,
+    CardHeader,
+    CardHeaderColumn,
+    CardHeaderTab,
+    CardHeaderContent,
+    CardHeaderBase,
+    useCard,
 } from '@/components/ui/card/index'
 import Image from 'next/image'
 import { DDragon } from '@/lib/api/ddragon'
@@ -16,6 +22,31 @@ import { useDDragonVersions } from '@/lib/swr/useDDragonVersions'
 interface ChampionStatisticsClientProps {
     tournamentId: string
     initialData?: TournamentChampionStatsResponse | null
+}
+
+/**
+ * Tab content component that uses the card context
+ */
+function ChampionTabContent({ data, tabColumns }: { 
+    data: TournamentChampionStatsResponse, 
+    tabColumns: TableColumn<ChampionStats>[][] 
+}) {
+    const { activeIndex } = useCard()
+    
+    return (
+        <CardBody className="p-0">
+            <div className="w-full overflow-hidden">
+                <SortableTable
+                    data={data.champions}
+                    columns={tabColumns[activeIndex]}
+                    showSectionHeaders={false}
+                    getRowKey={(item) => item.champion}
+                    emptyState="No champion data available"
+                    className="w-full text-xs table-fixed"
+                />
+            </div>
+        </CardBody>
+    )
 }
 
 /**
@@ -123,15 +154,145 @@ export function ChampionStatisticsClient({ tournamentId, initialData }: Champion
         },
     }
 
-    const columns: TableColumn<ChampionStats>[] = [
+    const positionColumn: TableColumn<ChampionStats> = {
+        key: 'position',
+        header: '#',
+        sortable: false,
+        headerClassName: 'w-8',
+        cellClassName: 'font-semibold text-base',
+        cell: (_, position) => <>{position}.</>,
+    }
+
+    // Tab 1: Position + Champion + GP + Pr + PR + BR
+    const tab1Columns: TableColumn<ChampionStats>[] = [
+        positionColumn,
+        championColumn,
         {
-            key: 'position',
-            header: '#',
-            sortable: false,
-            headerClassName: 'w-8',
-            cellClassName: 'font-semibold text-base',
-            cell: (_, position) => <>{position}.</>,
+            key: 'gamesPlayed',
+            header: 'GP',
+            tooltip: 'Games Played',
+            sortable: true,
+            defaultSortDirection: 'desc',
+            accessor: (item) => item.gamesPlayed || 0,
+            headerClassName: classname,
+            cellClassName: classname,
         },
+        {
+            key: 'presenceRate',
+            header: 'Pr',
+            tooltip: 'Presence Rate',
+            sortable: true,
+            defaultSortDirection: 'desc',
+            accessor: (item) => item.presenceRate || 0,
+            cell: (item) => item.presenceRate ? `${item.presenceRate.toFixed(0)}%` : '0%',
+            headerClassName: classname,
+            cellClassName: classname,
+        },
+        {
+            key: 'pickRate',
+            header: 'PR',
+            tooltip: 'Pick Rate',
+            sortable: true,
+            defaultSortDirection: 'desc',
+            accessor: (item) => item.pickRate || 0,
+            cell: (item) => item.pickRate ? `${item.pickRate.toFixed(0)}%` : '0%',
+            headerClassName: classname,
+            cellClassName: classname,
+        },
+        {
+            key: 'banRate',
+            header: 'BR',
+            tooltip: 'Ban Rate',
+            sortable: true,
+            defaultSortDirection: 'desc',
+            accessor: (item) => item.banRate || 0,
+            cell: (item) => item.banRate ? `${item.banRate.toFixed(0)}%` : '0%',
+            headerClassName: classname,
+            cellClassName: classname,
+        },
+    ]
+
+    // Tab 2: Position + Champion + WR + KDA + KP
+    const tab2Columns: TableColumn<ChampionStats>[] = [
+        positionColumn,
+        championColumn,
+        {
+            key: 'winRate',
+            header: 'WR',
+            tooltip: 'Win Rate',
+            sortable: true,
+            defaultSortDirection: 'desc',
+            accessor: (item) => item.winRate,
+            cell: (item) => `${item.winRate.toFixed(0)}%`,
+            headerClassName: classname,
+            cellClassName: classname + importantColor,
+        },
+        {
+            key: 'kda',
+            header: 'KDA',
+            tooltip: 'Kill/Death/Assist Ratio',
+            sortable: true,
+            defaultSortDirection: 'desc',
+            accessor: (item) => item.kda,
+            cell: (item) => item.kda.toFixed(2),
+            headerClassName: classname,
+            cellClassName: classname + importantColor,
+        },
+        {
+            key: 'avgKillParticipation',
+            header: 'KP',
+            tooltip: 'Average Kill Participation',
+            sortable: true,
+            defaultSortDirection: 'desc',
+            accessor: (item) => item.avgKillParticipation,
+            cell: (item) => `${item.avgKillParticipation.toFixed(0)}%`,
+            headerClassName: classname,
+            cellClassName: classname + importantColor,
+        },
+    ]
+
+    // Tab 3: Position + Champion + Gold + CS + DPM
+    const tab3Columns: TableColumn<ChampionStats>[] = [
+        positionColumn,
+        championColumn,
+        {
+            key: 'avgGold',
+            header: 'Gold',
+            tooltip: 'Average Gold',
+            sortable: true,
+            defaultSortDirection: 'desc',
+            accessor: (item) => item.avgGold,
+            cell: (item) => `${(item.avgGold / 1000).toFixed(1)}k`,
+            headerClassName: classname,
+            cellClassName: classname + importantYellow,
+        },
+        {
+            key: 'avgCs',
+            header: 'CS',
+            tooltip: 'Average Creep Score',
+            sortable: true,
+            defaultSortDirection: 'desc',
+            accessor: (item) => item.avgCs,
+            cell: (item) => item.avgCs.toFixed(0),
+            headerClassName: classname,
+            cellClassName: classname + importantYellow,
+        },
+        {
+            key: 'avgDamagePerMinute',
+            header: 'DPM',
+            tooltip: 'Average Damage Per Minute',
+            sortable: true,
+            defaultSortDirection: 'desc',
+            accessor: (item) => item.avgDamagePerMinute,
+            cell: (item) => Math.round(item.avgDamagePerMinute).toString(),
+            headerClassName: classname,
+            cellClassName: classname + importantYellow,
+        },
+    ]
+
+    // All columns for desktop
+    const allColumns: TableColumn<ChampionStats>[] = [
+        positionColumn,
         championColumn,
         {
             key: 'gamesPlayed',
@@ -305,23 +466,57 @@ export function ChampionStatisticsClient({ tournamentId, initialData }: Champion
         },
     ]
 
+    const tabColumns = [tab1Columns, tab2Columns, tab3Columns]
+
     return (
-        <Card className="flex flex-col w-full h-full">
-            <CardContext>
-                <CardBody className="p-0">
-                    <div className="w-full overflow-hidden">
-                        <SortableTable
-                            data={data.champions}
-                            columns={columns}
-                            showSectionHeaders={false}
-                            getRowKey={(item) => item.champion}
-                            emptyState="No champion data available"
-                            caption={`Champion Statistics ${data.tournament}`}
-                            className="w-full text-xs table-fixed"
-                        />
-                    </div>
-                </CardBody>
-            </CardContext>
-        </Card>
+        <>
+            {/* Desktop version - all columns */}
+            <div className="hidden md:block w-full h-full">
+                <Card className="flex flex-col w-full h-full">
+                    <CardContext>
+                        <CardBody className="p-0">
+                            <div className="w-full overflow-hidden">
+                                <SortableTable
+                                    data={data.champions}
+                                    columns={allColumns}
+                                    showSectionHeaders={false}
+                                    getRowKey={(item) => item.champion}
+                                    emptyState="No champion data available"
+                                    caption={`Champion Statistics ${data.tournament}`}
+                                    className="w-full text-xs table-fixed"
+                                />
+                            </div>
+                        </CardBody>
+                    </CardContext>
+                </Card>
+            </div>
+
+            {/* Mobile version - with tabs */}
+            <div className="block md:hidden w-full h-full">
+                <Card className="flex flex-col w-full h-full">
+                    <CardContext>
+                        <CardHeader>
+                            <CardHeaderColumn>
+                                <CardHeaderTab>
+                                    <CardHeaderContent>
+                                        <p className="text-inherit">Rates</p>
+                                    </CardHeaderContent>
+                                    <CardHeaderContent>
+                                        <p className="text-inherit">Combat</p>
+                                    </CardHeaderContent>
+                                    <CardHeaderContent>
+                                        <p className="text-inherit">Economy</p>
+                                    </CardHeaderContent>
+                                </CardHeaderTab>
+                                <CardHeaderBase>
+                                    <div className="text-sm font-medium">Champion Statistics - {data.tournament}</div>
+                                </CardHeaderBase>
+                            </CardHeaderColumn>
+                        </CardHeader>
+                        <ChampionTabContent data={data} tabColumns={tabColumns} />
+                    </CardContext>
+                </Card>
+            </div>
+        </>
     )
 }

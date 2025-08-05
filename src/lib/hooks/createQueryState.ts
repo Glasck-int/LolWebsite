@@ -155,6 +155,7 @@ export function useQueryState<T>(
             }
             return prevState
         })
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchParams,])
     
     const updateURL = useCallback(

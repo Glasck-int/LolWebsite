@@ -40,45 +40,19 @@ import { motion, AnimatePresence } from 'framer-motion';
 export const CardBody = ({ children, className = '' }: ChildAndClassname) => {
     const hasBeenToggled = useRef(false);
     
-    // Try to get context, but don't fail if it doesn't exist
+    // Always call the hook, handle errors afterwards
     let isHide = false;
+    let hasCardContext = true;
+    
     try {
-        const { isHide } = useCard()
-        
-        if (isHide) {
-            hasBeenToggled.current = true;
-        }
-        
-        return (
-            <AnimatePresence>
-                {!isHide && (
-                    <motion.article
-                        className={`flex grow-1 ${className}`}
-                        initial={hasBeenToggled.current ? 
-                            { height: 0, opacity: 0 } : 
-                            { height: 'auto', opacity: 1 }
-                        }
-                        animate={{ 
-                            height: 'auto', 
-                            opacity: 1,
-                        }}
-                        exit={{ 
-                            opacity: 0,
-                            height: 0,
-                        }}
-                        transition={{
-                            duration: 0.7,
-                            ease: "easeOut",
-                            opacity: { duration: 0.2 },
-                            height: { delay: 0.2 },
-                        }}
-                    >
-                        {children}
-                    </motion.article>
-                )}
-            </AnimatePresence>
-        )
+        const cardContext = useCard();
+        isHide = cardContext.isHide;
     } catch {
+        hasCardContext = false;
+    }
+    
+    // If no context, return simple article
+    if (!hasCardContext) {
         return <article className={`flex grow-1 ${className ?? ''}`}>{children}</article>
     }
     
@@ -89,8 +63,8 @@ export const CardBody = ({ children, className = '' }: ChildAndClassname) => {
     return (
         <AnimatePresence>
             {!isHide && (
-                <motion.div
-                    className={`flex grow-1 ${className ?? ''}`}
+                <motion.article
+                    className={`flex grow-1 ${className}`}
                     initial={hasBeenToggled.current ? 
                         { height: 0, opacity: 0 } : 
                         { height: 'auto', opacity: 1 }
@@ -111,7 +85,7 @@ export const CardBody = ({ children, className = '' }: ChildAndClassname) => {
                     }}
                 >
                     {children}
-                </motion.div>
+                </motion.article>
             )}
         </AnimatePresence>
     )
