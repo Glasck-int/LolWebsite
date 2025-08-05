@@ -4,7 +4,6 @@ import React from 'react'
 import { MatchSchedule as MatchScheduleType } from '@/generated/prisma'
 import { TimeDisplay } from '@/lib/hooks/timeDisplay'
 import { useVisibleMatches } from '@/lib/hooks/useVisibleMatches'
-import { useMatchesData } from '@/hooks/useMatchesData'
 import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 import { SubTitle } from '@/components/ui/text/SubTitle'
@@ -73,47 +72,23 @@ export const NextMatchesClient = ({
 }: NextMatchesClientProps) => {
     const t = useTranslations('Tournaments')
 
-    // Use the new cached hook for matches data
-    const { data: cachedData, loading, error } = useMatchesData(tournamentId)
-
-    // Determine which data to use - prioritize cached data, then initialData, then legacy props
-    const currentData = cachedData ||
-        initialData || {
-            matches: legacyMatches || [],
-            teamsData: legacyTeamsData || [],
-            teamImages: legacyTeamImages || [],
-            lastMatches: legacyLastMatches || false,
-        }
+    // Determine which data to use - prioritize initialData, then legacy props
+    const currentData = initialData || {
+        matches: legacyMatches || [],
+        teamsData: legacyTeamsData || [],
+        teamImages: legacyTeamImages || [],
+        lastMatches: legacyLastMatches || false,
+    }
 
     const { containerRef, testRef, visibleCount } = useVisibleMatches(
         currentData.matches.length,
         showSingleMatchOnDesktop
     )
 
-    // Note: Client-side fetching is now handled by useMatchesData hook
-
     const matchesToShow = currentData.matches.slice(0, visibleCount)
-    // Show loading state only when loading and no data available at all
-    if (loading && !currentData.matches.length) {
-        return (
-            <div className="w-full">
-                <MatchSkeleton />
-            </div>
-        )
-    }
-    // Show error state if there's an error and no data
-    if (error && !currentData.matches.length) {
-        return (
-            <div className="flex items-center justify-center h-[125px]">
-                <div className="text-red-400">
-                    Error loading matches: {error}
-                </div>
-            </div>
-        )
-    }
 
-    // Show "no matches" state if no loading, no error, but no matches
-    if (!error && !currentData.matches.length) {
+    // Show "no matches" state if no matches
+    if (!currentData.matches.length) {
         return (
             <div className="flex items-center justify-center h-[125px]">
                 <div className="text-gray-400">Aucun match disponible</div>

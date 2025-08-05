@@ -322,8 +322,7 @@ function SortableTableContent<T = unknown>({
                                     "hover:bg-white/5 transition-colors h-full",
                                     isRowHighlighted?.(item, rowPositions[index]) && "bg-accent/20 hover:bg-accent/30"
                                 )}
-                            >
-                            {columns.map((column) => {
+                            >{columns.map((column) => {
                                 const backgroundClass = getColumnBackgroundClass(column.key)
                                 return (
                                     <TableCell
@@ -338,8 +337,7 @@ function SortableTableContent<T = unknown>({
                                         {column.cell ? column.cell(item, rowPositions[index]) : String((item as Record<string, unknown>)[column.key] ?? '')}
                                     </TableCell>
                                 )
-                            })}
-                            </TableRow>
+                            })}</TableRow>
                         )
                     })}
                 </TableBody>

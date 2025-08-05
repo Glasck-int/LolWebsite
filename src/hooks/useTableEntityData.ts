@@ -39,10 +39,8 @@ export const useTableEntityData = (leagueId: number) => {
                 return
             }
 
-            // Vérifier le cache d'abord
             const cached = getCachedSeasons(leagueId)
             if (cached && !cached.loading && cached.data && cached.data.length > 0) {
-                // Données en cache et valides, pas besoin de fetch
                 setInitialized(true)
                 return
             }

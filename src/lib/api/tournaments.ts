@@ -27,7 +27,7 @@ async function getMatchesForTournament(
     tournamentId: string
 ): Promise<ApiResponse<{ data: MatchSchedule[], type: 'next' | 'last' }>> {
     return apiRequest<{ data: MatchSchedule[], type: 'next' | 'last' }>(
-        `/api/tournaments/${tournamentId}/matches`
+        `/api/tournaments/id/${tournamentId}/matches`
     )
 }
 

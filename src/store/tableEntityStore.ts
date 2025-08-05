@@ -6,8 +6,6 @@ import {
     getTournaments,
 } from '@/components/layout/TableEntityLayout/TableEntityLayout'
 import { createCacheHelpers, CacheItem } from '@/lib/cacheUtils'
-import { MatchSchedule, Standings } from '@/generated/prisma'
-import { ProcessedStanding } from '@/components/leagues/Standings/utils/StandingsDataProcessor'
 
 // Generic tab interface for reusability across different components
 export interface TabConfig {
@@ -36,31 +34,6 @@ export interface SeasonData {
 // Types for cached data
 type CachedSeasonData = SeasonData[]
 
-interface CachedMatchData {
-    matches: MatchSchedule[]
-    teamsData: Array<{
-        short?: string | null
-        image?: string | null
-        overviewPage?: string | null
-    }>
-    teamImages: Array<{
-        team1Image?: string | null
-        team2Image?: string | null
-    }>
-    lastMatches: boolean
-}
-
-interface CachedStandingsOverviewData {
-    standings: Standings[]
-    processedData: ProcessedStanding[]
-    tournamentName: string
-}
-
-interface CachedStandingsWithTabsData {
-    standings: Standings[]
-    processedData: ProcessedStanding[]
-    tournamentName: string
-}
 
 // Interface du store principal
 interface TableEntityState {
@@ -78,12 +51,6 @@ interface TableEntityState {
 
     // Cache des saisons par leagueId
     seasonsCache: Record<number, CacheItem<CachedSeasonData>>
-    // Cache des matches par tournamentId
-    matchesCache: Record<number, CacheItem<CachedMatchData>>
-    // Cache des standings overview par tournamentId
-    standingsOverviewCache: Record<number, CacheItem<CachedStandingsOverviewData>>
-    // Cache des standings with tabs par tournamentId
-    standingsWithTabsCache: Record<number, CacheItem<CachedStandingsWithTabsData>>
     cacheTimeout: number
 
     setActiveIndex: (index: number) => void
@@ -112,23 +79,6 @@ interface TableEntityState {
     setSeasonsLoading: (leagueId: number, loading: boolean) => void
     setSeasonsError: (leagueId: number, error: string | null) => void
     
-    // Cache methods for matches
-    getCachedMatches: (tournamentId: number) => CacheItem<CachedMatchData> | null
-    setCachedMatches: (tournamentId: number, data: CachedMatchData) => void
-    setMatchesLoading: (tournamentId: number, loading: boolean) => void
-    setMatchesError: (tournamentId: number, error: string | null) => void
-    
-    // Cache methods for standings overview
-    getCachedStandingsOverview: (tournamentId: number) => CacheItem<CachedStandingsOverviewData> | null
-    setCachedStandingsOverview: (tournamentId: number, data: CachedStandingsOverviewData) => void
-    setStandingsOverviewLoading: (tournamentId: number, loading: boolean) => void
-    setStandingsOverviewError: (tournamentId: number, error: string | null) => void
-    
-    // Cache methods for standings with tabs
-    getCachedStandingsWithTabs: (tournamentId: number) => CacheItem<CachedStandingsWithTabsData> | null
-    setCachedStandingsWithTabs: (tournamentId: number, data: CachedStandingsWithTabsData) => void
-    setStandingsWithTabsLoading: (tournamentId: number, loading: boolean) => void
-    setStandingsWithTabsError: (tournamentId: number, error: string | null) => void
     
     clearExpiredCache: () => void
 
@@ -188,22 +138,6 @@ export const useTableEntityStore = create<TableEntityState>()(
         (set, get) => {
             const CACHE_TIMEOUT = 5 * 60 * 1000 // 5 minutes
             const seasonsHelpers = createCacheHelpers<CachedSeasonData>(CACHE_TIMEOUT, () => [])
-            const matchesHelpers = createCacheHelpers<CachedMatchData>(CACHE_TIMEOUT, () => ({
-                matches: [],
-                teamsData: [],
-                teamImages: [],
-                lastMatches: false
-            }))
-            const standingsOverviewHelpers = createCacheHelpers<CachedStandingsOverviewData>(CACHE_TIMEOUT, () => ({
-                standings: [],
-                processedData: [],
-                tournamentName: ''
-            }))
-            const standingsWithTabsHelpers = createCacheHelpers<CachedStandingsWithTabsData>(CACHE_TIMEOUT, () => ({
-                standings: [],
-                processedData: [],
-                tournamentName: ''
-            }))
             
             return {
                 activeIndex: 0,
@@ -220,9 +154,6 @@ export const useTableEntityStore = create<TableEntityState>()(
 
                 // Cache state
                 seasonsCache: {},
-                matchesCache: {},
-                standingsOverviewCache: {},
-                standingsWithTabsCache: {},
                 cacheTimeout: CACHE_TIMEOUT,
 
                 setActiveIndex: (index) => set({ activeIndex: index }),
@@ -384,128 +315,11 @@ export const useTableEntityStore = create<TableEntityState>()(
                     }))
                 },
 
-                // Cache methods for matches
-                getCachedMatches: (tournamentId) => {
-                    const state = get()
-                    const cached = matchesHelpers.getCachedItem(state.matchesCache, tournamentId)
-                    
-                    if (!cached) {
-                        return null
-                    }
-                    
-                    // Remove expired cache automatically handled by getCachedItem
-                    if (!matchesHelpers.isCacheValid(cached.cachedAt)) {
-                        set(state => ({
-                            matchesCache: matchesHelpers.removeCacheItem(state.matchesCache, tournamentId)
-                        }))
-                        return null
-                    }
-                    
-                    return cached
-                },
-
-                setCachedMatches: (tournamentId, data) => {
-                    set(state => ({
-                        matchesCache: matchesHelpers.setCachedItem(state.matchesCache, tournamentId, data)
-                    }))
-                },
-
-                setMatchesLoading: (tournamentId, loading) => {
-                    set(state => ({
-                        matchesCache: matchesHelpers.setCacheLoading(state.matchesCache, tournamentId, loading)
-                    }))
-                },
-
-                setMatchesError: (tournamentId, error) => {
-                    set(state => ({
-                        matchesCache: matchesHelpers.setCacheError(state.matchesCache, tournamentId, error)
-                    }))
-                },
-
-                // Cache methods for standings overview
-                getCachedStandingsOverview: (tournamentId) => {
-                    const state = get()
-                    const cached = standingsOverviewHelpers.getCachedItem(state.standingsOverviewCache, tournamentId)
-                    
-                    if (!cached) {
-                        return null
-                    }
-                    
-                    // Remove expired cache automatically handled by getCachedItem
-                    if (!standingsOverviewHelpers.isCacheValid(cached.cachedAt)) {
-                        set(state => ({
-                            standingsOverviewCache: standingsOverviewHelpers.removeCacheItem(state.standingsOverviewCache, tournamentId)
-                        }))
-                        return null
-                    }
-                    
-                    return cached
-                },
-
-                setCachedStandingsOverview: (tournamentId, data) => {
-                    set(state => ({
-                        standingsOverviewCache: standingsOverviewHelpers.setCachedItem(state.standingsOverviewCache, tournamentId, data)
-                    }))
-                },
-
-                setStandingsOverviewLoading: (tournamentId, loading) => {
-                    set(state => ({
-                        standingsOverviewCache: standingsOverviewHelpers.setCacheLoading(state.standingsOverviewCache, tournamentId, loading)
-                    }))
-                },
-
-                setStandingsOverviewError: (tournamentId, error) => {
-                    set(state => ({
-                        standingsOverviewCache: standingsOverviewHelpers.setCacheError(state.standingsOverviewCache, tournamentId, error)
-                    }))
-                },
-
-                // Cache methods for standings with tabs
-                getCachedStandingsWithTabs: (tournamentId) => {
-                    const state = get()
-                    const cached = standingsWithTabsHelpers.getCachedItem(state.standingsWithTabsCache, tournamentId)
-                    
-                    if (!cached) {
-                        return null
-                    }
-                    
-                    // Remove expired cache automatically handled by getCachedItem
-                    if (!standingsWithTabsHelpers.isCacheValid(cached.cachedAt)) {
-                        set(state => ({
-                            standingsWithTabsCache: standingsWithTabsHelpers.removeCacheItem(state.standingsWithTabsCache, tournamentId)
-                        }))
-                        return null
-                    }
-                    
-                    return cached
-                },
-
-                setCachedStandingsWithTabs: (tournamentId, data) => {
-                    set(state => ({
-                        standingsWithTabsCache: standingsWithTabsHelpers.setCachedItem(state.standingsWithTabsCache, tournamentId, data)
-                    }))
-                },
-
-                setStandingsWithTabsLoading: (tournamentId, loading) => {
-                    set(state => ({
-                        standingsWithTabsCache: standingsWithTabsHelpers.setCacheLoading(state.standingsWithTabsCache, tournamentId, loading)
-                    }))
-                },
-
-                setStandingsWithTabsError: (tournamentId, error) => {
-                    set(state => ({
-                        standingsWithTabsCache: standingsWithTabsHelpers.setCacheError(state.standingsWithTabsCache, tournamentId, error)
-                    }))
-                },
-
                 clearExpiredCache: () => {
                     const state = get()
                     
                     set({ 
-                        seasonsCache: seasonsHelpers.removeExpiredItems(state.seasonsCache),
-                        matchesCache: matchesHelpers.removeExpiredItems(state.matchesCache),
-                        standingsOverviewCache: standingsOverviewHelpers.removeExpiredItems(state.standingsOverviewCache),
-                        standingsWithTabsCache: standingsWithTabsHelpers.removeExpiredItems(state.standingsWithTabsCache)
+                        seasonsCache: seasonsHelpers.removeExpiredItems(state.seasonsCache)
                     })
                 },
 

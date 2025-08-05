@@ -12,7 +12,7 @@ import {
     CardHeaderColumn,
     CardHeaderTab,
     CardHeaderContent,
-    CardHeaderBase,
+    // CardHeaderBase,
     useCard,
 } from '@/components/ui/card/index'
 import Image from 'next/image'
@@ -505,12 +505,12 @@ export function ChampionStatisticsClient({ tournamentId, initialData }: Champion
                                         <p className="text-inherit">Combat</p>
                                     </CardHeaderContent>
                                     <CardHeaderContent>
-                                        <p className="text-inherit">Economy</p>
+                                        <p className="text-inherit">Over Time</p>
                                     </CardHeaderContent>
                                 </CardHeaderTab>
-                                <CardHeaderBase>
+                                {/* <CardHeaderBase>
                                     <div className="text-sm font-medium">Champion Statistics - {data.tournament}</div>
-                                </CardHeaderBase>
+                                </CardHeaderBase> */}
                             </CardHeaderColumn>
                         </CardHeader>
                         <ChampionTabContent data={data} tabColumns={tabColumns} />

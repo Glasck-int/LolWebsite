@@ -18,9 +18,9 @@ import {
 import { SmartCardFooter, SmartCardFooterContent, useSmartTabsInit } from '@/components/ui/SmartTabs'
 import {
     LeagueDescription,
-    NextMatchesClient,
     StandingsOverviewFetch,
 } from '@/components/leagues'
+import { NextMatchesFetch } from '@/components/leagues/Matches/NextMatchesFetch'
 import { ChampionStatisticsClient } from './ChampionStatisticsClient'
 import { NewStandingsWithTabsFetch } from '@/components/leagues/Standings/views/NewStandingsWithTabsFetch'
 import {
@@ -119,7 +119,7 @@ const LeagueTableEntityContent = ({
                         <div className="space-y-4">
                             {/* Next Matches */}
                             {selectedTournamentId ? (
-                                <NextMatchesClient
+                                <NextMatchesFetch
                                     tournamentId={selectedTournamentId}
                                     showSingleMatchOnDesktop={false}
                                 />
