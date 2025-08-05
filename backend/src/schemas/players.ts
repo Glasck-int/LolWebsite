@@ -472,7 +472,8 @@ export const PlayerStatsSchema = Type.Object({
     totalCs: Type.Number({ description: 'Total creep score across all games' }),
     totalGold: Type.Number({ description: 'Total gold earned across all games' }),
     totalDamageToChampions: Type.Number({ description: 'Total damage to champions across all games' }),
-    totalVisionScore: Type.Number({ description: 'Total vision score across all games' })
+    totalVisionScore: Type.Number({ description: 'Total vision score across all games' }),
+    uniqueChampions: Type.Number({ description: 'Number of unique champions played' })
 })
 
 /**

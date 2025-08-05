@@ -25,6 +25,7 @@ export class PlayerStatsService {
     static calculatePlayerStats(games: any[]) {
         const playersMap = new Map()
         const gameLengthsByPlayer = new Map() // Track game lengths for per-minute calculations
+        const championsByPlayer = new Map() // Track unique champions per player
 
         games.forEach(game => {
             const player = game.link
@@ -47,12 +48,19 @@ export class PlayerStatsService {
                     totalGameMinutes: 0
                 })
                 gameLengthsByPlayer.set(player, [])
+                championsByPlayer.set(player, new Set())
             }
 
             const stats = playersMap.get(player)
             const gameLengths = gameLengthsByPlayer.get(player)
+            const champions = championsByPlayer.get(player)
             
             stats.gamesPlayed++
+            
+            // Track unique champions
+            if (game.champion) {
+                champions.add(game.champion)
+            }
             
             if (game.playerWin === 'Yes') {
                 stats.wins++
@@ -106,6 +114,9 @@ export class PlayerStatsService {
                 ? stats.totalDamageToChampions / stats.totalGameMinutes 
                 : 0
 
+            // Get unique champions count
+            const uniqueChampions = championsByPlayer.get(stats.player)?.size || 0
+
             // Destructure to exclude internal calculation values
             const { totalKillParticipation, totalGameMinutes, ...publicStats } = stats
             
@@ -123,7 +134,8 @@ export class PlayerStatsService {
                 avgKillParticipation: Math.round(avgKillParticipation * 100) / 100,
                 avgCsPerMinute: Math.round(avgCsPerMinute * 10) / 10,
                 avgGoldPerMinute: Math.round(avgGoldPerMinute),
-                avgDamagePerMinute: Math.round(avgDamagePerMinute * 10) / 10
+                avgDamagePerMinute: Math.round(avgDamagePerMinute * 10) / 10,
+                uniqueChampions
             }
         })
 
@@ -227,7 +239,8 @@ export class PlayerStatsService {
                 visionScore: true,
                 playerWin: true,
                 teamKills: true, // For kill participation calculation
-                overviewPage: true // For linking to game data
+                overviewPage: true, // For linking to game data
+                champion: true // For unique champions calculation
             }
         })
 
