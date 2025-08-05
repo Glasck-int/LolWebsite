@@ -9,9 +9,6 @@ export interface PlayerStats {
     wins: number
     losses: number
     winRate: number
-    totalKills: number
-    totalDeaths: number
-    totalAssists: number
     avgKills: number
     avgDeaths: number
     avgAssists: number
@@ -24,12 +21,16 @@ export interface PlayerStats {
     avgDamageToChampions: number
     avgDamagePerMinute: number
     avgVisionScore: number
+    totalKills: number
+    totalDeaths: number
+    totalAssists: number
     totalCs: number
     totalGold: number
     totalDamageToChampions: number
     totalVisionScore: number
-    totalKillParticipation: number
-    totalGameMinutes: number
+    uniqueChampions: number
+    role?: string
+    team?: string
 }
 
 /**

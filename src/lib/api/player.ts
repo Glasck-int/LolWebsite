@@ -78,4 +78,32 @@ async function getPlayerImages(
     return getPlayerImage(name, tournament)
 }
 
-export { getPlayerByLink, getPlayerImages, getPlayerImage }
+/**
+ * Get player details including role information
+ * @param name - The player name to get details for
+ * @returns The player details with role information
+ */
+async function getPlayerDetails(
+    name: string
+): Promise<ApiResponse<{ role?: string; team?: string }>> {
+    try {
+        const response = await apiRequest<any>(`/api/players/search/${encodeURIComponent(name)}`)
+        
+        if (!response.data || response.data.length === 0) {
+            return { error: 'Player not found', data: { role: undefined, team: undefined } }
+        }
+
+        // Get the first player result
+        const player = response.data[0]
+        return { 
+            data: { 
+                role: player.role || undefined, 
+                team: player.team || undefined 
+            } 
+        }
+    } catch (error) {
+        return { error: 'Failed to fetch player details', data: { role: undefined, team: undefined } }
+    }
+}
+
+export { getPlayerByLink, getPlayerImages, getPlayerImage, getPlayerDetails }

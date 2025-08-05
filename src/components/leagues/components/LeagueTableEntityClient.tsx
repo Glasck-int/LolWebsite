@@ -22,6 +22,7 @@ import {
 } from '@/components/leagues'
 import { NextMatchesFetch } from '@/components/leagues/Matches/NextMatchesFetch'
 import { ChampionStatisticsClient } from './ChampionStatisticsClient'
+import { PlayerStatisticsClient } from './PlayerStatisticsClient'
 import { NewStandingsWithTabsFetch } from '@/components/leagues/Standings/views/NewStandingsWithTabsFetch'
 import {
     League,
@@ -159,13 +160,22 @@ const LeagueTableEntityContent = ({
                 <TableEntityContent>
                     <div className="space-y-4">
                         {selectedTournamentId ? (
-                            <ChampionStatisticsClient tournamentId={selectedTournamentId.toString()} />
+                            <>
+                                <div className="space-y-2">
+                                    <h3 className="text-lg font-semibold">Player Statistics</h3>
+                                    <PlayerStatisticsClient tournamentId={selectedTournamentId.toString()} />
+                                </div>
+                                <div className="space-y-2">
+                                    <h3 className="text-lg font-semibold">Champion Statistics</h3>
+                                    <ChampionStatisticsClient tournamentId={selectedTournamentId.toString()} />
+                                </div>
+                            </>
                         ) : (
                             <div className="p-4 bg-gray-700 rounded-lg">
                                 <h3 className="text-lg font-semibold mb-2">
-                                    Champion Statistics
+                                    Statistics
                                 </h3>
-                                <p>Select a tournament to view champion statistics</p>
+                                <p>Select a tournament to view player and champion statistics</p>
                             </div>
                         )}
                     </div>

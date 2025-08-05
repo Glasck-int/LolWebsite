@@ -44,6 +44,10 @@
 		"title": "Best KDA",
 		"tooltip": "Players with the best KDA in the tournament"
 	},
+	"playersStats": {
+		"title": "Player Statistics",
+		"tooltip": "Comprehensive player statistics for the tournament"
+	},
 	"Tournaments": {
 		"lastMatch": "Last Match",
 		"nextMatch": "Next Match"
