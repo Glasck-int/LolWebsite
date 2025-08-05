@@ -3,40 +3,36 @@ import { FastifyRedis } from '@fastify/redis'
 import { getPlayerRedirectNames, PlayerNotFoundError } from '../utils/playerUtils'
 import { getTournamentConditions } from '../utils/tournamentUtils'
 
-export interface ChampionStatsFilter {
+export interface PlayerStatsFilter {
     tournament?: string
     player?: string
     team?: string
 }
 
-export interface ChampionStatsOptions {
-    includePickRate?: boolean
-    includePresenceRate?: boolean
+export interface PlayerStatsOptions {
     cacheKey: string
     cacheTTL: number
     redis: FastifyRedis
 }
 
 /**
- * Shared service for champion statistics calculation and caching
+ * Shared service for player statistics calculation and caching
  */
-export class ChampionStatsService {
+export class PlayerStatsService {
     /**
-     * Calculate champion statistics from scoreboard data
+     * Calculate player statistics from scoreboard data
      */
-    static calculateChampionStats(games: any[], totalGamesContext?: number, gameData?: any[], presenceData?: { picks: Set<string>, bans: Set<string> }) {
-        const championsMap = new Map()
-        const playersByChampion = new Map() // Track unique players per champion
-        const gameLengthsByChampion = new Map() // Track game lengths for damage per minute calculation
-        const banCountByChampion = new Map() // Track ban counts per champion
+    static calculatePlayerStats(games: any[]) {
+        const playersMap = new Map()
+        const gameLengthsByPlayer = new Map() // Track game lengths for per-minute calculations
 
         games.forEach(game => {
-            const champion = game.champion
-            if (!champion) return
+            const player = game.link
+            if (!player) return
 
-            if (!championsMap.has(champion)) {
-                championsMap.set(champion, {
-                    champion,
+            if (!playersMap.has(player)) {
+                playersMap.set(player, {
+                    player,
                     gamesPlayed: 0,
                     wins: 0,
                     losses: 0,
@@ -47,16 +43,14 @@ export class ChampionStatsService {
                     totalCs: 0,
                     totalDamageToChampions: 0,
                     totalVisionScore: 0,
-                    totalKillParticipation: 0, // Sum of all kill participation percentages
-                    totalGameMinutes: 0 // For damage per minute calculation
+                    totalKillParticipation: 0,
+                    totalGameMinutes: 0
                 })
-                playersByChampion.set(champion, new Set())
-                gameLengthsByChampion.set(champion, [])
+                gameLengthsByPlayer.set(player, [])
             }
 
-            const stats = championsMap.get(champion)
-            const playersSet = playersByChampion.get(champion)
-            const gameLengths = gameLengthsByChampion.get(champion)
+            const stats = playersMap.get(player)
+            const gameLengths = gameLengthsByPlayer.get(player)
             
             stats.gamesPlayed++
             
@@ -81,44 +75,15 @@ export class ChampionStatsService {
             const killParticipation = teamKills > 0 ? ((kills + assists) / teamKills) * 100 : 0
             stats.totalKillParticipation += killParticipation
 
-            // Track unique players
-            if (game.link) {
-                playersSet.add(game.link)
-            }
-
-            // Track game length for damage per minute calculation
+            // Track game length for per-minute calculations
             if (game.gamelengthNumber && game.gamelengthNumber > 0) {
                 gameLengths.push(game.gamelengthNumber)
                 stats.totalGameMinutes += game.gamelengthNumber
             }
         })
 
-        // Process ban data from gameData if available
-        if (gameData && gameData.length > 0) {
-            gameData.forEach(game => {
-                // Process team1Bans
-                if (game.team1Bans && Array.isArray(game.team1Bans)) {
-                    game.team1Bans.forEach((bannedChampion: string) => {
-                        if (bannedChampion) {
-                            banCountByChampion.set(bannedChampion, (banCountByChampion.get(bannedChampion) || 0) + 1)
-                        }
-                    })
-                }
-                
-                // Process team2Bans
-                if (game.team2Bans && Array.isArray(game.team2Bans)) {
-                    game.team2Bans.forEach((bannedChampion: string) => {
-                        if (bannedChampion) {
-                            banCountByChampion.set(bannedChampion, (banCountByChampion.get(bannedChampion) || 0) + 1)
-                        }
-                    })
-                }
-            })
-        }
-
         // Convert to array and calculate derived statistics
-        const championsArray = Array.from(championsMap.values()).map(stats => {
-            const champion = stats.champion
+        const playersArray = Array.from(playersMap.values()).map(stats => {
             const winRate = stats.gamesPlayed > 0 ? (stats.wins / stats.gamesPlayed) * 100 : 0
             const avgKills = stats.gamesPlayed > 0 ? stats.totalKills / stats.gamesPlayed : 0
             const avgDeaths = stats.gamesPlayed > 0 ? stats.totalDeaths / stats.gamesPlayed : 0
@@ -128,34 +93,18 @@ export class ChampionStatsService {
             const avgCs = stats.gamesPlayed > 0 ? stats.totalCs / stats.gamesPlayed : 0
             const avgDamageToChampions = stats.gamesPlayed > 0 ? stats.totalDamageToChampions / stats.gamesPlayed : 0
             const avgVisionScore = stats.gamesPlayed > 0 ? stats.totalVisionScore / stats.gamesPlayed : 0
-            
-            // Calculate new metrics
             const avgKillParticipation = stats.gamesPlayed > 0 ? stats.totalKillParticipation / stats.gamesPlayed : 0
-            const uniquePlayers = playersByChampion.get(champion)?.size || 0
-            const avgDamagePerMinute = (stats.totalGameMinutes > 0 && stats.totalDamageToChampions > 0) 
-                ? stats.totalDamageToChampions / stats.totalGameMinutes 
-                : 0
+
+            // Calculate per-minute stats
             const avgCsPerMinute = (stats.totalGameMinutes > 0 && stats.totalCs > 0) 
                 ? stats.totalCs / stats.totalGameMinutes 
                 : 0
             const avgGoldPerMinute = (stats.totalGameMinutes > 0 && stats.totalGold > 0) 
                 ? stats.totalGold / stats.totalGameMinutes 
                 : 0
-
-            // Calculate pick rate, ban rate, and presence rate
-            const pickRate = totalGamesContext ? (stats.gamesPlayed / totalGamesContext) * 100 : undefined
-            const banCount = banCountByChampion.get(champion) || 0
-            const banRate = totalGamesContext ? (banCount / totalGamesContext) * 100 : undefined
-            let presenceRate: number | undefined = undefined
-            
-            if (presenceData && totalGamesContext) {
-                const isPicked = presenceData.picks.has(champion)
-                const isBanned = presenceData.bans.has(champion)
-                const pickCount = isPicked ? stats.gamesPlayed : 0
-                const actualBanCount = banCount // Use the actual ban count calculated above
-                const presenceCount = pickCount + actualBanCount
-                presenceRate = Math.min(100, (presenceCount / totalGamesContext) * 100)
-            }
+            const avgDamagePerMinute = (stats.totalGameMinutes > 0 && stats.totalDamageToChampions > 0) 
+                ? stats.totalDamageToChampions / stats.totalGameMinutes 
+                : 0
 
             // Destructure to exclude internal calculation values
             const { totalKillParticipation, totalGameMinutes, ...publicStats } = stats
@@ -169,32 +118,28 @@ export class ChampionStatsService {
                 kda: Math.round(kda * 100) / 100,
                 avgGold: Math.round(avgGold),
                 avgCs: Math.round(avgCs * 10) / 10,
-                avgCsPerMinute: Math.round(avgCsPerMinute * 10) / 10,
-                avgGoldPerMinute: Math.round(avgGoldPerMinute),
                 avgDamageToChampions: Math.round(avgDamageToChampions),
-                avgDamagePerMinute: Math.round(avgDamagePerMinute * 10) / 10,
                 avgVisionScore: Math.round(avgVisionScore * 10) / 10,
                 avgKillParticipation: Math.round(avgKillParticipation * 100) / 100,
-                uniquePlayers,
-                pickRate,
-                banRate: banRate !== undefined ? Math.round(banRate * 100) / 100 : undefined,
-                presenceRate: presenceRate !== undefined ? Math.round(presenceRate * 100) / 100 : undefined
+                avgCsPerMinute: Math.round(avgCsPerMinute * 10) / 10,
+                avgGoldPerMinute: Math.round(avgGoldPerMinute),
+                avgDamagePerMinute: Math.round(avgDamagePerMinute * 10) / 10
             }
         })
 
-        // Sort by games played (descending), then by win rate (descending)
-        return championsArray.sort((a, b) => {
-            if (b.gamesPlayed !== a.gamesPlayed) {
-                return b.gamesPlayed - a.gamesPlayed
+        // Sort by KDA (descending), then by win rate (descending)
+        return playersArray.sort((a, b) => {
+            if (b.kda !== a.kda) {
+                return b.kda - a.kda
             }
             return b.winRate - a.winRate
         })
     }
 
     /**
-     * Get champion statistics with caching
+     * Get player statistics with caching
      */
-    static async getChampionStats(filter: ChampionStatsFilter, options: ChampionStatsOptions) {
+    static async getPlayerStats(filter: PlayerStatsFilter, options: PlayerStatsOptions) {
         const { redis, cacheKey, cacheTTL } = options
 
         // Check cache first
@@ -204,9 +149,7 @@ export class ChampionStatsService {
         }
 
         // Build database query based on filter
-        const whereClause: any = {
-            champion: { not: null }
-        }
+        const whereClause: any = {}
 
         // Handle tournament filter
         if (filter.tournament) {
@@ -270,11 +213,11 @@ export class ChampionStatsService {
             }
         }
 
-        // Fetch scoreboard data with additional fields for new metrics
+        // Fetch scoreboard data with additional fields for player statistics
         const scoreboardData = await prisma.scoreboardPlayers.findMany({
             where: whereClause,
             select: {
-                champion: true,
+                link: true, // Player name
                 kills: true,
                 deaths: true,
                 assists: true,
@@ -284,7 +227,6 @@ export class ChampionStatsService {
                 visionScore: true,
                 playerWin: true,
                 teamKills: true, // For kill participation calculation
-                link: true, // For unique players count
                 overviewPage: true // For linking to game data
             }
         })
@@ -296,18 +238,14 @@ export class ChampionStatsService {
         // Get unique overviewPages to fetch game length data
         const overviewPages = [...new Set(scoreboardData.map(game => game.overviewPage).filter((page): page is string => page !== null))]
         
-        // Fetch game length data for damage per minute calculation
+        // Fetch game length data for per-minute calculations
         const gameData = overviewPages.length > 0 ? await prisma.scoreboardGame.findMany({
             where: {
                 overviewPage: { in: overviewPages }
             },
             select: {
                 overviewPage: true,
-                gamelengthNumber: true,
-                team1Picks: true,
-                team2Picks: true,
-                team1Bans: true,
-                team2Bans: true
+                gamelengthNumber: true
             }
         }) : []
 
@@ -325,46 +263,42 @@ export class ChampionStatsService {
             gamelengthNumber: gameLengthMap.get(game.overviewPage) || null
         }))
 
-        // Calculate total games for pick rate (only for tournament context)
-        let totalGames: number | undefined
-        if (filter.tournament && !filter.player && !filter.team) {
-            // Get tournament conditions for counting games
-            const tournamentConditions = await getTournamentConditions(filter.tournament)
+        // Calculate player statistics
+        const playerStats = this.calculatePlayerStats(enrichedScoreboardData)
+        const uniquePlayers = playerStats.length
+
+        // For single player queries, return just the player's stats
+        if (filter.player && !filter.team) {
+            const singlePlayerStats = playerStats.find(p => p.player === filter.player) || 
+                                     playerStats[0] // Fallback in case of redirect issues
             
-            // Count games using the resolved conditions
-            totalGames = await prisma.scoreboardGame.count({
-                where: { OR: tournamentConditions }
-            })
+            if (!singlePlayerStats) {
+                return null
+            }
+
+            const result = {
+                player: filter.player,
+                tournament: filter.tournament,
+                totalGames: singlePlayerStats.gamesPlayed,
+                stats: singlePlayerStats,
+                meta: {
+                    cached: false,
+                    timestamp: new Date().toISOString()
+                }
+            }
+
+            // Cache the result
+            await redis.setex(cacheKey, cacheTTL, JSON.stringify(result))
+            return result
         }
 
-        // Prepare presence data for tournament-level statistics
-        let presenceData: { picks: Set<string>, bans: Set<string> } | undefined
-        if (options.includePresenceRate && filter.tournament && !filter.player && !filter.team) {
-            const allPicks = new Set<string>()
-            const allBans = new Set<string>()
-            
-            // Use the same gameData that was already fetched based on overviewPages from scoreboard data
-            gameData.forEach(game => {
-                // Add picks
-                if (game.team1Picks) game.team1Picks.forEach(pick => pick && allPicks.add(pick))
-                if (game.team2Picks) game.team2Picks.forEach(pick => pick && allPicks.add(pick))
-                
-                // Add bans
-                if (game.team1Bans) game.team1Bans.forEach(ban => ban && allBans.add(ban))
-                if (game.team2Bans) game.team2Bans.forEach(ban => ban && allBans.add(ban))
-            })
-            
-            presenceData = { picks: allPicks, bans: allBans }
-        }
-
-        const championStats = this.calculateChampionStats(enrichedScoreboardData, totalGames, gameData, presenceData)
-        const uniqueChampions = championStats.length
-
+        // For tournament or team queries, return all players
         const result = {
-            ...filter,
+            tournament: filter.tournament,
+            team: filter.team,
             totalGames: scoreboardData.length,
-            uniqueChampions,
-            champions: championStats,
+            uniquePlayers,
+            players: playerStats,
             meta: {
                 cached: false,
                 timestamp: new Date().toISOString()

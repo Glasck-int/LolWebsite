@@ -438,6 +438,99 @@ export const PlayerWithRedirectsSchema = Type.Object({
 
 
 /**
+ * Player performance statistics schema
+ */
+export const PlayerStatsSchema = Type.Object({
+    player: Type.String({ description: 'Player name' }),
+    gamesPlayed: Type.Number({ description: 'Total games played' }),
+    wins: Type.Number({ description: 'Total wins' }),
+    losses: Type.Number({ description: 'Total losses' }),
+    winRate: Type.Number({ 
+        minimum: 0, 
+        maximum: 100, 
+        description: 'Win rate percentage (0-100)' 
+    }),
+    avgKills: Type.Number({ description: 'Average kills per game' }),
+    avgDeaths: Type.Number({ description: 'Average deaths per game' }),
+    avgAssists: Type.Number({ description: 'Average assists per game' }),
+    kda: Type.Number({ description: 'KDA ratio ((kills + assists) / deaths)' }),
+    avgKillParticipation: Type.Number({ 
+        minimum: 0, 
+        maximum: 100, 
+        description: 'Average kill participation percentage ((kills + assists) / teamKills * 100)' 
+    }),
+    avgCs: Type.Number({ description: 'Average creep score per game' }),
+    avgCsPerMinute: Type.Number({ description: 'Average creep score per minute' }),
+    avgGold: Type.Number({ description: 'Average gold earned per game' }),
+    avgGoldPerMinute: Type.Number({ description: 'Average gold earned per minute' }),
+    avgDamageToChampions: Type.Number({ description: 'Average damage to champions per game' }),
+    avgDamagePerMinute: Type.Number({ description: 'Average damage to champions per minute' }),
+    avgVisionScore: Type.Number({ description: 'Average vision score per game' }),
+    totalKills: Type.Number({ description: 'Total kills across all games' }),
+    totalDeaths: Type.Number({ description: 'Total deaths across all games' }),
+    totalAssists: Type.Number({ description: 'Total assists across all games' }),
+    totalCs: Type.Number({ description: 'Total creep score across all games' }),
+    totalGold: Type.Number({ description: 'Total gold earned across all games' }),
+    totalDamageToChampions: Type.Number({ description: 'Total damage to champions across all games' }),
+    totalVisionScore: Type.Number({ description: 'Total vision score across all games' })
+})
+
+/**
+ * Tournament player statistics response schema
+ */
+export const TournamentPlayerStatsResponseSchema = Type.Object({
+    tournament: Type.String({ description: 'Tournament identifier' }),
+    totalGames: Type.Number({ description: 'Total games in the tournament' }),
+    uniquePlayers: Type.Number({ description: 'Number of unique players in the tournament' }),
+    players: Type.Array(PlayerStatsSchema, { 
+        description: 'Array of player statistics ordered by KDA (descending)' 
+    }),
+    meta: Type.Object({
+        cached: Type.Boolean({ description: 'Whether response was cached' }),
+        timestamp: Type.String({
+            format: 'date-time',
+            description: 'Response timestamp'
+        })
+    })
+})
+
+/**
+ * Player statistics response schema
+ */
+export const PlayerStatsResponseSchema = Type.Object({
+    player: Type.String({ description: 'Player name' }),
+    tournament: Type.Optional(Type.String({ description: 'Tournament identifier (if filtered)' })),
+    totalGames: Type.Number({ description: 'Total games played by the player' }),
+    stats: PlayerStatsSchema,
+    meta: Type.Object({
+        cached: Type.Boolean({ description: 'Whether response was cached' }),
+        timestamp: Type.String({
+            format: 'date-time',
+            description: 'Response timestamp'
+        })
+    })
+})
+
+/**
+ * Team player statistics response schema
+ */
+export const TeamPlayerStatsResponseSchema = Type.Object({
+    team: Type.String({ description: 'Team name' }),
+    tournament: Type.Optional(Type.String({ description: 'Tournament identifier (if filtered)' })),
+    totalGames: Type.Number({ description: 'Total games played by the team' }),
+    players: Type.Array(PlayerStatsSchema, { 
+        description: 'Array of team player statistics ordered by KDA (descending)' 
+    }),
+    meta: Type.Object({
+        cached: Type.Boolean({ description: 'Whether response was cached' }),
+        timestamp: Type.String({
+            format: 'date-time',
+            description: 'Response timestamp'
+        })
+    })
+})
+
+/**
  * Response arrays
  */
 export const PlayerImageListResponse = Type.Array(PlayerImageSchema)

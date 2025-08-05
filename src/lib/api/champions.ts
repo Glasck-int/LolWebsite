@@ -18,7 +18,10 @@ export interface ChampionStats {
     kda: number
     avgGold: number
     avgCs: number
+    avgCsPerMinute: number
+    avgGoldPerMinute: number
     avgDamageToChampions: number
+    avgDamagePerMinute: number
     avgVisionScore: number
     totalGold: number
     totalCs: number
@@ -29,7 +32,6 @@ export interface ChampionStats {
     presenceRate?: number
     avgKillParticipation: number
     uniquePlayers: number
-    avgDamagePerMinute: number
 }
 
 /**
