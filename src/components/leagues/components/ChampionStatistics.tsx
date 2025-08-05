@@ -1,9 +1,8 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { SortableTable, TableColumn } from '@/components/ui/table/SortableTable'
-import { getTournamentChampionStats, ChampionStats, TournamentChampionStatsResponse } from '@/lib/api/champions'
-import { SubTitle } from '@/components/ui/text/SubTitle'
+import { ChampionStats } from '@/lib/api/champions'
 import {
     Card,
     CardContext,
@@ -11,7 +10,6 @@ import {
     CardBodyMultiple,
     CardBodyMultipleContent,
     CardHeader,
-    CardHeaderBase,
     CardHeaderColumn,
     CardHeaderTab,
     CardHeaderContent,
@@ -19,53 +17,45 @@ import {
 import Image from 'next/image'
 import { DDragon } from '@/lib/api/ddragon'
 import { useTranslations } from 'next-intl'
+import { useChampionStats } from '@/lib/swr/useChampionStats'
+import { useDDragonVersions } from '@/lib/swr/useDDragonVersions'
+import { TournamentChampionStatsResponse } from '@/lib/api/champions'
 
 interface ChampionStatisticsProps {
     tournamentId: string
+    initialData?: TournamentChampionStatsResponse
 }
 
 /**
  * Champion Statistics component that displays tournament champion data using SortableTable
+ * Now uses advanced caching with the useChampionStatistics hook for better performance
+ * and instant loading on subsequent visits.
  */
-export function ChampionStatistics({ tournamentId }: ChampionStatisticsProps) {
+export function ChampionStatistics({ tournamentId, initialData }: ChampionStatisticsProps) {
     const t = useTranslations('ChampionStatistics')
-    const [data, setData] = useState<TournamentChampionStatsResponse | null>(null)
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
-    const [ddragonVersion, setDdragonVersion] = useState<string>('14.24.1') // Default version
+    
+    // Use SWR hooks for instant tab switching with initial data
+    const {
+        data,
+        error,
+        isLoading,
+        refetch,
+        isCached
+    } = useChampionStats(tournamentId, initialData)
+    
+    // Get DDragon version separately
+    const { latestVersion: ddragonVersion } = useDDragonVersions()
 
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true)
-            setError(null)
-            
-            try {
-                // Fetch DDragon version and champion stats in parallel
-                const [versionsResponse, statsResponse] = await Promise.all([
-                    DDragon.getVersions(),
-                    getTournamentChampionStats(tournamentId)
-                ])
-                
-                if (versionsResponse && versionsResponse.length > 0) {
-                    setDdragonVersion(versionsResponse[0])
-                }
-                
-                if (statsResponse.error) {
-                    setError(statsResponse.error)
-                } else if (statsResponse.data) {
-                    setData(statsResponse.data)
-                }
-            } catch (err) {
-                setError(err instanceof Error ? err.message : 'Failed to fetch champion statistics')
-            } finally {
-                setLoading(false)
-            }
-        }
-
-        if (tournamentId) {
-            fetchData()
-        }
-    }, [tournamentId])
+    // Development logging for cache performance
+    if (process.env.NODE_ENV === 'development' && data) {
+        console.log(`ChampionStatistics SWR Status:`, {
+            tournamentId,
+            isCached,
+            tournament: data.tournament,
+            championsCount: data.champions.length,
+            ddragonVersion
+        })
+    }
 
     const classname = "text-base w-10 "
     const importantColor = "bg-clear-violet/20 "
@@ -488,18 +478,32 @@ export function ChampionStatistics({ tournamentId }: ChampionStatisticsProps) {
         },
     ]
 
-    if (loading) {
+    if (isLoading) {
         return (
-            <div className="flex items-center justify-center p-8">
+            <div className="flex flex-col items-center justify-center p-8 space-y-2">
                 <div className="text-muted-foreground">{t('loading')}</div>
+                {process.env.NODE_ENV === 'development' && (
+                    <div className="text-xs text-muted-foreground">
+                        Fetching tournament: {tournamentId}
+                    </div>
+                )}
             </div>
         )
     }
 
     if (error) {
         return (
-            <div className="flex items-center justify-center p-8">
-                <div className="text-red-500">{t('error')}: {error}</div>
+            <div className="flex flex-col items-center justify-center p-8 space-y-4">
+                <div className="text-red-500 text-center">
+                    <div className="font-medium">{t('error')}</div>
+                    <div className="text-sm mt-1">{error}</div>
+                </div>
+                <button
+                    onClick={refetch}
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm"
+                >
+                    Try Again
+                </button>
             </div>
         )
     }

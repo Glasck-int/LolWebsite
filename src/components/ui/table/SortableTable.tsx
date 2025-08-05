@@ -170,7 +170,7 @@ function SortableTableContent<T = unknown>({
         if (!column) return data
 
         return [...data].sort((a, b) => {
-            let direction = activeSort.direction
+            const direction = activeSort.direction
             if (!direction) return 0
 
             // For columns with defaultSortDirection='desc' (like winrates), 
@@ -180,7 +180,7 @@ function SortableTableContent<T = unknown>({
             // Use custom sort function if provided
             if (column.sortFn) {
                 const comparison = column.sortFn(a, b)
-                let result = direction === 'desc' ? -comparison : comparison
+                const result = direction === 'desc' ? -comparison : comparison
                 return shouldInvertSort ? -result : result
             }
 
@@ -203,7 +203,7 @@ function SortableTableContent<T = unknown>({
                     comparison = String(aVal).localeCompare(String(bVal))
                 }
                 
-                let result = direction === 'desc' ? -comparison : comparison
+                const result = direction === 'desc' ? -comparison : comparison
                 return shouldInvertSort ? -result : result
             }
 
@@ -222,7 +222,7 @@ function SortableTableContent<T = unknown>({
                 comparison = String(aVal).localeCompare(String(bVal))
             }
             
-            let result = direction === 'desc' ? -comparison : comparison
+            const result = direction === 'desc' ? -comparison : comparison
             return shouldInvertSort ? -result : result
         })
     }, [data, columns, activeSort])

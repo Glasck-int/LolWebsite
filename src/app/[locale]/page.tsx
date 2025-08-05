@@ -37,7 +37,7 @@ import {
     SwitchContent,
     SwitchBodyMultiple,
     SwitchBodyMultipleContent,
-} from '@/components/utils/switch'
+} from '@/components/utils/Switch'
 import { CardContext } from '@/components/ui/card/Card'
 import {
     SelectorIcon,

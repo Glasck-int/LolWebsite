@@ -20,9 +20,9 @@ import {
     LeagueDescription,
     NextMatchesClient,
     StandingsOverviewFetch,
-    StandingsWithTabsFetch,
 } from '@/components/leagues'
 import { ChampionStatistics } from './ChampionStatistics'
+import { usePreloadChampionStats } from '@/lib/swr/useChampionStats'
 import { NewStandingsWithTabsFetch } from '@/components/leagues/Standings/views/NewStandingsWithTabsFetch'
 import {
     League,
@@ -67,6 +67,10 @@ const LeagueTableEntityContent = ({
     const { initializeFromUrl } = useSmartTabsInit()
     const selectedTournamentId = activeId.length > 0 ? activeId[0] : null
     const t = useTranslate('Tabs')
+    
+    // Preload champion stats for the selected tournament for instant tab switching
+    usePreloadChampionStats(selectedTournamentId || '', !!selectedTournamentId)
+    
     // Initialize from URL once all tabs are registered
     const hasSeasons = seasons.length > 0
     useEffect(() => {
@@ -158,7 +162,7 @@ const LeagueTableEntityContent = ({
                 <TableEntityContent>
                     <div className="space-y-4">
                         {selectedTournamentId ? (
-                            <ChampionStatistics tournamentId={selectedTournamentId} />
+                            <ChampionStatistics tournamentId={selectedTournamentId.toString()} />
                         ) : (
                             <div className="p-4 bg-gray-700 rounded-lg">
                                 <h3 className="text-lg font-semibold mb-2">

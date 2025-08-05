@@ -46,7 +46,7 @@ export const StandingsTable: React.FC<StandingsTableProps> = ({
             isRowHighlighted={isRowHighlighted}
             className={className}
             caption={`Classement ${config.type === 'matches' ? 'des matches' : 'des jeux'}`}
-            getRowKey={(item) => item.standing.team}
+            getRowKey={(item) => item.standing.team || `standing-${item.standing.id}`}
         />
     )
 }
@@ -99,7 +99,7 @@ export const CombinedStandingsTable: React.FC<CombinedStandingsTableProps> = ({
             className={className}
             caption="Classement combiné des matches et jeux"
             showSectionHeaders={showSectionHeaders}
-            getRowKey={(item) => item.standing.team}
+            getRowKey={(item) => item.standing.team || `standing-${item.standing.id}`}
         />
     )
 }
