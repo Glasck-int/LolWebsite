@@ -28,13 +28,12 @@ export function ChampionStatisticsClient({ tournamentId, initialData }: Champion
     const { data, error, isLoading } = useSWR(
         tournamentId ? `champion-stats-${tournamentId}` : null,
         async () => {
-            console.log('🔄 Fetching champion stats for tournament:', tournamentId)
             const response = await getTournamentChampionStats(tournamentId)
-            console.log('📊 Champion stats response:', response)
             if (response.error) throw new Error(response.error)
             return response.data
         },
         {
+            fallbackData: initialData || undefined,
             revalidateOnFocus: false,
             revalidateOnMount: !initialData, // Don't revalidate if we have initial data
             dedupingInterval: 60000, // 1 minute
@@ -42,14 +41,6 @@ export function ChampionStatisticsClient({ tournamentId, initialData }: Champion
         }
     )
 
-    // Debug logs
-    console.log('ChampionStatisticsClient Debug:', {
-        tournamentId,
-        isLoading,
-        error: error?.message,
-        hasData: !!data,
-        championsCount: data?.champions?.length || 0
-    })
 
     if (isLoading) {
         return (
