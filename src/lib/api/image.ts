@@ -110,9 +110,7 @@ async function getTeamImageByName(
     if (!teamName || teamName.trim() === '') {
         return { data: null }
     }
-    // console.log('teamName', teamName)
     const STATIC_BASE_URL = getStaticBaseUrl()
-    // Essayer différents formats de noms d'images
     const possibleNames = [
         `${teamName}.webp`,
         `${teamName}.png`,
@@ -136,7 +134,6 @@ async function getTeamImageByName(
                 return { data: imageUrl }
             }
         } catch {
-            // Continue to next possibility
         }
     }
     
@@ -144,12 +141,9 @@ async function getTeamImageByName(
 }
 
 const AVAILABLE_ROLES = new Set([
-    // Rôles exacts utilisés dans la base de données
     'Top', 'Jungle', 'Mid', 'Bot', 'Support',
-    // Variantes communes
     'top', 'jungle', 'mid', 'bot', 'support',
     'TOP', 'JUNGLE', 'MID', 'BOT', 'SUPPORT',
-    // Variantes alternatives pour compatibilité
     'ADC', 'adc', 'Toplane', 'Midlane', 'Bottom',
     'Supp', 'Carry', 'Ad Carry', 'Marksman',
     'TopLane', 'MidLane', 'AdCarry', 'BotLane'
