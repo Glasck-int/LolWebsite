@@ -257,7 +257,7 @@ export function ChampionStatisticsClient({ tournamentId, initialData }: Champion
         championColumn,
         {
             key: 'avgGoldPerMinute',
-            header: 'GPM',
+            header: 'G/M',
             tooltip: 'Average Gold Per Minute',
             sortable: true,
             defaultSortDirection: 'desc',
@@ -268,7 +268,7 @@ export function ChampionStatisticsClient({ tournamentId, initialData }: Champion
         },
         {
             key: 'avgCsPerMinute',
-            header: 'CSPM',
+            header: 'CS/M',
             tooltip: 'Average CS Per Minute',
             sortable: true,
             defaultSortDirection: 'desc',

@@ -168,7 +168,6 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
                 setPlayerImages({ ...cachedImages, ...newImagesMap })
             } catch (error) {
                 console.error('Failed to fetch player data:', error)
-                // En cas d'erreur, utiliser au moins les images en cache
                 setPlayerImages(cachedImages)
             } finally {
                 setImagesLoading(false)
@@ -239,10 +238,26 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
                             />
                         </div>
                     ) : (
-                        <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0">
-                            <span className="text-sm font-bold text-white">
-                                {item.player.charAt(0).toUpperCase()}
-                            </span>
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-dark-grey to-clear-violet/50 flex items-center justify-center flex-shrink-0 ring-1 ring-white/10">
+                            <svg
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="text-white"
+                            >
+                                <path
+                                    d="M12 11C14.2091 11 16 9.20914 16 7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7C8 9.20914 9.79086 11 12 11Z"
+                                    fill="currentColor"
+                                    opacity="0.9"
+                                />
+                                <path
+                                    d="M3 22C3 17.5817 6.58172 14 11 14H13C17.4183 14 21 17.5817 21 22H3Z"
+                                    fill="currentColor"
+                                    opacity="0.8"
+                                />
+                            </svg>
                         </div>
                     )}
                     
@@ -516,7 +531,7 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
         },
         {
             key: 'avgGoldPerMinute',
-            header: 'GPM',
+            header: 'G/M',
             tooltip: 'Average Gold Per Minute',
             sortable: true,
             defaultSortDirection: 'desc',
@@ -527,7 +542,7 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
         },
         {
             key: 'avgCsPerMinute',
-            header: 'CSPM',
+            header: 'CS/M',
             tooltip: 'Average CS Per Minute',
             sortable: true,
             defaultSortDirection: 'desc',
@@ -560,7 +575,7 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
         },
         {
             key: 'uniqueChampions',
-            header: 'Champions',
+            header: 'UC',
             tooltip: 'Unique Champions Played',
             sortable: true,
             defaultSortDirection: 'desc',

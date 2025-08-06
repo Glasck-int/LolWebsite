@@ -62,7 +62,7 @@ export const Header = () => {
                     className="w-full h-[80px] relative"
                     style={{
                         background:
-                            'url("/background3.png") no-repeat center center fixed',
+                            'url("/background2.jpg") no-repeat center center fixed',
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                         backgroundAttachment: 'fixed',

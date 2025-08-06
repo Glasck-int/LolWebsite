@@ -82,7 +82,7 @@ export default async function LocaleLayout({
 					<SpoilerProvider>
 						<SWRProvider>
 							<Header />
-							<div className="pt-24 px-4 body-container">
+							<div className="pt-24 px-2 body-container">
 								{children}
 							</div>
 						</SWRProvider>
