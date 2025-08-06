@@ -1,4 +1,4 @@
-'use client'
+'survivaluse client'
 
 import React from 'react'
 import { ChildAndClassname } from '../ui/card/Card'

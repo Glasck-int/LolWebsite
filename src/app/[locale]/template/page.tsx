@@ -1,10 +1,7 @@
 'use client'
 
 import Footer from '@/components/layout/Footer/Footer'
-import {
-    useQueryString,
-    useQueryBoolean,
-} from '@/lib/hooks/createQueryState'
+import { useQueryString, useQueryBoolean } from '@/lib/hooks/createQueryState'
 
 import {
     Card,
@@ -50,7 +47,7 @@ import {
 } from '@/components/utils/Selector'
 import { useIndexState } from '@/lib/hooks/useIndexState'
 import { HideCard } from '@/components/ui/card/HideCard'
-import ChoseDate, {useChoseDate} from '@/components/ui/calendar/ChoseDate'
+import ChoseDate, { useChoseDate } from '@/components/ui/calendar/ChoseDate'
 
 const seasons = [
     {
@@ -179,7 +176,7 @@ export default function Home() {
     return (
         <div className="body-container">
             <h3>Querie Template</h3>
-            <div className='w-full h-1 bg-white/40'/>
+            <div className="w-full h-1 bg-white/40" />
             <div className="flex flex-row gap-3">
                 <p>Input search:</p>
                 <input
@@ -199,7 +196,7 @@ export default function Home() {
             <p>{isLive ? 'true' : 'false'}</p>
             <br></br>
             <h3>Tab Card</h3>
-            <div className='w-full h-1 bg-white/40'/>
+            <div className="w-full h-1 bg-white/40" />
             <div className="">
                 <Card>
                     <CardContext>
@@ -228,14 +225,23 @@ export default function Home() {
                         <CardBody>
                             <CardBodyMultiple>
                                 <CardBodyMultipleContent>
-                                    <div className="flex flex-col justify-center items-center h-full">
-                                    </div>
-                                        <p>- BUG : dans tableEntity quand je passe de tab all activée a non active, ca me reset ma season a la derniere</p>
-                                        <p>- Click sur Glasck sur la page principal doit scroll</p>
-                                        <p>- Calendar affichage par semaine</p>
-                                        <p>- Faire le seo des balises sur mes card </p>
-                                        <p>- main page mettre la balise main</p>
-                                        <p>- page sur le cote, mettre balise aside </p>
+                                    <div className="flex flex-col justify-center items-center h-full"></div>
+                                    <p>
+                                        - BUG : dans tableEntity quand je passe
+                                        de tab all activée a non active, ca me
+                                        reset ma season a la derniere
+                                    </p>
+                                    <p>
+                                        - Click sur Glasck sur la page principal
+                                        doit scroll
+                                    </p>
+                                    <p>
+                                        - Faire le seo des balises sur mes card{' '}
+                                    </p>
+                                    <p>- main page mettre la balise main</p>
+                                    <p>
+                                        - page sur le cote, mettre balise aside{' '}
+                                    </p>
                                 </CardBodyMultipleContent>
                                 <CardBodyMultipleContent>
                                     <p>body 2</p>
@@ -250,27 +256,28 @@ export default function Home() {
             </div>
             <br></br>
             <h3>Calendar</h3>
-            <div className='w-full h-1 bg-white/40'/>
-            <ChoseDate {...calendar} weekDisplay={true} />
+            <div className="w-full h-1 bg-white/40" />
+            <ChoseDate {...calendar} displayWeek={true} />
+            <ChoseDate {...calendar} />
             <Card>
                 <h3>INFO</h3>
-                <p>Live: {calendar.isLive ? "true" : "false"}</p>
-                <p>MatchChaud: {calendar.matchChaud ? "true" : "false"}</p>
+                <p>Live: {calendar.isLive ? 'true' : 'false'}</p>
+                <p>MatchChaud: {calendar.matchChaud ? 'true' : 'false'}</p>
                 <p>Search: '{calendar.search}'</p>
             </Card>
             <br></br>
             <h3>DropDown Card</h3>
-            <div className='w-full h-1 bg-white/40'/>
+            <div className="w-full h-1 bg-white/40" />
             <Card>
                 <CardContext>
                     <CardHeader>
-                        <CardHeaderBase className='justify-between'>
+                        <CardHeaderBase className="justify-between">
                             <SubTitle>Header</SubTitle>
-                            <HideCard/>
+                            <HideCard />
                         </CardHeaderBase>
                     </CardHeader>
-                    <CardBody >
-                        <div className='h-[100px]'>
+                    <CardBody>
+                        <div className="h-[100px]">
                             <p>BODY</p>
                         </div>
                     </CardBody>
@@ -278,7 +285,7 @@ export default function Home() {
             </Card>
             <br></br>
             <h3>Switch Card</h3>
-            <div className='w-full h-1 bg-white/40'/>
+            <div className="w-full h-1 bg-white/40" />
             <div>
                 <Card>
                     <CardHeader>
@@ -311,7 +318,7 @@ export default function Home() {
             </div>
             <br></br>
             <h3>Table Entity Layout</h3>
-            <div className='w-full h-1 bg-white/40'/>
+            <div className="w-full h-1 bg-white/40" />
             <div>
                 <TableEntityLayout>
                     {/* header */}
@@ -327,7 +334,10 @@ export default function Home() {
                                     <SubTitle>BGteams</SubTitle>
                                 </div>
                             </div>
-                            <TableEntityHeader seasons={seasons} allExcluded={[2]} />
+                            <TableEntityHeader
+                                seasons={seasons}
+                                allExcluded={[2]}
+                            />
                         </CardBody>
                         <CardFooter>
                             <CardFooterContent>
@@ -357,7 +367,7 @@ export default function Home() {
             </div>
             <br></br>
             <h3>SelectorIcon</h3>
-            <div className='w-full h-1 bg-white/40'/>
+            <div className="w-full h-1 bg-white/40" />
             <div>
                 <Card>
                     <CardHeader>
@@ -390,7 +400,7 @@ export default function Home() {
             </div>
             <br></br>
             <h3>Sort In Card</h3>
-            <div className='w-full h-1 bg-white/40'/>
+            <div className="w-full h-1 bg-white/40" />
             <div className="">
                 <Card>
                     <CardSort>

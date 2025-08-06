@@ -1,5 +1,5 @@
 import { useQueryDate } from '@/lib/hooks/createQueryState'
-import React, { useRef, useState, useEffect, useCallback } from 'react'
+import React, { useRef, useState } from 'react'
 import DropDownArrow, { useDropdownArrow } from '../Button/DropDownArrow'
 import ArrowButton from '../Button/ArrowButton'
 import { Calendar } from '@heroui/calendar'
@@ -41,7 +41,7 @@ export interface ChoseDateProps
         ChoseDateActions,
         ChoseDateHelpers {
     className?: string
-    weekDisplay?:boolean
+    displayWeek?: boolean
 }
 
 /**
@@ -68,12 +68,11 @@ export interface ChoseDateProps
  * @see `ChoseDate` component
  */
 export function useChoseDate() {
-    const [selectedDate, setSelectedDate] = useQueryDate("date", new Date())
+    const [selectedDate, setSelectedDate] = useQueryDate('date', new Date())
     const [isLive, setIsLive] = useState(false)
     const [matchChaud, setMatchChaud] = useState(false)
     const [search, setSearch] = useState('')
-    
-    
+
     /**
      * Converts a JavaScript Date to a CalendarDate format used by @internationalized/date.
      *
@@ -94,7 +93,7 @@ export function useChoseDate() {
         if (!date) return null
         return toCalendarDate(fromDate(date, getLocalTimeZone()))
     }
-    
+
     return {
         // States
         selectedDate,
@@ -123,7 +122,7 @@ export function useChoseDate() {
  * @param setSearch - Function to set the search query.
  * @param dateToCalendarDate - Helper function to convert a JS Date to `CalendarDate`.
  * @param className - Optional className for custom styling.
- * @param weekDisplay - Whether to display the calendar with week grouping (not used internally yet).
+ * @param displayWeek - Whether to display the calendar with week grouping.
  * @returns A nav element rendering the full interactive date chooser UI.
  *
  * @example
@@ -145,7 +144,7 @@ export default function ChoseDate({
     setSearch,
     className = '',
     dateToCalendarDate,
-    weekDisplay = false
+    displayWeek = false,
 }: ChoseDateProps) {
     const { isDown, setIsDown } = useDropdownArrow()
     const calendarRef = useRef<HTMLDivElement>(null)
@@ -165,8 +164,32 @@ export default function ChoseDate({
     }
     const currentLocale = normalizeLocale(locale)
 
-    const formatSelectedDate = () => {
+    const formatSelectedDate = (displayWeek = false) => {
         if (!selectedDate) return ''
+
+        if (displayWeek) {
+            const date = new Date(selectedDate)
+            const dayOfWeek = date.getDay()
+            const monday = new Date(date)
+
+            const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1
+            monday.setDate(date.getDate() - daysFromMonday)
+
+            const sunday = new Date(monday)
+            sunday.setDate(monday.getDate() + 6)
+
+            const startFormat = monday.toLocaleDateString(currentLocale, {
+                day: 'numeric',
+                month: 'long',
+            })
+
+            const endFormat = sunday.toLocaleDateString(currentLocale, {
+                day: 'numeric',
+                month: 'long',
+            })
+
+            return `${startFormat} - ${endFormat}`
+        }
 
         const today = new Date()
         const dayMs = 86400000
@@ -191,15 +214,23 @@ export default function ChoseDate({
         }
     }
 
-    const addOneDay = (date: Date): Date => {
+    const clickRight = (date: Date): Date => {
         const newDate = new Date(date)
-        newDate.setDate(newDate.getDate() + 1)
+        if (displayWeek) {
+            newDate.setDate(newDate.getDate() + 7)
+        } else {
+            newDate.setDate(newDate.getDate() + 1)
+        }
         return newDate
     }
 
-    const removeOneDay = (date: Date): Date => {
+    const clickLeft = (date: Date): Date => {
         const newDate = new Date(date)
-        newDate.setDate(newDate.getDate() - 1)
+        if (displayWeek) {
+            newDate.setDate(newDate.getDate() - 7)
+        } else {
+            newDate.setDate(newDate.getDate() - 1)
+        }
         return newDate
     }
 
@@ -231,14 +262,20 @@ export default function ChoseDate({
     }
 
     return (
-        <nav className={`w-full h-31 md:bg-white/6 flex flex-col pt-[5px] pb-[10px] px-[10px] relative default-border-radius ${className}`}>
+        <nav
+            className={`w-full ${
+                displayWeek ? 'h-18' : 'h-31'
+            } md:bg-white/6 flex flex-col pt-[5px] pb-[10px] px-[10px] relative default-border-radius ${className}`}
+        >
             <ArrowButton
                 className="flex-1"
-                onLeftClick={() => setSelectedDate(removeOneDay(selectedDate))}
-                onRightClick={() => setSelectedDate(addOneDay(selectedDate))}
+                onLeftClick={() => setSelectedDate(clickLeft(selectedDate))}
+                onRightClick={() => setSelectedDate(clickRight(selectedDate))}
             >
                 <div className="flex items-center gap-3">
-                    <h3 className="text-clear-grey"><time>{formatSelectedDate()}</time></h3>
+                    <h3 className="text-clear-grey">
+                        <time>{formatSelectedDate(displayWeek)}</time>
+                    </h3>
                     <DropDownArrow
                         size={15}
                         sizeMd={20}
@@ -295,21 +332,25 @@ export default function ChoseDate({
                     </motion.div>
                 )}
             </AnimatePresence>
-            <div className=" flex-1 w-full ">
-                <div className="flex gap-2 ">
-                    <ButtonBar
-                        options={[translate('live'), translate('hotGame')]}
-                        onButtonChange={(option) => handleButtonClick(option)}
-                    />
-                    <div className="flex-1 min-w-0">
-                        <FunctionalSearchBar
-                            searchLogo="textSearch"
-                            className="h-[40px] !rounded-2xl border md:border-none border-solid border-dark-grey bg-white-06"
-                            onSearch={handleSearch}
+            {!displayWeek && (
+                <div className=" flex-1 w-full ">
+                    <div className="flex gap-2 ">
+                        <ButtonBar
+                            options={[translate('live'), translate('hotGame')]}
+                            onButtonChange={(option) =>
+                                handleButtonClick(option)
+                            }
                         />
+                        <div className="flex-1 min-w-0">
+                            <FunctionalSearchBar
+                                searchLogo="textSearch"
+                                className="h-[40px] !rounded-2xl border md:border-none border-solid border-dark-grey bg-white-06"
+                                onSearch={handleSearch}
+                            />
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
         </nav>
     )
 }
