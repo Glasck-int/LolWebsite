@@ -34,7 +34,7 @@ export class PlayerStatsService {
 
             if (!playersMap.has(player)) {
                 playersMap.set(player, {
-                    player: CleanName(player),
+                    player: player,
                     role: playerRoles.get(player) || null,
                     gamesPlayed: 0,
                     wins: 0,
@@ -242,7 +242,8 @@ export class PlayerStatsService {
                 playerWin: true,
                 teamKills: true, // For kill participation calculation
                 overviewPage: true, // For linking to game data
-                champion: true // For unique champions calculation
+                champion: true, // For unique champions calculation
+                role: true // Player role in this game
             }
         })
 
@@ -250,29 +251,13 @@ export class PlayerStatsService {
             return null
         }
 
-        // Get unique player names to fetch their roles
-        const uniquePlayerNames = Array.from(new Set(scoreboardData.map(game => game.link).filter((link): link is string => link !== null)))
-        
-        // Fetch player roles through PlayerRedirect relationships
-        const playerRoleData = uniquePlayerNames.length > 0 ? await prisma.playerRedirect.findMany({
-            where: {
-                name: { in: uniquePlayerNames }
-            },
-            select: {
-                name: true,
-                Player: {
-                    select: {
-                        role: true
-                    }
-                }
-            }
-        }) : []
-
-        // Create a map of player names to their roles
+        // Create a map of player names to their roles using the data we already have
         const playerRoles = new Map<string, string>()
-        playerRoleData.forEach(redirect => {
-            if (redirect.Player?.role) {
-                playerRoles.set(redirect.name, redirect.Player.role)
+        
+        // Use roles directly from scoreboardData (most efficient)
+        scoreboardData.forEach(game => {
+            if (game.link && game.role && !playerRoles.has(game.link)) {
+                playerRoles.set(game.link, game.role)
             }
         })
 

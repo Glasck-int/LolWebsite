@@ -143,4 +143,38 @@ async function getTeamImageByName(
     return { data: null }
 }
 
-export { getLeagueImage, getTeamImage, getPublicPlayerImage, getTeamImageByName }
+const AVAILABLE_ROLES = new Set([
+    // Rôles exacts utilisés dans la base de données
+    'Top', 'Jungle', 'Mid', 'Bot', 'Support',
+    // Variantes communes
+    'top', 'jungle', 'mid', 'bot', 'support',
+    'TOP', 'JUNGLE', 'MID', 'BOT', 'SUPPORT',
+    // Variantes alternatives pour compatibilité
+    'ADC', 'adc', 'Toplane', 'Midlane', 'Bottom',
+    'Supp', 'Carry', 'Ad Carry', 'Marksman',
+    'TopLane', 'MidLane', 'AdCarry', 'BotLane'
+])
+
+async function getRoleImage(
+    role: string
+): Promise<ApiResponse<string | null>> {
+    if (!role || role.trim() === '') {
+        return { data: null }
+    }
+    
+    // Vérifier si le rôle est dans la liste des rôles disponibles
+    if (!AVAILABLE_ROLES.has(role)) {
+        if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+            console.warn(`Role '${role}' not found in AVAILABLE_ROLES list`)
+        }
+        return { data: null }
+    }
+    
+    const STATIC_BASE_URL = getStaticBaseUrl()
+    const imageUrl = `${STATIC_BASE_URL}/static/assets/SVG/${role}.svg`
+    
+    // Retourner directement l'URL sans vérification HEAD pour les performances
+    return { data: imageUrl }
+}
+
+export { getLeagueImage, getTeamImage, getPublicPlayerImage, getTeamImageByName, getRoleImage }

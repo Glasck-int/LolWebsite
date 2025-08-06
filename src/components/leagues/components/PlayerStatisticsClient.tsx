@@ -6,7 +6,8 @@ import useSWR from 'swr'
 import { SortableTable, TableColumn } from '@/components/ui/table/SortableTable'
 import { PlayerStats, getTournamentPlayerStats, TournamentPlayerStatsResponse } from '@/lib/api/players'
 import { getPlayerImage } from '@/lib/api/player'
-import { getTeamImageByName } from '@/lib/api/image'
+import { getTeamImageByName, getRoleImage } from '@/lib/api/image'
+import { CleanName } from '@/lib/utils/cleanName'
 import {
     Card,
     CardContext,
@@ -39,7 +40,7 @@ function PlayerTabContent({ data, tabColumns }: {
                     data={data.players}
                     columns={tabColumns[activeIndex]}
                     showSectionHeaders={false}
-                    getRowKey={(item) => item.player}
+                    getRowKey={(item, index) => `${item.player}-${item.team || ''}-${item.role || ''}-${index}`}
                     emptyState="No player data available"
                     className="w-full text-xs table-fixed"
                 />
@@ -52,8 +53,11 @@ function PlayerTabContent({ data, tabColumns }: {
  * Client Component for Player Statistics with SWR caching
  * Works with dynamic tournamentId changes
  */
+// Cache persistant des images par joueur
+const imageCache = new Map<string, { playerImage: string; teamImage: string; roleImage: string }>()
+
 export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStatisticsClientProps) {
-    const [playerImages, setPlayerImages] = useState<Record<string, { playerImage: string; teamImage: string }>>({})
+    const [playerImages, setPlayerImages] = useState<Record<string, { playerImage: string; teamImage: string; roleImage: string }>>({})
     const [imagesLoading, setImagesLoading] = useState(false)
 
     const { data, error, isLoading } = useSWR(
@@ -82,7 +86,32 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
         const fetchData = async () => {
             setImagesLoading(true)
             
-            const dataPromises = data.players.map(async (player) => {
+            // Vérifier d'abord le cache et ne récupérer que les images manquantes
+            const cachedImages: Record<string, { playerImage: string; teamImage: string; roleImage: string }> = {}
+            const playersNeedingImages: typeof data.players = []
+            
+            data.players.forEach(player => {
+                const cacheKey = `${player.player}-${data.tournament}-${player.role || 'unknown'}`
+                const cached = imageCache.get(cacheKey)
+                
+                if (cached) {
+                    cachedImages[player.player] = cached
+                } else {
+                    playersNeedingImages.push(player)
+                }
+            })
+            
+            // Si toutes les images sont en cache, les utiliser directement
+            if (playersNeedingImages.length === 0) {
+                setPlayerImages(cachedImages)
+                setImagesLoading(false)
+                return
+            }
+            
+            // Récupérer seulement les images manquantes
+            const dataPromises = playersNeedingImages.map(async (player) => {
+                const cacheKey = `${player.player}-${data.tournament}-${player.role || 'unknown'}`
+                
                 try {
                     // Get player image using the player name and tournament
                     const playerImageResponse = await getPlayerImage(player.player, data.tournament)
@@ -91,33 +120,56 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
                     // For now, we'll use an empty string as we don't have team info in PlayerStats
                     const teamImageResponse = { data: '' }
                     
-                    return {
-                        playerName: player.player,
+                    // Get role image using the player's role
+                    const roleImageResponse = await getRoleImage(player.role || '')
+                    
+                    const imageData = {
                         playerImage: playerImageResponse.data || '',
                         teamImage: teamImageResponse.data || '',
+                        roleImage: roleImageResponse.data || '',
+                    }
+                    
+                    // Mettre en cache
+                    imageCache.set(cacheKey, imageData)
+                    
+                    return {
+                        playerName: player.player,
+                        ...imageData
                     }
                 } catch (error) {
                     console.error(`Failed to fetch data for player ${player.player}:`, error)
-                    return {
-                        playerName: player.player,
+                    const emptyImageData = {
                         playerImage: '',
                         teamImage: '',
+                        roleImage: '',
+                    }
+                    
+                    // Mettre en cache même les échecs pour éviter de refaire la requête
+                    imageCache.set(cacheKey, emptyImageData)
+                    
+                    return {
+                        playerName: player.player,
+                        ...emptyImageData
                     }
                 }
             })
 
             try {
                 const results = await Promise.all(dataPromises)
-                const imagesMap = results.reduce(
-                    (acc, { playerName, playerImage, teamImage }) => {
-                        acc[playerName] = { playerImage, teamImage }
+                const newImagesMap = results.reduce(
+                    (acc, { playerName, playerImage, teamImage, roleImage }: { playerName: string; playerImage: string; teamImage: string; roleImage: string }) => {
+                        acc[playerName] = { playerImage, teamImage, roleImage }
                         return acc
                     },
-                    {} as Record<string, { playerImage: string; teamImage: string }>
+                    {} as Record<string, { playerImage: string; teamImage: string; roleImage: string }>
                 )
-                setPlayerImages(imagesMap)
+                
+                // Combiner le cache existant avec les nouvelles images
+                setPlayerImages({ ...cachedImages, ...newImagesMap })
             } catch (error) {
                 console.error('Failed to fetch player data:', error)
+                // En cas d'erreur, utiliser au moins les images en cache
+                setPlayerImages(cachedImages)
             } finally {
                 setImagesLoading(false)
             }
@@ -167,6 +219,7 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
         cell: (item) => {
             const playerImageData = playerImages[item.player]
             const hasPlayerImage = playerImageData?.playerImage
+            const hasRoleImage = playerImageData?.roleImage
             
             return (
                 <div className="flex items-center gap-2">
@@ -176,8 +229,8 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
                             <Image
                                 src={playerImageData.playerImage}
                                 alt={`${item.player} avatar`}
-                                width={24}
-                                height={24}
+                                width={32}
+                                height={32}
                                 className="rounded-full object-cover aspect-square"
                                 onError={(e) => {
                                     // Hide image on error
@@ -186,15 +239,32 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
                             />
                         </div>
                     ) : (
-                        <div className="w-6 h-6 rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0">
-                            <span className="text-xs font-bold text-white">
+                        <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0">
+                            <span className="text-sm font-bold text-white">
                                 {item.player.charAt(0).toUpperCase()}
                             </span>
                         </div>
                     )}
                     
+                    {/* Role Image */}
+                    {hasRoleImage && (
+                        <div className="relative flex-shrink-0">
+                            <Image
+                                src={playerImageData.roleImage}
+                                alt={`${item.role || 'Unknown'} role`}
+                                width={20}
+                                height={20}
+                                className="object-contain"
+                                onError={(e) => {
+                                    // Hide image on error
+                                    e.currentTarget.style.display = 'none'
+                                }}
+                            />
+                        </div>
+                    )}
+                    
                     {/* Player Name */}
-                    <span className="truncate">{item.player}</span>
+                    <span className="truncate">{CleanName(item.player)}</span>
                 </div>
             )
         },
@@ -514,7 +584,7 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
                                     data={data.players}
                                     columns={allColumns}
                                     showSectionHeaders={false}
-                                    getRowKey={(item) => item.player}
+                                    getRowKey={(item, index) => `${item.player}-${item.team || ''}-${item.role || ''}-${index}`}
                                     emptyState="No player data available"
                                     caption={`Player Statistics ${data.tournament}`}
                                     className="w-full text-xs table-fixed"

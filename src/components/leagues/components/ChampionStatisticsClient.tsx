@@ -40,7 +40,7 @@ function ChampionTabContent({ data, tabColumns }: {
                     data={data.champions}
                     columns={tabColumns[activeIndex]}
                     showSectionHeaders={false}
-                    getRowKey={(item) => item.champion}
+                    getRowKey={(item, index) => `${item.champion}-${index}`}
                     emptyState="No champion data available"
                     className="w-full text-xs table-fixed"
                 />
@@ -138,12 +138,12 @@ export function ChampionStatisticsClient({ tournamentId, initialData }: Champion
             
             return (
                 <div className="flex items-center gap-2">
-                    <div className="relative w-6 h-6 rounded overflow-hidden flex-shrink-0">
+                    <div className="relative w-8 h-8 rounded overflow-hidden flex-shrink-0">
                         <Image
                             src={imageUrl}
                             alt={item.champion}
-                            width={24}
-                            height={24}
+                            width={32}
+                            height={32}
                             className="object-cover"
                             unoptimized
                         />
@@ -480,7 +480,7 @@ export function ChampionStatisticsClient({ tournamentId, initialData }: Champion
                                     data={data.champions}
                                     columns={allColumns}
                                     showSectionHeaders={false}
-                                    getRowKey={(item) => item.champion}
+                                    getRowKey={(item, index) => `${item.champion}-${index}`}
                                     emptyState="No champion data available"
                                     caption={`Champion Statistics ${data.tournament}`}
                                     className="w-full text-xs table-fixed"

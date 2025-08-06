@@ -69,7 +69,7 @@ interface SortableTableProps<T> {
     /** Whether to show section headers (MATCHES/GAMES) */
     showSectionHeaders?: boolean
     /** Optional function to get unique key for each row (needed for animations) */
-    getRowKey?: (item: T) => string
+    getRowKey?: (item: T, index: number) => string
 }
 
 /**
@@ -119,14 +119,14 @@ type SortState = {
 /**
  * Adapter to make any data compatible with useFlipAnimation
  */
-function useGenericFlipAnimation<T>(activeSort: SortState, data: T[], getRowKey?: (item: T) => string) {
+function useGenericFlipAnimation<T>(activeSort: SortState, data: T[], getRowKey?: (item: T, index: number) => string) {
     // Convert generic data to a format that useFlipAnimation expects
     const flipData = useMemo(() => {
         if (!getRowKey) return []
         
-        return data.map(item => ({
+        return data.map((item, index) => ({
             // Create a minimal object that satisfies the hook's type requirements
-            team: getRowKey(item),
+            team: getRowKey(item, index),
             teamImage: '',
             totalGames: 0,
             wins: 0,
@@ -313,7 +313,7 @@ function SortableTableContent<T = unknown>({
 
                 <TableBody>
                     {sortedData.map((item, index) => {
-                        const rowKey = getRowKey ? getRowKey(item) : `row-${index}`
+                        const rowKey = getRowKey ? getRowKey(item, index) : `row-${index}`
                         return (
                             <TableRow
                                 key={rowKey}

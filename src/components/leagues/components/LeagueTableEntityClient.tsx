@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useTableEntityData } from '@/hooks/useTableEntityData'
 import { useTableEntityStore, SeasonData } from '@/store/tableEntityStore'
@@ -23,6 +23,7 @@ import {
 import { NextMatchesFetch } from '@/components/leagues/Matches/NextMatchesFetch'
 import { ChampionStatisticsClient } from './ChampionStatisticsClient'
 import { PlayerStatisticsClient } from './PlayerStatisticsClient'
+import { ButtonBar } from '@/components/ui/Button/ButtonBar'
 import { NewStandingsWithTabsFetch } from '@/components/leagues/Standings/views/NewStandingsWithTabsFetch'
 import {
     League,
@@ -67,6 +68,23 @@ const LeagueTableEntityContent = ({
     const { initializeFromUrl } = useSmartTabsInit()
     const selectedTournamentId = activeId.length > 0 ? activeId[0] : null
     const t = useTranslate('Tabs')
+    
+    // State for managing which statistics to show
+    const [activeStatsView, setActiveStatsView] = useState<string | null>('Players')
+    
+    const handleStatsViewChange = useCallback((option: string | null) => {
+        console.log('ButtonBar changed to:', option)
+        setActiveStatsView(option)
+    }, [])
+    
+    // Reset stats view to Players when selectedTournamentId changes
+    useEffect(() => {
+        if (selectedTournamentId) {
+            setActiveStatsView('Players')
+            console.log('Resetting activeStatsView to Players for tournament:', selectedTournamentId)
+        }
+    }, [selectedTournamentId])
+    
     
     
     // Initialize from URL once all tabs are registered
@@ -161,13 +179,31 @@ const LeagueTableEntityContent = ({
                     <div className="space-y-4">
                         {selectedTournamentId ? (
                             <>
-                                <div className="space-y-2">
-                                    <h3 className="text-lg font-semibold">Player Statistics</h3>
-                                    <PlayerStatisticsClient tournamentId={selectedTournamentId.toString()} />
-                                </div>
-                                <div className="space-y-2">
-                                    <h3 className="text-lg font-semibold">Champion Statistics</h3>
-                                    <ChampionStatisticsClient tournamentId={selectedTournamentId.toString()} />
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <ButtonBar 
+                                            key={`buttonbar-${selectedTournamentId}-${activeStatsView}`}
+                                            options={['Players', 'Champions']}
+                                            onButtonChange={handleStatsViewChange}
+                                            initialActiveIndex={activeStatsView === 'Players' ? 0 : activeStatsView === 'Champions' ? 1 : 0}
+                                        />
+                                    </div>
+                                    
+                                    <div style={{ display: 'none' }}>
+                                        Debug - Current view: "{activeStatsView}" | Players? {activeStatsView === 'Players'} | Champions? {activeStatsView === 'Champions'}
+                                    </div>
+                                    
+                                    {activeStatsView === 'Players' && (
+                                        <div>
+                                            <PlayerStatisticsClient tournamentId={selectedTournamentId.toString()} />
+                                        </div>
+                                    )}
+                                    
+                                    {activeStatsView === 'Champions' && (
+                                        <div>
+                                            <ChampionStatisticsClient tournamentId={selectedTournamentId.toString()} />
+                                        </div>
+                                    )}
                                 </div>
                             </>
                         ) : (

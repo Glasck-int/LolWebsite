@@ -14,6 +14,7 @@ import { useState } from "react";
 interface ButtonBarProps {
 	options: string[];
 	onButtonChange: (option: string | null) => void;
+	initialActiveIndex?: number;
 }
 
 /**
@@ -46,9 +47,10 @@ interface ButtonBarProps {
  */
 export const ButtonBar = (props: ButtonBarProps) => {
 	const [activeButtonIndex, setActiveButtonIndex] = useState<number | null>(
-		null
+		props.initialActiveIndex ?? null
 	);
 	const options = props.options;
+
 
 	const handleButtonClick = (option: string, index: number) => {
 		const newActiveIndex = activeButtonIndex === index ? null : index;
