@@ -44,6 +44,10 @@ export interface ChoseDateProps
     weekDisplay?:boolean
     minDate?: Date
     maxDate?: Date
+    onNavigateNext?: () => void
+    onNavigatePrev?: () => void
+    canNavigateNext?: boolean
+    canNavigatePrev?: boolean
 }
 
 /**
@@ -148,7 +152,11 @@ export default function ChoseDate({
     className = '',
     dateToCalendarDate,
     minDate,
-    maxDate
+    maxDate,
+    onNavigateNext,
+    onNavigatePrev,
+    canNavigateNext,
+    canNavigatePrev
 }: ChoseDateProps) {
     const { isDown, setIsDown } = useDropdownArrow()
     const calendarRef = useRef<HTMLDivElement>(null)
@@ -248,15 +256,19 @@ export default function ChoseDate({
     // Vérifier si on est au premier ou dernier jour
     const isFirstDay = minDate && selectedDate.toDateString() === minDate.toDateString()
     const isLastDay = maxDate && selectedDate.toDateString() === maxDate.toDateString()
+    
+    // Determine if arrows should be disabled
+    const leftArrowDisabled = canNavigatePrev !== undefined ? !canNavigatePrev : (isFirstDay && !onNavigatePrev)
+    const rightArrowDisabled = canNavigateNext !== undefined ? !canNavigateNext : (isLastDay && !onNavigateNext)
 
     return (
         <nav className={`w-full h-31 md:bg-white/6 flex flex-col pt-[5px] pb-[10px] px-[10px] relative default-border-radius ${className}`}>
             <ArrowButton
                 className="flex-1"
-                onLeftClick={() => setSelectedDate(removeOneDay(selectedDate))}
-                onRightClick={() => setSelectedDate(addOneDay(selectedDate))}
-                leftDisabled={isFirstDay}
-                rightDisabled={isLastDay}
+                onLeftClick={onNavigatePrev || (() => setSelectedDate(removeOneDay(selectedDate)))}
+                onRightClick={onNavigateNext || (() => setSelectedDate(addOneDay(selectedDate)))}
+                leftDisabled={leftArrowDisabled}
+                rightDisabled={rightArrowDisabled}
             >
                 <div className="flex items-center gap-3">
                     <h3 className="text-clear-grey"><time>{formatSelectedDate()}</time></h3>

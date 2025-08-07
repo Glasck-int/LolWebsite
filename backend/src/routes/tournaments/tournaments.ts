@@ -1059,6 +1059,91 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
         }
     )
 
+    // Get available match dates for a tournament
+    fastify.get<{ Params: { tournamentId: string } }>(
+        '/tournaments/id/:tournamentId/match-dates',
+        {
+            schema: {
+                description: 'Get all dates that have matches for a tournament',
+                tags: ['tournaments'],
+                params: TournamentIdParamSchema,
+                response: {
+                    200: {
+                        type: 'object',
+                        properties: {
+                            dates: {
+                                type: 'array',
+                                items: { type: 'string', format: 'date' },
+                                description: 'Array of dates (YYYY-MM-DD) that have matches'
+                            },
+                            totalMatches: { type: 'number' }
+                        }
+                    },
+                    404: ErrorResponseSchema,
+                    500: ErrorResponseSchema,
+                },
+            },
+        },
+        async (request, reply) => {
+            try {
+                const { tournamentId } = request.params
+                const cacheKey = `tournament_match_dates:${tournamentId}`
+
+                // Check cache first
+                const cached = await redis.get(cacheKey)
+                if (cached) {
+                    return JSON.parse(cached)
+                }
+
+                // Get all matches for the tournament
+                const matches = await prisma.matchSchedule.findMany({
+                    where: {
+                        Tournament: {
+                            id: parseInt(tournamentId)
+                        }
+                    },
+                    select: {
+                        dateTime_UTC: true
+                    },
+                    orderBy: {
+                        dateTime_UTC: 'asc'
+                    }
+                })
+
+                if (matches.length === 0) {
+                    return reply.status(404).send({
+                        error: 'No matches found for this tournament'
+                    })
+                }
+
+                // Extract unique dates (YYYY-MM-DD format)
+                const dateSet = new Set<string>()
+                matches.forEach(match => {
+                    const date = new Date(match.dateTime_UTC)
+                    const year = date.getUTCFullYear()
+                    const month = String(date.getUTCMonth() + 1).padStart(2, '0')
+                    const day = String(date.getUTCDate()).padStart(2, '0')
+                    dateSet.add(`${year}-${month}-${day}`)
+                })
+
+                const result = {
+                    dates: Array.from(dateSet).sort(),
+                    totalMatches: matches.length
+                }
+
+                // Cache for 1 hour
+                await redis.setex(cacheKey, 3600, JSON.stringify(result))
+                return result
+
+            } catch (error) {
+                console.error('Error in tournament match dates route:', error)
+                return reply
+                    .status(500)
+                    .send({ error: 'Internal server error' })
+            }
+        }
+    )
+
     // Get matches for a tournament filtered by date range
     fastify.get<{ 
         Params: { tournamentId: string },
