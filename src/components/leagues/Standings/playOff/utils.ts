@@ -28,3 +28,15 @@ export const extractTeamInfo = (match: Match, team: number) => {
 		asWin: score > opponentScore,
 	};
 }
+
+export const getLoserMatch = (match:Match) => {
+	return match.team1Score > match.team2Score ? match.teamB : match.teamA
+}
+
+export const getWinnerMatch = (match:Match) => {
+	return match.team1Score > match.team2Score ? match.teamA : match.teamB
+}
+
+export function hasTeamLost(alreadyLost: Set<string>, match: Match): boolean {
+    return alreadyLost.has(match.teamA) || alreadyLost.has(match.teamB);
+}
