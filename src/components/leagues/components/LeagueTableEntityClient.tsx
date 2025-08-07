@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useTableEntityData } from '@/hooks/useTableEntityData'
 import { useTableEntityStore, SeasonData } from '@/store/tableEntityStore'
@@ -15,12 +15,13 @@ import {
     CardBody,
     CardContext,
 } from '@/components/ui/card'
-import { SmartCardFooter, SmartCardFooterContent, useSmartTabsInit } from '@/components/ui/SmartTabs'
+import { SmartCardFooter, SmartCardFooterContent } from '@/components/ui/SmartTabs'
 import {
     LeagueDescription,
     StandingsOverviewFetch,
 } from '@/components/leagues'
 import { NextMatchesFetch } from '@/components/leagues/Matches/NextMatchesFetch'
+import { MatchesCalendar } from '@/components/leagues/Matches/MatchesCalendar'
 import { ChampionStatisticsClient } from './ChampionStatisticsClient'
 import { PlayerStatisticsClient } from './PlayerStatisticsClient'
 import { ButtonBar } from '@/components/ui/Button/ButtonBar'
@@ -65,7 +66,6 @@ const LeagueTableEntityContent = ({
 }) => {
     const searchParams = useSearchParams()
     const { activeId } = useTableEntityStore()
-    const { initializeFromUrl } = useSmartTabsInit()
     const selectedTournamentId = activeId.length > 0 ? activeId[0] : null
     const t = useTranslate('Tabs')
     
@@ -73,7 +73,6 @@ const LeagueTableEntityContent = ({
     const [activeStatsView, setActiveStatsView] = useState<string | null>('Players')
     
     const handleStatsViewChange = useCallback((option: string | null) => {
-        console.log('ButtonBar changed to:', option)
         setActiveStatsView(option)
     }, [])
     
@@ -81,7 +80,6 @@ const LeagueTableEntityContent = ({
     useEffect(() => {
         if (selectedTournamentId) {
             setActiveStatsView('Players')
-            console.log('Resetting activeStatsView to Players for tournament:', selectedTournamentId)
         }
     }, [selectedTournamentId])
     
@@ -89,16 +87,25 @@ const LeagueTableEntityContent = ({
     
     // Initialize from URL once all tabs are registered
     const hasSeasons = seasons.length > 0
+    const initializedRef = useRef(false)
+    
     useEffect(() => {
-        if (hasSeasons) {
+        if (hasSeasons && !initializedRef.current) {
             // Small delay to ensure all tabs are registered first
             const timer = setTimeout(() => {
-                initializeFromUrl(searchParams, seasons)
+                initializedRef.current = true
+                // Only initialize tab from URL, not the full state
+                const tabParam = searchParams.get('tab')
+                if (tabParam) {
+                    const { setActiveTab, getTabIndex } = useTableEntityStore.getState()
+                    const tabIndex = getTabIndex(tabParam)
+                    setActiveTab(tabIndex)
+                }
             }, 100)
             
             return () => clearTimeout(timer)
         }
-    }, [hasSeasons, initializeFromUrl, searchParams, seasons])
+    }, [hasSeasons, searchParams])
 
     return (
         <>
@@ -172,7 +179,16 @@ const LeagueTableEntityContent = ({
                 </TableEntityContent>
                 <TableEntityContent>
                     <div className="space-y-4">
-                        <p>matchs</p>
+                        {selectedTournamentId ? (
+                            <MatchesCalendar tournamentId={selectedTournamentId.toString()} />
+                        ) : (
+                            <div className="p-4 bg-gray-700 rounded-lg">
+                                <h3 className="text-lg font-semibold mb-2">
+                                    Matchs
+                                </h3>
+                                <p>Sélectionnez un tournoi pour voir les matchs</p>
+                            </div>
+                        )}
                     </div>
                 </TableEntityContent>
                 <TableEntityContent>
@@ -189,9 +205,6 @@ const LeagueTableEntityContent = ({
                                         />
                                     </div>
                                     
-                                    <div style={{ display: 'none' }}>
-                                        Debug - Current view: "{activeStatsView}" | Players? {activeStatsView === 'Players'} | Champions? {activeStatsView === 'Champions'}
-                                    </div>
                                     
                                     {activeStatsView === 'Players' && (
                                         <div>

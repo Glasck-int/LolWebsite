@@ -42,6 +42,8 @@ export interface ChoseDateProps
         ChoseDateHelpers {
     className?: string
     weekDisplay?:boolean
+    minDate?: Date
+    maxDate?: Date
 }
 
 /**
@@ -144,7 +146,9 @@ export default function ChoseDate({
     setMatchChaud,
     setSearch,
     className = '',
-    dateToCalendarDate
+    dateToCalendarDate,
+    minDate,
+    maxDate
 }: ChoseDateProps) {
     const { isDown, setIsDown } = useDropdownArrow()
     const calendarRef = useRef<HTMLDivElement>(null)
@@ -193,12 +197,24 @@ export default function ChoseDate({
     const addOneDay = (date: Date): Date => {
         const newDate = new Date(date)
         newDate.setDate(newDate.getDate() + 1)
+        
+        // Check if we exceed maxDate
+        if (maxDate && newDate > maxDate) {
+            return date // Return original date if we would exceed max
+        }
+        
         return newDate
     }
 
     const removeOneDay = (date: Date): Date => {
         const newDate = new Date(date)
         newDate.setDate(newDate.getDate() - 1)
+        
+        // Check if we go below minDate
+        if (minDate && newDate < minDate) {
+            return date // Return original date if we would go below min
+        }
+        
         return newDate
     }
 
@@ -229,12 +245,18 @@ export default function ChoseDate({
         setSearch(term)
     }
 
+    // Vérifier si on est au premier ou dernier jour
+    const isFirstDay = minDate && selectedDate.toDateString() === minDate.toDateString()
+    const isLastDay = maxDate && selectedDate.toDateString() === maxDate.toDateString()
+
     return (
         <nav className={`w-full h-31 md:bg-white/6 flex flex-col pt-[5px] pb-[10px] px-[10px] relative default-border-radius ${className}`}>
             <ArrowButton
                 className="flex-1"
                 onLeftClick={() => setSelectedDate(removeOneDay(selectedDate))}
                 onRightClick={() => setSelectedDate(addOneDay(selectedDate))}
+                leftDisabled={isFirstDay}
+                rightDisabled={isLastDay}
             >
                 <div className="flex items-center gap-3">
                     <h3 className="text-clear-grey"><time>{formatSelectedDate()}</time></h3>
@@ -266,6 +288,8 @@ export default function ChoseDate({
                                 onChange={(calendarDate) =>
                                     onChangeDateCalendar(calendarDate)
                                 }
+                                minValue={minDate ? dateToCalendarDate(minDate) : undefined}
+                                maxValue={maxDate ? dateToCalendarDate(maxDate) : undefined}
                                 classNames={{
                                     base: 'bg-white/4 rounded-lg backdrop-blur border border-grey/30',
                                     headerWrapper:
