@@ -1,13 +1,17 @@
 import { ButtonBar } from '@/components/ui/Button/ButtonBar'
 import { getTeamImageByName } from '@/lib/api/image'
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import {
     extractPageNames,
     findPageByName,
     extractTeamInfo,
     getLoserMatch,
     getWinnerMatch,
-    hasTeamLost
+    hasTeamLost,
+    getMatchCounts,
+    getLinkPosition,
+    isBeforeLastTab,
+    hasAnyMatch,
 } from './utils'
 import Image from 'next/image'
 import './animeBorder.css'
@@ -52,6 +56,7 @@ interface MatchProps {
     isTopMatch: boolean
     nTab: number
     trackTeamName: string
+    linkPosition: string | null
 }
 
 interface Team {
@@ -67,7 +72,13 @@ interface TabProps {
     isLast: boolean
     nTab: number
     trackTeamName: string
-    looserBracket: Page
+    isLooserBracket: boolean
+    bracket: Page
+    hasLoserBracket: boolean
+}
+
+interface LooserTabProps extends TabProps {
+    bracket: Page
 }
 
 interface TeamLineContainerProps {
@@ -108,79 +119,166 @@ export const PlayoffBracket = ({
 }
 
 const Page = ({ page, trackTeamName }: PageProps) => {
-    const looserBracket: Page = {pageName:"Looser Bracket", nTabInPage:0, tabs:[]}
+    const { looserBracket, winnerBracket } = useMemo(() => {
+        const looserBracket: Page = {
+            pageName: 'Looser Bracket',
+            nTabInPage: 0,
+            tabs: [],
+        }
+
+        const winnerBracket: Page = {
+            pageName: 'Winner Bracket',
+            nTabInPage: page.nTabInPage,
+            tabs: [],
+        }
+
+        page.tabs.forEach((tab) => {
+            winnerBracket.tabs.push({ tabName: tab.tabName, matchs: [] })
+            looserBracket.tabs.push({ tabName: tab.tabName, matchs: [] })
+        })
+        const allLosers = new Set<string>()
+
+        const processedTabs = page.tabs.map((tab, tabIndex) => {
+            const visibleMatches: Match[] = []
+            const isLastTab = tabIndex === page.tabs.length - 1
+
+            tab.matchs.forEach((match) => {
+                const loser = getLoserMatch(match)
+                const isLooserBracketMatch = hasTeamLost(allLosers, match)
+
+                if (isLooserBracketMatch && !isLastTab) {
+                    let looserTab = looserBracket.tabs.find(
+                        (t) => t.tabName === tab.tabName
+                    )
+                    if (!looserTab) {
+                        looserTab = { tabName: tab.tabName, matchs: [] }
+                        looserBracket.tabs.push(looserTab)
+                    }
+                    looserTab.matchs.push(match)
+                    allLosers.add(loser)
+                } else {
+                    visibleMatches.push(match)
+                    allLosers.add(loser)
+                }
+            })
+            return {
+                ...tab,
+                matchs: visibleMatches,
+            }
+        })
+
+        winnerBracket.tabs = processedTabs
+
+        return { looserBracket, winnerBracket }
+    }, [page.tabs])
+
+    const hasLooserBracket = hasAnyMatch(looserBracket)
+
     return (
-        <div className="w-full flex flex-10">
-            {page.tabs.map((tab, index) => (
-                <Tab
-                    key={index}
-                    tab={tab}
-                    isLast={index === page.tabs.length - 1}
-                    nTab={index}
-                    trackTeamName={trackTeamName}
-                    looserBracket={looserBracket}
-                />
-            ))}
+        <div className="w-full flex flex-10 flex-col">
+            <div className="w-full h-full flex">
+                {winnerBracket.tabs.map((tab, index) => (
+                    <Tab
+                        key={index}
+                        tab={tab}
+                        isLast={index === winnerBracket.tabs.length - 1}
+                        nTab={index}
+                        trackTeamName={trackTeamName}
+                        bracket={winnerBracket}
+                        isLooserBracket={false}
+                        hasLoserBracket={hasLooserBracket}
+                    />
+                ))}
+            </div>
+            <div className="flex w-full h-full relative">
+                {hasLooserBracket && (
+                    <>
+                        <p className="absolute -top-3 left-2 z-10 text-sm">
+                            loser bracket
+                        </p>
+                        {looserBracket.tabs.map((tab, index) => (
+                            <Tab
+                                key={index}
+                                tab={tab}
+                                isLast={index === looserBracket.tabs.length - 1}
+                                nTab={index}
+                                trackTeamName={trackTeamName}
+                                bracket={looserBracket}
+                                isLooserBracket={true}
+                                hasLoserBracket={hasLooserBracket}
+                            />
+                        ))}
+                    </>
+                )}
+            </div>
         </div>
     )
 }
 
-const Tab = ({ tab, isLast, nTab, trackTeamName, looserBracket }: TabProps) => {
-    const allLosers = new Set<string>();
-
-    looserBracket.tabs.forEach(t =>
-        t.matchs.forEach(match => {
-            const loser =
-                match.team1Score > match.team2Score
-                    ? match.teamB
-                    : match.teamA;
-            allLosers.add(loser);
-        })
-    );
-    const visibleMatches: Match[] = [];
-    
-    tab.matchs.forEach((match) => {
-        const loser = getLoserMatch(match)
-        const alreadyInlooserBracket = hasTeamLost(allLosers, match)
-        
-        if (alreadyInlooserBracket){
-            let looserTab = looserBracket.tabs.find(t => t.tabName === tab.tabName);
-            if (!looserTab){
-                looserTab = {
-                    tabName:tab.tabName,
-                    matchs:[]
-                }
-                looserBracket.tabs.push(looserTab) 
-            }
-            looserTab.matchs.push(match)
-        }else{
-            visibleMatches.push(match)
-            allLosers.add(loser)
-        }
-    });
-    console.log("all loser", allLosers)
-    console.log(looserBracket, tab.tabName)
+const Tab = ({
+    tab,
+    isLast,
+    nTab,
+    trackTeamName,
+    isLooserBracket,
+    bracket,
+    hasLoserBracket,
+}: TabProps) => {
+    const [nbrMatch, nbrMatchNext] = getMatchCounts(nTab, bracket)
 
     return (
-        <div className={`h-auto ${isLast ? 'flex-7' : 'flex-10'}`}>
+        <div className={`h-auto ${isLast ? 'flex-7' : 'flex-10'} min-w-38`}>
             <div className="h-full flex-1 flex flex-col gap-6">
-                <TabHeader tabName={tab.tabName} isLast={isLast} />
+                {!isLooserBracket && (
+                    <TabHeader tabName={tab.tabName} isLast={isLast} />
+                )}
                 <div className="flex flex-col h-full">
-                    {visibleMatches.map((match, index) => (
-                        <Match
-                            key={index}
-                            match={match}
-                            isLast={isLast}
-                            isTopMatch={index % 2 === 0}
-                            nTab={nTab}
-                            trackTeamName={trackTeamName}
-                        />
-                    ))}
+                    {tab.matchs.length > 0 ? (
+                        tab.matchs.map((match, index) => (
+                            <Match
+                                key={index}
+                                match={match}
+                                isLast={isLast}
+                                isTopMatch={index % 2 === 0}
+                                nTab={nTab}
+                                trackTeamName={trackTeamName}
+                                linkPosition={getLinkPosition(
+                                    nbrMatch,
+                                    nbrMatchNext,
+                                    index % 2 === 0,
+                                    (isLooserBracket || hasLoserBracket) &&
+                                        isBeforeLastTab(bracket, nTab),
+                                    isLooserBracket
+                                )}
+                            />
+                        ))
+                    ) : (
+                        <EmptyTab isLast={isLast} nTab={nTab} />
+                    )}
                 </div>
             </div>
         </div>
-    );
-};
+    )
+}
+
+const EmptyTab = ({ isLast, nTab }: { isLast: boolean; nTab: number }) => {
+    const delay = 0.4 * nTab + 's'
+    return (
+        <div className="flex-1 flex">
+            {!isLast && (
+                <div className="flex flex-1 flex-col">
+                    <div className="flex-5 flex relative">
+                        <div
+                            className={`flex-5 grow-border-bot`}
+                            style={{ animationDelay: delay }}
+                        ></div>
+                    </div>
+                    <div className="flex-5"></div>
+                </div>
+            )}
+        </div>
+    )
+}
 
 const TabHeader = ({ tabName, isLast }: TabHeaderProps) => {
     return (
@@ -203,7 +301,28 @@ const Match = ({
     isTopMatch,
     nTab,
     trackTeamName,
+    linkPosition,
 }: MatchProps) => {
+    let content: React.ReactNode = null
+
+    switch (linkPosition) {
+        case 'line':
+            content = <LineLink nTab={nTab} />
+            break
+        case 'top':
+            content = <TopLink nTab={nTab} />
+            break
+        case 'bot':
+            content = <BotLink nTab={nTab} />
+            break
+        case 'lastLoserBracketMatchBot':
+            content = <LoserBracketBotLink nTab={nTab} />
+            break
+        case 'lastLoserBracketMatchTop':
+            content = <LoserBracketTopLink nTab={nTab} />
+            break
+    }
+
     return (
         <div className="flex-1">
             <div className="w-full h-full">
@@ -214,27 +333,41 @@ const Match = ({
                         isTopMatch={isTopMatch}
                         nTab={nTab}
                         trackTeamName={trackTeamName}
+                        linkPosition={linkPosition}
                     />
-                    {!isLast && (
-                        <LinkMatch
-                            match={match}
-                            isLast={isLast}
-                            isTopMatch={isTopMatch}
-                            nTab={nTab}
-                            trackTeamName={trackTeamName}
-                        />
-                    )}
+                    {!isLast && content}
                 </div>
             </div>
         </div>
     )
 }
 
-const LinkMatch = ({ match, isLast, isTopMatch, nTab }: MatchProps) => {
-    const borderTopMatch = isTopMatch ? 'grow-border-topX' : ''
-    const borderBotMatch = !isTopMatch ? 'grow-border-botX' : ''
-    const animeLink = isTopMatch ? 'grow-border' : ''
+const TopLink = ({ nTab }: { nTab: number }) => {
+    const delay = 0.3 * nTab + 's'
+    const secondDelay = 0.3 * nTab + 0.3 + 's'
 
+    return (
+        <div className="h-full flex-3 flex flex-col">
+            <div className="flex-5 flex relative"></div>
+            <div className="flex-5 flex relative">
+                <div className="flex-5 relative">
+                    <div
+                        className={`grow-border-bot-top-right`}
+                        style={{ animationDelay: delay }}
+                    ></div>
+                </div>
+                <div className="flex-5 relative">
+                    <div
+                        className={`grow-border-bot`}
+                        style={{ animationDelay: secondDelay }}
+                    />
+                </div>
+            </div>
+        </div>
+    )
+}
+
+const BotLink = ({ nTab }: { nTab: number }) => {
     const delay = 0.3 * nTab + 's'
     const secondDelay = 0.3 * nTab + 0.3 + 's'
 
@@ -243,47 +376,77 @@ const LinkMatch = ({ match, isLast, isTopMatch, nTab }: MatchProps) => {
             <div className="flex-5 flex relative">
                 <div className="flex-5 relative">
                     <div
-                        className={`${borderBotMatch}`}
+                        className={`grow-border-bot-bot-right`}
                         style={{ animationDelay: delay }}
                     ></div>
                 </div>
                 <div className="flex-5"></div>
             </div>
+            <div className="flex-5 flex relative"></div>
+        </div>
+    )
+}
 
+const LineLink = ({ nTab }: { nTab: number }) => {
+    const delay = 0.3 * nTab + 's'
+
+    return (
+        <div className="h-full flex-3 flex flex-col relative">
+            <div className={`flex-5 relative`}>
+                <div
+                    className="grow-border-bot"
+                    style={{ animationDelay: delay }}
+                ></div>
+            </div>
+
+            <div className="flex-5 relative"></div>
+        </div>
+    )
+}
+
+const LoserBracketTopLink = ({ nTab }: { nTab: number }) => {
+    const delay = 0.3 * nTab + 's'
+    const secondDelay = 0.3 * nTab + 0.3 + 's'
+
+    return (
+        <div className="h-full flex-3 flex flex-col">
+            <div className="flex-5 flex relative"></div>
             <div className="flex-5 flex relative">
                 <div className="flex-5 relative">
                     <div
-                        className={`${borderTopMatch}`}
+                        className={`grow-border-bot-top-right`}
                         style={{ animationDelay: delay }}
                     ></div>
                 </div>
-
                 <div className="flex-5 relative">
                     <div
-                        className={`${animeLink}`}
+                        className={`grow-border-top`}
                         style={{ animationDelay: secondDelay }}
-                    />
+                    ></div>
                 </div>
             </div>
         </div>
     )
+}
 
-    // const borderTopMatch = isTopMatch ? 'border-r-3 border-t-3' : ''
-    // const borderBotMatch = !isTopMatch ? 'border-r-3 border-b-3' : ''
-    // const borderLink = isTopMatch ? "border-b-3":""
+const LoserBracketBotLink = ({ nTab }: { nTab: number }) => {
+    const delay = 0.3 * nTab + 's'
+    const secondDelay = 0.3 * nTab + 0.3 + 's'
 
-    // return (
-    //     <div className="h-full flex-3 flex flex-col">
-    //         <div className="flex-5 flex">
-    //             <div className={`flex-5 ${borderBotMatch}`}></div>
-    //             <div className="flex-5"></div>
-    //         </div>
-    //         <div className="flex-5 flex">
-    //             <div className={`flex-5 ${borderTopMatch}`}></div>
-    //             <div className={`flex-5 ${borderLink}`}></div>
-    //         </div>
-    //     </div>
-    // )
+    return (
+        <div className="h-full flex-3 flex flex-col">
+            <div className="flex-5 flex relative">
+                <div className="flex-5 relative">
+                    <div
+                        className={`grow-border-bot-bot-right`}
+                        style={{ animationDelay: delay }}
+                    ></div>
+                </div>
+                <div className="flex-5"></div>
+            </div>
+            <div className="flex-5 flex relative"></div>
+        </div>
+    )
 }
 
 const VsCard = ({ match, isLast, isTopMatch, trackTeamName }: MatchProps) => {
@@ -351,7 +514,6 @@ const TeamLineContainer = ({
 const DisplayTeamLine = ({
     team,
     position,
-    isTopMatch,
     trackTeamName,
 }: TeamLineContainerProps) => {
     const roundedClasses =

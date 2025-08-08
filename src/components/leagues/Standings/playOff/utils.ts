@@ -40,3 +40,28 @@ export const getWinnerMatch = (match:Match) => {
 export function hasTeamLost(alreadyLost: Set<string>, match: Match): boolean {
     return alreadyLost.has(match.teamA) || alreadyLost.has(match.teamB);
 }
+
+export function getMatchCounts(tabIndex: number, page: Page): [number, number] {
+    const currentCount = page.tabs[tabIndex]?.matchs.length ?? 0;
+    const nextCount = page.tabs[tabIndex + 1]?.matchs.length ?? 0;
+
+    return [currentCount, nextCount];
+}
+
+export function isBeforeLastTab(bracket: Page, tabIndex: number): boolean {
+    return tabIndex === bracket.tabs.length - 2;
+} 
+
+export const getLinkPosition = (nbrMatchInTab:number, nbrMatchInNextTab:number, isTopMatch:boolean, lastLooserBracketMatch:boolean, isLooserBracket:boolean) => {
+	if (lastLooserBracketMatch)
+		return isLooserBracket ? "lastLoserBracketMatchBot" : "lastLoserBracketMatchTop"
+	if (nbrMatchInTab == nbrMatchInNextTab)
+		return 'line'
+	if ((nbrMatchInTab / 2 == nbrMatchInNextTab) || nbrMatchInNextTab == 0)
+		return isTopMatch ? "top" : "bot"
+	return null
+}
+
+export function hasAnyMatch(page: Page): boolean {
+  return page.tabs.some(tab => tab.matchs.length > 0);
+}

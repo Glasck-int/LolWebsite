@@ -308,8 +308,8 @@ const tournamentData = [
                         matchId: 13,
                         teamA: 'Vitality',
                         teamB: 'Astralis',
-                        shortA: 'G2',
-                        shortB: 'VIT',
+                        shortA: 'VIT',
+                        shortB: 'AST',
                         team1Score: 2,
                         team2Score: 1,
                         dateTime_UTC: '2025-08-07T18:00:00Z',
@@ -684,13 +684,13 @@ export default function Home() {
                                         - Click sur Glasck sur la page principal
                                         doit scroll
                                     </p>
-                                    <p>
-                                        - Faire le seo des balises sur mes card{' '}
-                                    </p>
                                     <p>- main page mettre la balise main</p>
                                     <p>
                                         - page sur le cote, mettre balise aside{' '}
                                     </p>
+                                    <p>- colorier les matchs suivis avec la ligne en violet</p>
+                                    <p>- gerer l'affichage 3 match round1/ puis 2 round2</p>
+                                    <p>- ajouter la page choisis dans playoff bracket dans l'url</p>
                                 </CardBodyMultipleContent>
                                 <CardBodyMultipleContent>
                                     <p>body 2</p>
