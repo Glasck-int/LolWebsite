@@ -3,6 +3,8 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { useTableEntityData } from '@/hooks/useTableEntityData'
 import { useTableEntityStore, SeasonData } from '@/store/tableEntityStore'
+import { useSimpleTabSync } from '@/hooks/useSimpleTabSync'
+import { useTableUrlSync } from '@/hooks/useTableUrlSync'
 import {
     TableEntityLayout,
     TableEntityHeader,
@@ -15,6 +17,7 @@ import {
     CardContext,
 } from '@/components/ui/card'
 import { SmartCardFooter, SmartCardFooterContent } from '@/components/ui/SmartTabs'
+import { SmartCardFooterSync, SmartCardFooterContentSync } from '@/components/ui/SmartTabsSync'
 import {
     LeagueDescription,
     StandingsOverviewFetch,
@@ -67,6 +70,12 @@ const LeagueTableEntityContent = ({
     const selectedTournamentId = activeId.length > 0 ? activeId[0] : null
     const t = useTranslate('Tabs')
     
+    // Initialize simple tab URL synchronization
+    const { setActiveTab } = useSimpleTabSync()
+    
+    // Initialize season/split/tournament URL synchronization
+    useTableUrlSync(seasons)
+    
     // State for managing which statistics to show
     const [activeStatsView, setActiveStatsView] = useState<string | null>('Players')
     
@@ -96,20 +105,20 @@ const LeagueTableEntityContent = ({
                     </div>
                     <TableEntityHeader seasons={seasons} />
                 </CardBody>
-                <SmartCardFooter>
-                    <SmartCardFooterContent>
+                <SmartCardFooterSync>
+                    <SmartCardFooterContentSync>
                         <p className="text-inherit">{t('Overview')}</p>
-                    </SmartCardFooterContent>
-                    <SmartCardFooterContent>
+                    </SmartCardFooterContentSync>
+                    <SmartCardFooterContentSync>
                         <p className="text-inherit">{t('Matches')}</p>
-                    </SmartCardFooterContent>
-                    <SmartCardFooterContent>
+                    </SmartCardFooterContentSync>
+                    <SmartCardFooterContentSync>
                         <p className="text-inherit">{t('Statistics')}</p>
-                    </SmartCardFooterContent>
-                    <SmartCardFooterContent>
+                    </SmartCardFooterContentSync>
+                    <SmartCardFooterContentSync>
                         <p className="text-inherit">{t('Tournaments')}</p>
-                    </SmartCardFooterContent>
-                </SmartCardFooter>
+                    </SmartCardFooterContentSync>
+                </SmartCardFooterSync>
                 </CardContext>
             </Card>
             {/* Body avec le contenu des différents onglets */}
