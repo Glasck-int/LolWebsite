@@ -19,6 +19,7 @@
     --color-green: #1e895e;
     --color-clear-violet: #a082fd;
     --color-dark-violet: #6022cd;
+    --color-violet: #A082FD;
     --color-grey: #8c8c8c;
     --color-clear-grey: #bab9b9;
     --color-dark-grey: #262626;
@@ -122,6 +123,11 @@
     }
     .default-bot-border-radius {
         border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
+
+    .default-right-border-radius {
+        border-top-right-radius: 8px;
         border-bottom-right-radius: 8px;
     }
 }
@@ -234,7 +240,7 @@ body {
 }
 
 /* global.css */
-  html body[data-scroll-locked] {
+html body[data-scroll-locked] {
     overflow: visible !important;
     margin-right: 0 !important;
-  } 
+}

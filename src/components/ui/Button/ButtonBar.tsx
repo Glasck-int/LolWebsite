@@ -1,7 +1,7 @@
-"use client";
+'use client'
 
-import { Button } from "@/components/ui/Button/Button";
-import { useState } from "react";
+import { Button } from '@/components/ui/Button/Button'
+import { useState } from 'react'
 
 /**
  * ButtonBar component properties
@@ -10,65 +10,76 @@ import { useState } from "react";
  *
  * @param options - Array of button labels to display in the bar
  * @param onButtonChange - Callback function called when a button selection changes
+ * @param disableUnselect - If true, prevents unselecting the currently active button by clicking it again.
+ * @param defaultActiveIndex - Index of the button to set as initially active (default: null).
  */
 interface ButtonBarProps {
-	options: string[];
-	onButtonChange: (option: string | null) => void;
-	initialActiveIndex?: number;
+    options: string[]
+    onButtonChange: (option: string | null) => void
+    disableUnselect?: boolean
+    defaultActiveIndex?: number | null
 }
 
 /**
- * Single selection button bar
+ * ButtonBar Component
  *
- * Component that displays a series of buttons where only one can be selected at a time.
- * Clicking on the active button deselects it.
+ * A horizontal group of toggleable buttons allowing **single selection**.
+ * One button can be active at a time. Clicking the active button will either
+ * deselect it or do nothing based on `disableUnselect`.
  *
- * @param props - The component properties containing the options and callback
- * @returns A JSX element representing the button bar
+ * @param options - Array of button labels to display
+ * @param onButtonChange - Callback triggered when the selection changes. Returns the selected option or `null` if deselected
+ * @param disableUnselect - If `true`, prevents unselecting an already active button (default: `false`)
+ * @param defaultActiveIndex - Optionally sets the index of the button that should be active on first render
+ *
+ * @returns A React element rendering the button group
  *
  * @example
- * ```ts
- * const handleButtonChange = (option: string | null) => {
- *   console.log('Selected button:', option);
- * };
- *
+ * ```tsx
  * <ButtonBar
- *   options={['Option 1', 'Option 2', 'Option 3']}
- *   onButtonChange={handleButtonChange}
+ *   options={['All', 'Ongoing', 'Completed']}
+ *   defaultActiveIndex={0}
+ *   disableUnselect={true}
+ *   onButtonChange={(val) => console.log('Selected:', val)}
  * />
  * ```
  *
  * @remarks
- * The component maintains internal state for the active button. Only one button can be
- * selected at a time. Clicking on the already selected button deselects it and
- * passes the null value to the callback.
- *
- * @see Button - Component used for each individual button
+ * - Buttons are styled with `variant="selected"` if active, or `variant="base"` if inactive.
+ * - Internal state handles the selected button index.
  */
-export const ButtonBar = (props: ButtonBarProps) => {
-	const [activeButtonIndex, setActiveButtonIndex] = useState<number | null>(
-		props.initialActiveIndex ?? null
-	);
-	const options = props.options;
+export const ButtonBar = ({
+    options,
+    onButtonChange,
+    disableUnselect = false,
+    defaultActiveIndex = null,
+}: ButtonBarProps) => {
+    const [activeButtonIndex, setActiveButtonIndex] = useState<number | null>(
+        defaultActiveIndex
+    )
 
+    const handleButtonClick = (option: string, index: number) => {
+        const isSame = activeButtonIndex === index
+        if (isSame && disableUnselect) {
+            return
+        }
+        const newActiveIndex = isSame ? null : index
+        const newValue = newActiveIndex !== null ? option : null
 
-	const handleButtonClick = (option: string, index: number) => {
-		const newActiveIndex = activeButtonIndex === index ? null : index;
-		const newValue = newActiveIndex !== null ? option : null;
-		setActiveButtonIndex(newActiveIndex);
-		props.onButtonChange(newValue);
-	};
-	return (
-		<div className="flex flex-row gap-2 w-fit">
-			{options.map((option, index) => (
-				<Button
-					key={index}
-					variant={activeButtonIndex === index ? "selected" : "base"}
-					onClick={() => handleButtonClick(option, index)}
-				>
-					{option}
-				</Button>
-			))}
-		</div>
-	);
-};
+        setActiveButtonIndex(newActiveIndex)
+        onButtonChange(newValue)
+    }
+    return (
+        <div className="flex flex-row gap-2 w-fit">
+            {options.map((option, index) => (
+                <Button
+                    key={index}
+                    variant={activeButtonIndex === index ? 'selected' : 'base'}
+                    onClick={() => handleButtonClick(option, index)}
+                >
+                    {option}
+                </Button>
+            ))}
+        </div>
+    )
+}

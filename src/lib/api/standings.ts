@@ -44,8 +44,9 @@ export async function fetchEnrichedStandingsData(
       let teamImageResponse = await getTeamImage(
         team.image?.replace('.png', '.webp') || ''
       )
-
+      
       // Si ça ne marche pas, essayer avec le nom de l'équipe
+      console.log("team", team.overviewPage)
       if (!teamImageResponse.data && team.overviewPage) {
         teamImageResponse = await getTeamImageByName(team.overviewPage)
       }
