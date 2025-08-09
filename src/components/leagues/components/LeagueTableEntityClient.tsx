@@ -1,7 +1,6 @@
 'use client'
 
-import React, { useEffect, useState, useCallback, useRef } from 'react'
-import { useSearchParams } from 'next/navigation'
+import React, { useEffect, useState, useCallback } from 'react'
 import { useTableEntityData } from '@/hooks/useTableEntityData'
 import { useTableEntityStore, SeasonData } from '@/store/tableEntityStore'
 import {
@@ -64,7 +63,6 @@ const LeagueTableEntityContent = ({
 }: Omit<LeagueTableEntityClientProps, 'leagueId'> & {
     seasons: SeasonData[]
 }) => {
-    const searchParams = useSearchParams()
     const { activeId } = useTableEntityStore()
     const selectedTournamentId = activeId.length > 0 ? activeId[0] : null
     const t = useTranslate('Tabs')
@@ -82,30 +80,6 @@ const LeagueTableEntityContent = ({
             setActiveStatsView('Players')
         }
     }, [selectedTournamentId])
-    
-    
-    
-    // Initialize from URL once all tabs are registered
-    const hasSeasons = seasons.length > 0
-    const initializedRef = useRef(false)
-    
-    useEffect(() => {
-        if (hasSeasons && !initializedRef.current) {
-            // Small delay to ensure all tabs are registered first
-            const timer = setTimeout(() => {
-                initializedRef.current = true
-                // Only initialize tab from URL, not the full state
-                const tabParam = searchParams.get('tab')
-                if (tabParam) {
-                    const { setActiveTab, getTabIndex } = useTableEntityStore.getState()
-                    const tabIndex = getTabIndex(tabParam)
-                    setActiveTab(tabIndex)
-                }
-            }, 100)
-            
-            return () => clearTimeout(timer)
-        }
-    }, [hasSeasons, searchParams])
 
     return (
         <>

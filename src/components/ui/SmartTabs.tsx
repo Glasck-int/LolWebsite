@@ -1,11 +1,9 @@
 /**
- * @fileoverview Smart tabs system for automatic tab detection and URL synchronization
+ * @fileoverview Smart tabs system for automatic tab detection
  * 
  * This module provides a smart tab system that automatically:
  * - Detects tabs from JSX structure without manual configuration
  * - Handles click events and tab switching
- * - Synchronizes tab state with URL parameters for shareable links
- * - Normalizes French accents in URLs (e.g., "Aperçu" → "apercu")
  * 
  * @example
  * ```tsx
@@ -18,15 +16,6 @@
  *     <p className="text-inherit">Matchs</p>
  *   </SmartCardFooterContent>
  * </SmartCardFooter>
- * 
- * // Initialize URL sync in your component
- * const { initializeFromUrl } = useSmartTabsInit()
- * useEffect(() => {
- *   const timer = setTimeout(() => {
- *     initializeFromUrl(searchParams, seasons)
- *   }, 100)
- *   return () => clearTimeout(timer)
- * }, [seasons.length > 0])
  * ```
  * 
  * @author joaquim
@@ -71,7 +60,7 @@ interface SmartCardFooterProps {
  * 
  * This component:
  * - Automatically extracts tab names from child SmartCardFooterContent elements
- * - Registers tabs with the Zustand store for URL synchronization
+ * - Registers tabs with the Zustand store
  * - Injects tabIndex props into child components
  * - Prevents duplicate registrations using a ref guard
  * 
@@ -175,7 +164,6 @@ export const SmartCardFooterContent = ({
 
     /**
      * Handles tab click by updating the active tab in the store
-     * This triggers URL synchronization automatically
      */
     const handleClick = () => {
         setActiveTab(tabIndex)
@@ -198,46 +186,4 @@ export const SmartCardFooterContent = ({
             {enhancedChildren}
         </BaseCardFooterContent>
     )
-}
-
-/**
- * Hook for initializing URL synchronization after tab registration
- * 
- * This hook provides access to the URL initialization function from the store.
- * It should be used in components that need to sync tab state from URL parameters
- * after all tabs have been automatically registered.
- * 
- * @returns Object containing initializeFromUrl function
- * 
- * @example
- * ```tsx
- * const { initializeFromUrl } = useSmartTabsInit()
- * 
- * useEffect(() => {
- *   if (seasons.length > 0) {
- *     // Small delay to ensure all tabs are registered first
- *     const timer = setTimeout(() => {
- *       initializeFromUrl(searchParams, seasons)
- *     }, 100)
- *     return () => clearTimeout(timer)
- *   }
- * }, [seasons.length > 0, initializeFromUrl, searchParams, seasons])
- * ```
- */
-export const useSmartTabsInit = () => {
-    const { initializeFromUrl } = useTableEntityStore()
-    
-    return {
-        /**
-         * Initialize tabs from URL parameters
-         * 
-         * This function should be called after all tabs have been registered
-         * (typically in useEffect with a small delay to ensure registration is complete).
-         * It syncs the active tab from URL parameters and optionally other state.
-         * 
-         * @param searchParams - URLSearchParams from useSearchParams()
-         * @param seasons - Optional seasons data for full state synchronization
-         */
-        initializeFromUrl
-    }
 }
