@@ -1,13 +1,14 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "allow": [
       "Bash(mkdir:*)",
       "Bash(mv:*)",
       "Bash(rmdir:*)",
       "Bash(rm:*)",
-      "Bash(npm run lint)"
+      "Bash(npm run lint)",
+      "Bash(grep:*)"
     ],
     "deny": []
-  },
-  "$schema": "https://json.schemastore.org/claude-code-settings.json"
+  }
 }

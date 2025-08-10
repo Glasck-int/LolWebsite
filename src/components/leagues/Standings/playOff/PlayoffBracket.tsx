@@ -1,6 +1,6 @@
 import { ButtonBar } from '@/components/ui/Button/ButtonBar'
-import { getTeamImageByName } from '@/lib/api/image'
-import React, { useState, useMemo } from 'react'
+import { getTeamImage, getTeamImageByName } from '@/lib/api/image'
+import React, { useState, useMemo, useEffect } from 'react'
 import {
     extractPageNames,
     findPageByName,
@@ -30,7 +30,7 @@ export interface Tab {
 }
 
 export interface Match {
-    matchId: number
+    matchId: number | string
     teamA: string
     teamB: string
     shortA: string
@@ -38,6 +38,8 @@ export interface Match {
     team1Score: number
     team2Score: number
     dateTime_UTC: string
+    imageA?: string | null
+    imageB?: string | null
 }
 
 interface PlayoffProps {
@@ -91,6 +93,51 @@ interface TeamLineContainerProps {
 interface TabHeaderProps {
     tabName: string
     isLast: boolean
+}
+
+// Component for team image with fallback handling
+const TeamImage = ({ imageUrl, teamName }: { imageUrl: string; teamName: string }) => {
+    const [imageSrc, setImageSrc] = useState<string | null>(null)
+
+    useEffect(() => {
+        const loadImage = async () => {
+            if (imageUrl) {
+                // Convert .png to .webp like in other components
+                const imageWithWebp = imageUrl.replace('.png', '.webp')
+                const result = await getTeamImage(imageWithWebp)
+                if (result.data) {
+                    setImageSrc(result.data)
+                } else if (teamName) {
+                    // Fallback to team name if image doesn't work
+                    const fallbackResult = await getTeamImageByName(teamName)
+                    if (fallbackResult.data) {
+                        setImageSrc(fallbackResult.data)
+                    }
+                }
+            } else if (teamName) {
+                // No image URL, try with team name directly
+                const result = await getTeamImageByName(teamName)
+                if (result.data) {
+                    setImageSrc(result.data)
+                }
+            }
+        }
+        loadImage()
+    }, [imageUrl, teamName])
+
+    if (!imageSrc) {
+        return null // Don't show anything if no image
+    }
+
+    return (
+        <Image
+            src={imageSrc}
+            width={20}
+            height={20}
+            alt={teamName}
+            className="object-contain"
+        />
+    )
 }
 
 export const PlayoffBracket = ({
@@ -452,11 +499,16 @@ const LoserBracketBotLink = ({ nTab }: { nTab: number }) => {
 const VsCard = ({ match, isLast, isTopMatch, trackTeamName }: MatchProps) => {
     const teamA = extractTeamInfo(match, 0)
     const teamB = extractTeamInfo(match, 1)
-    const url =
-        'http://49.13.26.198:8080/static/teamPng/Karmine Corplogo square.webp'
-
-    const teamAWithImage = { ...teamA, imageUrl: url || '' }
-    const teamBWithImage = { ...teamB, imageUrl: url || '' }
+    
+    // Pass both image URL from DB and team name for fallback
+    const teamAWithImage = { 
+        ...teamA, 
+        imageUrl: match.imageA || '' 
+    }
+    const teamBWithImage = { 
+        ...teamB, 
+        imageUrl: match.imageB || '' 
+    }
 
     return (
         <div
@@ -553,14 +605,7 @@ const DisplayTeamLine = ({
                         ></div>
                     )}
                 </div>
-                {team.imageUrl && (
-                    <Image
-                        src={team.imageUrl}
-                        width={20}
-                        height={20}
-                        alt={team.name}
-                    />
-                )}
+                <TeamImage imageUrl={team.imageUrl} teamName={team.name} />
                 <p
                     className={`text-sm font-semibold ${
                         !team.asWin && 'text-grey'

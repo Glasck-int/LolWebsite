@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify'
+import { Type } from '@sinclair/typebox'
 
 import {
     TournamentListResponse,
@@ -10,6 +11,7 @@ import { MatchScheduleGameListResponse } from '../../schemas/matchScheduleGame'
 import { ScoreboardPlayersListResponse, PlayerStatsListResponse } from '../../schemas/scoreboardPlayers'
 import { TournamentLeagueNameParamSchema, TournamentIdParamSchema, OverviewPageParamSchema, TournamentOverviewPageParamSchema } from '../../schemas/params'
 import { MatchScheduleListResponse } from '../../schemas/matchShedule'
+import { PlayoffBracketResponse } from '../../schemas/playoffBracket'
 
 export default async function tournamentsRoutes(fastify: FastifyInstance) {
     const redis = fastify.redis
@@ -1103,6 +1105,283 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
                 return { tournaments }
             } catch (error) {
                 console.error('Error in debug route:', error)
+                return reply
+                    .status(500)
+                    .send({ error: 'Internal server error' })
+            }
+        }
+    )
+
+    // Get tournament type (standings, groups, or playoff)
+    fastify.get<{ Params: { tournamentId: string } }>(
+        '/tournaments/:tournamentId/type',
+        {
+            schema: {
+                description: 'Determine the tournament type (standings, groups, or playoff)',
+                tags: ['tournaments'],
+                params: TournamentIdParamSchema,
+                response: {
+                    200: Type.Object({
+                        type: Type.Union([
+                            Type.Literal('standings'),
+                            Type.Literal('groups'),
+                            Type.Literal('playoff'),
+                            Type.Literal('unknown')
+                        ]),
+                        hasStandings: Type.Boolean(),
+                        hasGroups: Type.Boolean(),
+                        hasPlayoffStructure: Type.Boolean(),
+                    }),
+                    404: ErrorResponseSchema,
+                    500: ErrorResponseSchema,
+                },
+            },
+        },
+        async (request, reply) => {
+            try {
+                const { tournamentId } = request.params
+                
+                // Get tournament
+                const tournament = await prisma.tournament.findUnique({
+                    where: { id: parseInt(tournamentId) },
+                    select: { overviewPage: true },
+                })
+
+                if (!tournament) {
+                    return reply.status(404).send({ error: 'Tournament not found' })
+                }
+
+                // Check for standings
+                const standingsCount = await prisma.standings.count({
+                    where: { overviewPage: tournament.overviewPage }
+                })
+
+                // Check for groups
+                const groupsCount = await prisma.tournamentGroups.count({
+                    where: { overviewPage: tournament.overviewPage }
+                })
+
+                // Check for playoff structure (matches with nPage and nTabInPage)
+                const playoffMatchesCount = await prisma.matchSchedule.count({
+                    where: {
+                        overviewPage: tournament.overviewPage,
+                        nPage: { not: null },
+                        nTabInPage: { not: null },
+                        tab: { not: null },
+                    }
+                })
+
+                // Determine type
+                let type: 'standings' | 'groups' | 'playoff' | 'unknown' = 'unknown'
+                
+                if (groupsCount > 0) {
+                    type = 'groups'
+                } else if (standingsCount > 0) {
+                    type = 'standings'
+                } else if (playoffMatchesCount > 0) {
+                    type = 'playoff'
+                }
+
+                return {
+                    type,
+                    hasStandings: standingsCount > 0,
+                    hasGroups: groupsCount > 0,
+                    hasPlayoffStructure: playoffMatchesCount > 0,
+                }
+            } catch (error) {
+                console.error('Error determining tournament type:', error)
+                return reply.status(500).send({ error: 'Internal server error' })
+            }
+        }
+    )
+
+    // Playoff bracket route
+    fastify.get<{ Params: { tournamentId: string } }>(
+        '/tournaments/:tournamentId/playoff-bracket',
+        {
+            schema: {
+                description: 'Get playoff bracket data for a tournament',
+                tags: ['tournaments'],
+                params: TournamentIdParamSchema,
+                response: {
+                    200: PlayoffBracketResponse,
+                    404: ErrorResponseSchema,
+                    500: ErrorResponseSchema,
+                },
+            },
+        },
+        async (request, reply) => {
+            try {
+                const { tournamentId } = request.params
+                const cacheKey = `tournament_playoff_bracket:${tournamentId}`
+
+                // Check cache first
+                const cached = await redis.get(cacheKey)
+                if (cached) {
+                    return JSON.parse(cached)
+                }
+
+                // Get tournament first to get the overviewPage
+                const tournament = await prisma.tournament.findUnique({
+                    where: { id: parseInt(tournamentId) },
+                    select: { overviewPage: true, dateEnd: true },
+                })
+
+                if (!tournament) {
+                    return reply
+                        .status(404)
+                        .send({ error: 'Tournament not found' })
+                }
+
+                // Get all matches for the tournament that have playoff structure
+                // Playoffs are identified by having nPage and nTabInPage structure
+                // We don't filter by specific round/tab names since they vary by tournament
+                const matches = await prisma.matchSchedule.findMany({
+                    where: {
+                        overviewPage: tournament.overviewPage,
+                        // Exclude nullified matches
+                        isNullified: { not: true },
+                        // Only get matches that have page and tab information (playoff structure)
+                        nPage: { not: null },
+                        nTabInPage: { not: null },
+                        // Must have tab information to be a playoff bracket
+                        tab: { not: null },
+                    },
+                    orderBy: [
+                        { nPage: 'asc' },
+                        { nTabInPage: 'asc' },
+                        { nMatchInTab: 'asc' },
+                    ],
+                })
+
+                if (matches.length === 0) {
+                    return reply.status(404).send({
+                        error: 'No playoff matches found for this tournament',
+                    })
+                }
+
+                // Get team short names - optimize by only fetching teams we need
+                const teamNames = new Set<string>()
+                matches.forEach((match) => {
+                    if (match.team1) teamNames.add(match.team1)
+                    if (match.team2) teamNames.add(match.team2)
+                })
+
+                const teams = await prisma.team.findMany({
+                    where: {
+                        name: { in: Array.from(teamNames) },
+                    },
+                    select: {
+                        name: true,
+                        short: true,
+                        image: true,
+                    },
+                })
+
+                const teamShortMap = new Map(
+                    teams.map((team) => [team.name, team.short || team.name])
+                )
+                const teamImageMap = new Map(
+                    teams.map((team) => [team.name, team.image])
+                )
+
+                // Group matches by page and tab
+                const pagesMap = new Map<number, {
+                    pageName: string,
+                    tabsMap: Map<number, { tabName: string, matches: any[] }>
+                }>()
+
+                matches.forEach((match) => {
+                    const pageNum = match.nPage || 0
+                    const tabNum = match.nTabInPage || 0
+                    const tabName = match.tab || match.round || 'Unknown'
+
+		    const pageName = match.round || match.phase || match.shownRound || `Stage ${pageNum}`
+
+                    if (!pagesMap.has(pageNum)) {
+                        pagesMap.set(pageNum, {
+                            pageName: pageName,
+                            tabsMap: new Map()
+                        })
+                    }
+
+                    const pageData = pagesMap.get(pageNum)!
+                    
+                    if (!pageData.tabsMap.has(tabNum)) {
+                        pageData.tabsMap.set(tabNum, {
+                            tabName: tabName,
+                            matches: []
+                        })
+                    }
+
+                    const matchData = {
+                        matchId: match.matchId || match.id.toString(),
+                        teamA: match.team1 || '',
+                        teamB: match.team2 || '',
+                        shortA: teamShortMap.get(match.team1 || '') || match.team1 || '',
+                        shortB: teamShortMap.get(match.team2 || '') || match.team2 || '',
+                        team1Score: match.team1Score,
+                        team2Score: match.team2Score,
+                        dateTime_UTC: match.dateTime_UTC
+                            ? match.dateTime_UTC.toISOString()
+                            : null,
+                        imageA: teamImageMap.get(match.team1 || '') || null,
+                        imageB: teamImageMap.get(match.team2 || '') || null,
+                    }
+
+                    pageData.tabsMap.get(tabNum)!.matches.push(matchData)
+                })
+
+                const bracketData = Array.from(pagesMap.entries())
+                    .sort(([a], [b]) => a - b)
+                    .map(([_, pageData]) => {
+                        const tabs = Array.from(pageData.tabsMap.entries())
+                            .sort(([a], [b]) => a - b)
+                            .map(([_, tabData]) => ({
+                                tabName: tabData.tabName,
+                                matchs: tabData.matches
+                            }))
+
+                        return {
+                            pageName: pageData.pageName,
+                            nTabInPage: tabs.length,
+                            tabs,
+                        }
+                    })
+
+                // Dynamic cache strategy based on tournament status
+                let cacheTime: number
+
+                if (!tournament?.dateEnd) {
+                    // Tournament without end date = active
+                    cacheTime = 300 // 5 minutes
+                } else {
+                    const tournamentEndDate = new Date(tournament.dateEnd)
+                    const now = new Date()
+                    const daysSinceEnd = Math.floor(
+                        (now.getTime() - tournamentEndDate.getTime()) /
+                            (1000 * 60 * 60 * 24)
+                    )
+
+                    if (tournamentEndDate > now) {
+                        // Tournament not yet finished
+                        cacheTime = 300 // 5 minutes
+                    } else if (daysSinceEnd <= 2) {
+                        // Tournament finished ≤ 2 days ago (possible corrections)
+                        cacheTime = 3600 // 1 hour
+                    } else if (daysSinceEnd <= 30) {
+                        // Tournament finished 3-30 days ago
+                        cacheTime = 604800 // 7 days
+                    } else {
+                        // Tournament finished > 30 days ago (historical data is fixed)
+                        cacheTime = 2592000 // 30 days
+                    }
+                }
+
+                await redis.setex(cacheKey, cacheTime, JSON.stringify(bracketData))
+                return bracketData
+            } catch (error) {
+                console.error('Error in tournament playoff bracket route:', error)
                 return reply
                     .status(500)
                     .send({ error: 'Internal server error' })

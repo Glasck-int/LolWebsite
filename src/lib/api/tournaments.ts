@@ -115,6 +115,20 @@ async function getTournamentStandingsByTournamentId(
     )
 }
 
+/**
+ * Get playoff bracket data for a tournament
+ *
+ * @param tournamentId - The ID of the tournament to fetch playoff bracket for
+ * @returns Promise with playoff bracket data or error
+ */
+async function getTournamentPlayoffBracket(
+    tournamentId: string
+): Promise<ApiResponse<any>> {
+    return apiRequest<any>(
+        `/api/tournaments/${tournamentId}/playoff-bracket`
+    )
+}
+
 export {
     getTournamentsByLeagueName,
     getTournamentsStandingsByTournamentOverviewPage,
@@ -125,4 +139,5 @@ export {
     getLastThreeMatchesForTournament,
     getNextThreeMatchesForTournament,
     getMatchesForTournament,
+    getTournamentPlayoffBracket,
 }

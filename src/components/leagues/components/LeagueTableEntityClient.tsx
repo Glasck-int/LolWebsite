@@ -24,7 +24,7 @@ import { NextMatchesFetch } from '@/components/leagues/Matches/NextMatchesFetch'
 import { ChampionStatisticsClient } from './ChampionStatisticsClient'
 import { PlayerStatisticsClient } from './PlayerStatisticsClient'
 import { ButtonBar } from '@/components/ui/Button/ButtonBar'
-import { NewStandingsWithTabsFetch } from '@/components/leagues/Standings/views/NewStandingsWithTabsFetch'
+import { TournamentContentFetch } from '@/components/leagues/Standings/views/TournamentContentFetch'
 import {
     League,
     Standings,
@@ -218,9 +218,9 @@ const LeagueTableEntityContent = ({
                 </TableEntityContent>
                 <TableEntityContent>
                     <div className="space-y-4">
-                        {/* Nouveau système de tableaux avec vraies balises HTML */}
+                        {/* Tournament content - automatically detects standings vs playoff bracket */}
                         {selectedTournamentId ? (
-                            <NewStandingsWithTabsFetch
+                            <TournamentContentFetch
                                 tournamentId={selectedTournamentId}
                                 maxRows={null}
                             />
