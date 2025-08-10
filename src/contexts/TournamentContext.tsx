@@ -3,7 +3,7 @@
 import React, { createContext, useContext } from 'react'
 import { ProcessedStanding } from '@/components/leagues/Standings/utils/StandingsDataProcessor'
 import { MatchScheduleGame, Standings } from '@/generated/prisma'
-import { PlayerStatsType } from '@Glasck-int/glasck-types'
+import { PlayerStatsType } from '@glasck-int/glasck-types'
 
 // Types flexibles pour accepter les données de l'API
 

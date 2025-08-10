@@ -8,7 +8,6 @@ import {
     TeamNameParamSchema,
     TeamTournamentParamsSchema,
 } from '../../schemas/params'
-import { CleanName } from '../../utils/cleanName'
 
 export default async function teamsRoutes(fastify: FastifyInstance) {
     const redis = fastify.redis
@@ -50,7 +49,7 @@ export default async function teamsRoutes(fastify: FastifyInstance) {
 
             const cleanedTeam = {
                 ...team,
-                name: CleanName(team.name)
+                name: team.name
             }
 
             // Cache for 1 week (604800 seconds)
@@ -161,13 +160,13 @@ export default async function teamsRoutes(fastify: FastifyInstance) {
                 return {
                     matchId: match.matchId,
                     dateTime_UTC: match.dateTime_UTC?.toISOString(),
-                    team1: CleanName(match.team1),
-                    team2: CleanName(match.team2),
+                    team1: match.team1,
+                    team2: match.team2,
                     winner: match.winner,
                     team1Score: match.team1Score,
                     team2Score: match.team2Score,
                     isWin,
-                    opponent: CleanName(opponent) || 'Unknown',
+                    opponent: opponent || 'Unknown',
                     tournament: match.overviewPage,
                 }
             })
@@ -178,7 +177,7 @@ export default async function teamsRoutes(fastify: FastifyInstance) {
                 .join('')
 
             const result = {
-                team: CleanName(name),
+                team: name,
                 tournament: tournament,
                 recentMatches: processedMatches, // ← Changer "matches" en "recentMatches"
                 form,
@@ -304,13 +303,13 @@ export default async function teamsRoutes(fastify: FastifyInstance) {
                 return {
                     gameId: game.gameId,
                     matchId: game.matchId,
-                    blue: CleanName(game.blue),
-                    red: CleanName(game.red),
+                    blue: game.blue,
+                    red: game.red,
                     winner: game.winner,
                     blueScore: game.blueScore,
                     redScore: game.redScore,
                     isWin,
-                    opponent: CleanName(opponent) || 'Unknown',
+                    opponent: opponent || 'Unknown',
                     tournament: game.MatchSchedule?.overviewPage,
                     nGameInMatch: game.nGameInMatch,
                 }
@@ -322,7 +321,7 @@ export default async function teamsRoutes(fastify: FastifyInstance) {
                 .join('')
 
             const result = {
-                team: CleanName(name),
+                team: name,
                 tournament: tournament,
                 recentGames: processedGames,
                 form,

@@ -4,7 +4,7 @@ import {
     ScoreboardPlayers,
 } from '@/generated/prisma'
 import { apiRequest, ApiResponse } from './utils'
-import { PlayerStatsType } from '@Glasck-int/glasck-types'
+import { PlayerStatsType } from '@glasck-int/glasck-types'
 
 
 async function getLastThreeMatchesForTournament(
@@ -123,8 +123,8 @@ async function getTournamentStandingsByTournamentId(
  */
 async function getTournamentPlayoffBracket(
     tournamentId: string
-): Promise<ApiResponse<any>> {
-    return apiRequest<any>(
+): Promise<ApiResponse<unknown>> {
+    return apiRequest<unknown>(
         `/api/tournaments/${tournamentId}/playoff-bracket`
     )
 }

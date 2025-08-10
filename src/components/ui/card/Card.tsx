@@ -12,7 +12,7 @@ export interface ChildAndClassname {
 
 // Context
 
-const CardContextP = createContext<{
+export const CardContextP = createContext<{
     activeIndex: number
     setActiveIndex: (index: number) => void
     isHide:boolean

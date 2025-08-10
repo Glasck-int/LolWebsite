@@ -3,7 +3,6 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import ChoseDate, { useChoseDate } from '@/components/ui/calendar/ChoseDate'
 import { Card, CardBody } from '@/components/ui/card'
-import { useTranslate } from '@/lib/hooks/useTranslate'
 import { TimeDisplay } from '@/lib/hooks/timeDisplay'
 import { MatchSchedule } from '@/generated/prisma'
 
@@ -51,25 +50,6 @@ type MatchWithGames = MatchSchedule & {
     }>
 }
 
-/**
- * API response structure for matches
- * @interface MatchesResponse
- */
-interface MatchesResponse {
-    /** Array of match data */
-    data: MatchWithGames[]
-    /** Pagination information */
-    pagination: {
-        /** Total number of matches */
-        total: number
-        /** Number of matches per page */
-        limit: number
-        /** Current offset for pagination */
-        offset: number
-        /** Whether more matches are available */
-        hasMore: boolean
-    }
-}
 
 /**
  * MatchesCalendar Component
@@ -122,7 +102,6 @@ export const MatchesCalendar: React.FC<MatchesCalendarProps> = ({ tournamentId }
         offset: 0,
         hasMore: false
     })
-    const t = useTranslate('Matches')
 
     // Fetch tournament info and available dates
     useEffect(() => {
@@ -166,7 +145,7 @@ export const MatchesCalendar: React.FC<MatchesCalendarProps> = ({ tournamentId }
         if (tournamentId) {
             fetchTournamentData()
         }
-    }, [tournamentId])
+    }, [tournamentId, choseDateProps])
 
     /**
      * Fetches matches for a specific date with pagination support
@@ -372,6 +351,12 @@ export const MatchesCalendar: React.FC<MatchesCalendarProps> = ({ tournamentId }
      */
     const getMatchStatus = (match: MatchWithGames) => {
         const now = new Date()
+        
+        // Si pas de date, considérer comme "upcoming"
+        if (!match.dateTime_UTC) {
+            return 'upcoming'
+        }
+        
         const matchDate = new Date(match.dateTime_UTC)
         
         // Si le match a un gagnant défini, il est terminé
@@ -482,7 +467,9 @@ export const MatchesCalendar: React.FC<MatchesCalendarProps> = ({ tournamentId }
                                     <CardBody>
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center space-x-4">
-                                                <TimeDisplay dateTime_UTC={new Date(match.dateTime_UTC)} />
+                                                {match.dateTime_UTC && (
+                                                    <TimeDisplay dateTime_UTC={new Date(match.dateTime_UTC)} />
+                                                )}
                                                 <div className="flex items-center space-x-2">
                                                     <span className="font-medium">{match.team1}</span>
                                                     <span className="text-gray-400">vs</span>

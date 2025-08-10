@@ -1,5 +1,5 @@
 import { apiRequest, ApiResponse } from './utils'
-import { SeasonResponse } from '@Glasck-int/glasck-types'
+import { SeasonResponse } from '@glasck-int/glasck-types'
 
 
 

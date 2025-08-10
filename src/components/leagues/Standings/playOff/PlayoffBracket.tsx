@@ -6,7 +6,6 @@ import {
     findPageByName,
     extractTeamInfo,
     getLoserMatch,
-    getWinnerMatch,
     hasTeamLost,
     getMatchCounts,
     getLinkPosition,
@@ -15,8 +14,6 @@ import {
 } from './utils'
 import Image from 'next/image'
 import './animeBorder.css'
-import { delay } from 'framer-motion'
-import { match } from 'assert'
 
 export interface Page {
     pageName: string
@@ -79,9 +76,6 @@ interface TabProps {
     hasLoserBracket: boolean
 }
 
-interface LooserTabProps extends TabProps {
-    bracket: Page
-}
 
 interface TeamLineContainerProps {
     team: Team
@@ -144,8 +138,11 @@ export const PlayoffBracket = ({
     tournaments,
     trackTeamName = '',
 }: PlayoffProps) => {
+    const [pageSelected, setPageSelected] = useState(() => {
+        return tournaments.length > 0 ? tournaments[0] : null
+    })
+    
     if (tournaments.length == 0) return <p>Error: no matchs as been found</p>
-    const [pageSelected, setPageSelected] = useState(tournaments[0])
 
     const handleButtonClick = (option: string | null) => {
         if (!option) return
@@ -160,7 +157,7 @@ export const PlayoffBracket = ({
                 defaultActiveIndex={0}
                 onButtonChange={handleButtonClick}
             />
-            <Page page={pageSelected} trackTeamName={trackTeamName} />
+            {pageSelected && <Page page={pageSelected} trackTeamName={trackTeamName} />}
         </div>
     )
 }
@@ -217,7 +214,7 @@ const Page = ({ page, trackTeamName }: PageProps) => {
         winnerBracket.tabs = processedTabs
 
         return { looserBracket, winnerBracket }
-    }, [page.tabs])
+    }, [page.tabs, page.nTabInPage])
 
     const hasLooserBracket = hasAnyMatch(looserBracket)
 
@@ -416,7 +413,6 @@ const TopLink = ({ nTab }: { nTab: number }) => {
 
 const BotLink = ({ nTab }: { nTab: number }) => {
     const delay = 0.3 * nTab + 's'
-    const secondDelay = 0.3 * nTab + 0.3 + 's'
 
     return (
         <div className="h-full flex-3 flex flex-col">
@@ -478,7 +474,6 @@ const LoserBracketTopLink = ({ nTab }: { nTab: number }) => {
 
 const LoserBracketBotLink = ({ nTab }: { nTab: number }) => {
     const delay = 0.3 * nTab + 's'
-    const secondDelay = 0.3 * nTab + 0.3 + 's'
 
     return (
         <div className="h-full flex-3 flex flex-col">

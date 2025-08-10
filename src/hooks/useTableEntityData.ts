@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import type { SeasonData } from '@/store/tableEntityStore'
 import { useTableEntityStore } from '@/store/tableEntityStore'
 import { getSeasonsByLeagueId } from '@/lib/api/seasons'
-import type { SeasonResponse } from '@Glasck-int/glasck-types'
+import type { SeasonResponse } from '@glasck-int/glasck-types'
 
 /**
  * Hook pour récupérer automatiquement les données de saisons depuis l'API

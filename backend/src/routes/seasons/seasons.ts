@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import { ErrorResponseSchema } from '../../schemas/common'
 import prisma from '../../services/prisma'
-import { SeasonResponse, SplitResponse, TournamentResponse } from '@Glasck-int/glasck-types'
+import { SeasonResponse, SplitResponse, TournamentResponse } from '@glasck-int/glasck-types'
 
 /**
  * Clean up extra spaces and separators in a string

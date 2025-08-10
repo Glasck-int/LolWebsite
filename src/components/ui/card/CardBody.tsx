@@ -1,8 +1,8 @@
 'use client'
 
 import React from 'react'
-import { ChildAndClassname, useCard } from './Card'
-import { useRef } from 'react'
+import { ChildAndClassname, CardContextP } from './Card'
+import { useRef, useContext } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 /**
@@ -35,53 +35,21 @@ import { motion, AnimatePresence } from 'framer-motion'
  * - The component manages these properties internally for smooth transitions
  */
 
+// Main component that handles context existence
 export const CardBody = ({ children, className = '' }: ChildAndClassname) => {
     const hasBeenToggled = useRef(false)
-
-    // Try to get context, but don't fail if it doesn't exist
-    let isHide = false
-    try {
-        const { isHide } = useCard()
-
-        if (isHide) {
-            hasBeenToggled.current = true
-        }
-
+    
+    // Use useContext directly to check if context exists
+    const context = useContext(CardContextP)
+    
+    // If no context, render simple div
+    if (!context) {
         return (
-            <AnimatePresence>
-                {!isHide && (
-                    <motion.div
-                        className={`flex grow-1 ${className}`}
-                        initial={
-                            hasBeenToggled.current
-                                ? { height: 0, opacity: 0 }
-                                : { height: 'auto', opacity: 1 }
-                        }
-                        animate={{
-                            height: 'auto',
-                            opacity: 1,
-                        }}
-                        exit={{
-                            opacity: 0,
-                            height: 0,
-                        }}
-                        transition={{
-                            duration: 0.7,
-                            ease: 'easeOut',
-                            opacity: { duration: 0.2 },
-                            height: { delay: 0.2 },
-                        }}
-                    >
-                        {children}
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        )
-    } catch {
-        return (
-            <div className={`flex grow-1 ${className ?? ''}`}>{children}</div>
+            <div className={`flex grow-1 ${className}`}>{children}</div>
         )
     }
+    
+    const { isHide } = context
 
     if (isHide) {
         hasBeenToggled.current = true
@@ -91,7 +59,7 @@ export const CardBody = ({ children, className = '' }: ChildAndClassname) => {
         <AnimatePresence>
             {!isHide && (
                 <motion.div
-                    className={`flex grow-1 ${className ?? ''}`}
+                    className={`flex grow-1 ${className}`}
                     initial={
                         hasBeenToggled.current
                             ? { height: 0, opacity: 0 }
@@ -145,14 +113,8 @@ export const CardBody = ({ children, className = '' }: ChildAndClassname) => {
  * @see useCard
  */
 export const CardBodyMultiple = ({ children }: ChildAndClassname) => {
-    let activeIndex = 0
-    try {
-        const context = useCard()
-        activeIndex = context.activeIndex
-    } catch {
-        // No context available, show first child by default
-        activeIndex = 0
-    }
+    const context = useContext(CardContextP)
+    const activeIndex = context?.activeIndex ?? 0
 
     return (
         <div className="h-full w-full">

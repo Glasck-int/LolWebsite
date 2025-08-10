@@ -2,12 +2,12 @@
 
 import React, { createContext, useContext, ReactNode } from 'react'
 import { useSimpleSeasonSync } from '@/hooks/useSimpleSeasonSync'
-import { SeasonData } from '@/store/tableEntityStore'
+import { SeasonData, useTableEntityStore } from '@/store/tableEntityStore'
 
 interface SeasonSyncContextType {
     selectSeason: (season: string) => void
     selectSplit: (split: string) => void
-    selectTournament: (tournament: any) => void
+    selectTournament: (tournament: { id: number; name: string; tournament: string }) => void
     selectAllSeasons: (allId: number[]) => void
     selectAllSplits: (allId: number[]) => void
 }
@@ -31,22 +31,22 @@ export const SeasonSyncProvider = ({ children, seasons }: SeasonSyncProviderProp
 
 export const useSeasonSync = () => {
     const context = useContext(SeasonSyncContext)
+    const { 
+        selectSeason: storeSelectSeason, 
+        selectSplit: storeSelectSplit, 
+        selectTournament: storeSelectTournament, 
+        selectAllSeasons: storeSelectAllSeasons, 
+        selectAllSplits: storeSelectAllSplits 
+    } = useTableEntityStore()
+    
     if (!context) {
         // Return default store methods if no context (for backward compatibility)
-        const { 
-            selectSeason, 
-            selectSplit, 
-            selectTournament, 
-            selectAllSeasons, 
-            selectAllSplits 
-        } = require('@/store/tableEntityStore').useTableEntityStore()
-        
         return {
-            selectSeason: (season: string) => selectSeason(season, [], false),
-            selectSplit: (split: string) => selectSplit(split, [], false),
-            selectTournament,
-            selectAllSeasons,
-            selectAllSplits
+            selectSeason: (season: string) => storeSelectSeason(season, [], false),
+            selectSplit: (split: string) => storeSelectSplit(split, [], false),
+            selectTournament: storeSelectTournament,
+            selectAllSeasons: storeSelectAllSeasons,
+            selectAllSplits: storeSelectAllSplits
         }
     }
     return context

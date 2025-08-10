@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { useQueryString } from '@/lib/hooks/createQueryState'
-import { useTableEntityStore, SeasonData } from '@/store/tableEntityStore'
+import { useTableEntityStore, SeasonData, Tournament } from '@/store/tableEntityStore'
 import { 
     getSplits, 
     getTournaments 
@@ -21,14 +21,27 @@ export const useTableUrlSync = (seasons: SeasonData[]) => {
     const hasInitializedRef = useRef(false)
     const isInternalUpdateRef = useRef(false)
     
-    // Store original methods
-    const originalMethodsRef = useRef({
-        selectSeason: store.selectSeason,
-        selectSplit: store.selectSplit,
-        selectTournament: store.selectTournament,
-        selectAllSeasons: store.selectAllSeasons,
-        selectAllSplits: store.selectAllSplits
-    })
+    // Store original methods once on mount to prevent infinite loops
+    const originalMethodsRef = useRef<{
+        selectSeason: typeof store.selectSeason
+        selectSplit: typeof store.selectSplit
+        selectTournament: typeof store.selectTournament
+        selectAllSeasons: typeof store.selectAllSeasons
+        selectAllSplits: typeof store.selectAllSplits
+    } | null>(null)
+    
+    // Capture original methods only once
+    if (!originalMethodsRef.current) {
+        originalMethodsRef.current = {
+            selectSeason: store.selectSeason,
+            selectSplit: store.selectSplit,
+            selectTournament: store.selectTournament,
+            selectAllSeasons: store.selectAllSeasons,
+            selectAllSplits: store.selectAllSplits
+        }
+    }
+    
+    const originalMethods = originalMethodsRef.current
 
     // Initialize from URL on mount - with a delay to ensure store is ready
     useEffect(() => {
@@ -45,7 +58,7 @@ export const useTableUrlSync = (seasons: SeasonData[]) => {
                         split.tournaments?.map(t => t.id) || []
                     )
                 )
-                originalMethodsRef.current.selectAllSeasons(allId)
+                originalMethods.selectAllSeasons(allId)
             } else {
                 // Determine which season to use
                 let targetSeason = seasonParam
@@ -79,14 +92,14 @@ export const useTableUrlSync = (seasons: SeasonData[]) => {
                 // Find the season object
                 const season = seasons.find(s => s.season === targetSeason)
                 if (season) {
-                    originalMethodsRef.current.selectSeason(season.season, seasons)
+                    originalMethods.selectSeason(season.season, seasons, false)
                     
                     // Handle split
                     if (inferredSplit === 'all') {
                         const allId = season.data.flatMap(split =>
                             split.tournaments?.map(t => t.id) || []
                         )
-                        originalMethodsRef.current.selectAllSplits(allId)
+                        originalMethods.selectAllSplits(allId)
                     } else {
                         // Determine target split
                         let targetSplit = inferredSplit
@@ -105,7 +118,7 @@ export const useTableUrlSync = (seasons: SeasonData[]) => {
                         if (targetSplit) {
                             const splits = getSplits(season.season, seasons)
                             if (splits.includes(targetSplit)) {
-                                originalMethodsRef.current.selectSplit(targetSplit, seasons, false)
+                                originalMethods.selectSplit(targetSplit, seasons, false)
                             }
                         }
                         
@@ -117,7 +130,7 @@ export const useTableUrlSync = (seasons: SeasonData[]) => {
                                 const tournaments = getTournaments(season.season, currentSplit, seasons, false)
                                 const tournament = tournaments.find(t => t.tournament === tournamentParam)
                                 if (tournament) {
-                                    originalMethodsRef.current.selectTournament(tournament)
+                                    originalMethods.selectTournament(tournament)
                                 }
                             }, 50)
                         }
@@ -132,14 +145,15 @@ export const useTableUrlSync = (seasons: SeasonData[]) => {
             
             return () => clearTimeout(timer)
         }
-    }, [seasonParam, splitParam, tournamentParam, seasons.length])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [seasonParam, splitParam, tournamentParam, seasons, store.activeSplit])
 
     // Patch store methods to add URL sync
     useEffect(() => {
         // Override selectSeason
         useTableEntityStore.setState({
-            selectSeason: (season: string, seasonsData: SeasonData[]) => {
-                originalMethodsRef.current.selectSeason(season, seasonsData)
+            selectSeason: (season: string, seasonsData: SeasonData[], isAllActive: boolean) => {
+                originalMethods.selectSeason(season, seasonsData, isAllActive)
                 if (!isInternalUpdateRef.current) {
                     setSeasonParam(season)
                     setSplitParam('')
@@ -151,7 +165,7 @@ export const useTableUrlSync = (seasons: SeasonData[]) => {
         // Override selectSplit
         useTableEntityStore.setState({
             selectSplit: (split: string, seasonsData: SeasonData[], isAllActive: boolean) => {
-                originalMethodsRef.current.selectSplit(split, seasonsData, isAllActive)
+                originalMethods.selectSplit(split, seasonsData, isAllActive)
                 if (!isInternalUpdateRef.current) {
                     setSplitParam(split)
                     setTournamentParam('')
@@ -161,8 +175,8 @@ export const useTableUrlSync = (seasons: SeasonData[]) => {
         
         // Override selectTournament
         useTableEntityStore.setState({
-            selectTournament: (tournament: any) => {
-                originalMethodsRef.current.selectTournament(tournament)
+            selectTournament: (tournament: Tournament) => {
+                originalMethods.selectTournament(tournament)
                 if (!isInternalUpdateRef.current) {
                     setTournamentParam(tournament.tournament)
                 }
@@ -172,7 +186,7 @@ export const useTableUrlSync = (seasons: SeasonData[]) => {
         // Override selectAllSeasons
         useTableEntityStore.setState({
             selectAllSeasons: (allId: number[]) => {
-                originalMethodsRef.current.selectAllSeasons(allId)
+                originalMethods.selectAllSeasons(allId)
                 if (!isInternalUpdateRef.current) {
                     setSeasonParam('all')
                     setSplitParam('')
@@ -184,7 +198,7 @@ export const useTableUrlSync = (seasons: SeasonData[]) => {
         // Override selectAllSplits
         useTableEntityStore.setState({
             selectAllSplits: (allId: number[]) => {
-                originalMethodsRef.current.selectAllSplits(allId)
+                originalMethods.selectAllSplits(allId)
                 if (!isInternalUpdateRef.current) {
                     setSplitParam('all')
                     setTournamentParam('')
@@ -195,13 +209,14 @@ export const useTableUrlSync = (seasons: SeasonData[]) => {
         // Cleanup: restore original methods on unmount
         return () => {
             useTableEntityStore.setState({
-                selectSeason: originalMethodsRef.current.selectSeason,
-                selectSplit: originalMethodsRef.current.selectSplit,
-                selectTournament: originalMethodsRef.current.selectTournament,
-                selectAllSeasons: originalMethodsRef.current.selectAllSeasons,
-                selectAllSplits: originalMethodsRef.current.selectAllSplits
+                selectSeason: originalMethods.selectSeason,
+                selectSplit: originalMethods.selectSplit,
+                selectTournament: originalMethods.selectTournament,
+                selectAllSeasons: originalMethods.selectAllSeasons,
+                selectAllSplits: originalMethods.selectAllSplits
             })
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [setSeasonParam, setSplitParam, setTournamentParam])
 
     // Sync store changes to URL
@@ -247,6 +262,7 @@ export const useTableUrlSync = (seasons: SeasonData[]) => {
         store.activeAllSplit,
         seasonParam,
         splitParam,
+        seasons.length,
         tournamentParam,
         setSeasonParam,
         setSplitParam,

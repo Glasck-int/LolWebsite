@@ -56,7 +56,7 @@ export async function generateMetadata({ params }: TournamentPageProps): Promise
 }
 
 export default async function TournamentPage({ params }: TournamentPageProps) {
-    const { leagueName, tournamentId } = await params
+    const { leagueName } = await params
     
     try {
         const league = await getLeagueByName(leagueName)
@@ -76,7 +76,6 @@ export default async function TournamentPage({ params }: TournamentPageProps) {
                             leagueId={league.data.id}
                             league={league.data}
                             imageData={leagueImage.data || ''}
-                            initialTournamentId={parseInt(tournamentId)}
                         />
                     )}
                 </div>
@@ -87,7 +86,6 @@ export default async function TournamentPage({ params }: TournamentPageProps) {
                             leagueId={league.data.id}
                             league={league.data}
                             imageData={leagueImage.data || ''}
-                            initialTournamentId={parseInt(tournamentId)}
                         />
                     )}
                 </div>

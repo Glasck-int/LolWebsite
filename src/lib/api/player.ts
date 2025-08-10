@@ -1,6 +1,6 @@
 import {PlayerWithRedirectsListResponse as PlayerWithRedirectsListResponseType } from '../../../backend/src/schemas/players'
 import { apiRequest, ApiResponse } from './utils'
-import { PlayerImageType } from '@Glasck-int/glasck-types'
+import { PlayerImageType } from '@glasck-int/glasck-types'
 import { getPublicPlayerImage } from './image'
 
 /**
@@ -87,7 +87,7 @@ async function getPlayerDetails(
     name: string
 ): Promise<ApiResponse<{ role?: string; team?: string }>> {
     try {
-        const response = await apiRequest<any>(`/api/players/search/${encodeURIComponent(name)}`)
+        const response = await apiRequest<Array<{ role?: string; team?: string }>>(`/api/players/search/${encodeURIComponent(name)}`)
         
         if (!response.data || response.data.length === 0) {
             return { error: 'Player not found', data: { role: undefined, team: undefined } }
@@ -101,7 +101,7 @@ async function getPlayerDetails(
                 team: player.team || undefined 
             } 
         }
-    } catch (error) {
+    } catch {
         return { error: 'Failed to fetch player details', data: { role: undefined, team: undefined } }
     }
 }

@@ -16,7 +16,6 @@ import {
     CardBody,
     CardContext,
 } from '@/components/ui/card'
-import { SmartCardFooter, SmartCardFooterContent } from '@/components/ui/SmartTabs'
 import { SmartCardFooterSync, SmartCardFooterContentSync } from '@/components/ui/SmartTabsSync'
 import {
     LeagueDescription,
@@ -71,7 +70,7 @@ const LeagueTableEntityContent = ({
     const t = useTranslate('Tabs')
     
     // Initialize simple tab URL synchronization
-    const { setActiveTab } = useSimpleTabSync()
+    useSimpleTabSync()
     
     // Initialize season/split/tournament URL synchronization
     useTableUrlSync(seasons)
@@ -184,7 +183,7 @@ const LeagueTableEntityContent = ({
                                             key={`buttonbar-${selectedTournamentId}-${activeStatsView}`}
                                             options={['Players', 'Champions']}
                                             onButtonChange={handleStatsViewChange}
-                                            initialActiveIndex={activeStatsView === 'Players' ? 0 : activeStatsView === 'Champions' ? 1 : 0}
+                                            defaultActiveIndex={activeStatsView === 'Players' ? 0 : activeStatsView === 'Champions' ? 1 : 0}
                                         />
                                     </div>
                                     

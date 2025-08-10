@@ -2,7 +2,6 @@ import prisma from './prisma'
 import { FastifyRedis } from '@fastify/redis'
 import { getPlayerRedirectNames, PlayerNotFoundError } from '../utils/playerUtils'
 import { getTournamentConditions } from '../utils/tournamentUtils'
-import { CleanName } from '../utils/cleanName'
 
 export interface PlayerStatsFilter {
     tournament?: string
@@ -303,7 +302,7 @@ export class PlayerStatsService {
             }
 
             const result = {
-                player: CleanName(filter.player),
+                player: filter.player,
                 tournament: filter.tournament,
                 totalGames: singlePlayerStats.gamesPlayed,
                 stats: singlePlayerStats,
@@ -321,7 +320,7 @@ export class PlayerStatsService {
         // For tournament or team queries, return all players
         const result = {
             tournament: filter.tournament,
-            team: filter.team ? CleanName(filter.team) : filter.team,
+            team: filter.team,
             totalGames: scoreboardData.length,
             uniquePlayers,
             players: playerStats,

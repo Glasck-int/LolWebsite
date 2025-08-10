@@ -1121,11 +1121,13 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
                 // Extract unique dates (YYYY-MM-DD format)
                 const dateSet = new Set<string>()
                 matches.forEach(match => {
-                    const date = new Date(match.dateTime_UTC)
-                    const year = date.getUTCFullYear()
-                    const month = String(date.getUTCMonth() + 1).padStart(2, '0')
-                    const day = String(date.getUTCDate()).padStart(2, '0')
-                    dateSet.add(`${year}-${month}-${day}`)
+                    if (match.dateTime_UTC) {
+                        const date = new Date(match.dateTime_UTC)
+                        const year = date.getUTCFullYear()
+                        const month = String(date.getUTCMonth() + 1).padStart(2, '0')
+                        const day = String(date.getUTCDate()).padStart(2, '0')
+                        dateSet.add(`${year}-${month}-${day}`)
+                    }
                 })
 
                 const result = {

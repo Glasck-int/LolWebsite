@@ -119,7 +119,7 @@ export const NextMatchesServer = async ({
                     <div className="flex flex-row justify-between items-center w-full">
                         <NextMatchesClient
                             initialData={matchesData}
-                            tournamentId={tournamentId}
+                        //     tournamentId={tournamentId}
                             showSingleMatchOnDesktop={showSingleMatchOnDesktop}
                             isHeader={true}
                             bestOf={matchesData.matches[0]?.bestOf}
@@ -130,7 +130,7 @@ export const NextMatchesServer = async ({
             <CardBody>
                 <NextMatchesClient
                     initialData={matchesData}
-                    tournamentId={tournamentId}
+                //     tournamentId={tournamentId}
                     showSingleMatchOnDesktop={showSingleMatchOnDesktop}
                     isHeader={false}
                 />

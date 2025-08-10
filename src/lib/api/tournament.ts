@@ -15,11 +15,11 @@ export async function getTournamentById(
     )
     
     if (response.error) {
-        return { data: null, error: response.error }
+        return { data: undefined, error: response.error }
     }
     
     return { 
         data: response.data && response.data.length > 0 ? response.data[0] : null, 
-        error: null 
+        error: undefined 
     }
 }

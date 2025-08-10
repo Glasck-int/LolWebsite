@@ -6,7 +6,7 @@ import useSWR from 'swr'
 import { SortableTable, TableColumn } from '@/components/ui/table/SortableTable'
 import { PlayerStats, getTournamentPlayerStats, TournamentPlayerStatsResponse } from '@/lib/api/players'
 import { getPlayerImage } from '@/lib/api/player'
-import { getTeamImageByName, getRoleImage } from '@/lib/api/image'
+import { getRoleImage } from '@/lib/api/image'
 import { CleanName } from '@/lib/utils/cleanName'
 import {
     Card,
@@ -58,7 +58,6 @@ const imageCache = new Map<string, { playerImage: string; teamImage: string; rol
 
 export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStatisticsClientProps) {
     const [playerImages, setPlayerImages] = useState<Record<string, { playerImage: string; teamImage: string; roleImage: string }>>({})
-    const [imagesLoading, setImagesLoading] = useState(false)
 
     const { data, error, isLoading } = useSWR(
         tournamentId ? `player-stats-${tournamentId}` : null,
@@ -84,7 +83,6 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
         }
 
         const fetchData = async () => {
-            setImagesLoading(true)
             
             // Vérifier d'abord le cache et ne récupérer que les images manquantes
             const cachedImages: Record<string, { playerImage: string; teamImage: string; roleImage: string }> = {}
@@ -104,7 +102,6 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
             // Si toutes les images sont en cache, les utiliser directement
             if (playersNeedingImages.length === 0) {
                 setPlayerImages(cachedImages)
-                setImagesLoading(false)
                 return
             }
             
@@ -169,8 +166,6 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
             } catch (error) {
                 console.error('Failed to fetch player data:', error)
                 setPlayerImages(cachedImages)
-            } finally {
-                setImagesLoading(false)
             }
         }
 

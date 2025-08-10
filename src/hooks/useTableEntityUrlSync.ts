@@ -33,11 +33,7 @@ export const useTableEntityUrlSync = (seasons: SeasonData[]) => {
     
     const isInitializedRef = useRef(false)
     const isUpdatingRef = useRef(false)
-    const lastSyncedStateRef = useRef({
-        season: '',
-        split: '',
-        tournament: ''
-    })
+    const isUpdatingFromStoreRef = useRef(false)
 
     // Initialize from URL on mount
     useEffect(() => {
@@ -69,13 +65,13 @@ export const useTableEntityUrlSync = (seasons: SeasonData[]) => {
                     split.tournaments?.map(t => t.id) || []
                 )
                 selectAllSplits(allId)
-                isUpdatingFromUrlRef.current = false
+                isUpdatingRef.current = false
                 return
             }
 
             // Set specific season/split/tournament
             if (seasonParam && season) {
-                selectSeason(targetSeason, seasons)
+                selectSeason(targetSeason, seasons, false)
                 
                 if (splitParam) {
                     const splits = getSplits(targetSeason, seasons)
@@ -99,13 +95,13 @@ export const useTableEntityUrlSync = (seasons: SeasonData[]) => {
                 }
             }
             
-            isUpdatingFromUrlRef.current = false
+            isUpdatingRef.current = false
         }
     }, [seasonParam, splitParam, tournamentParam, seasons, selectSeason, selectSplit, selectTournament, selectAllSeasons, selectAllSplits])
 
     // Sync from store to URL when selection changes
     useEffect(() => {
-        if (isUpdatingFromUrlRef.current || !isInitializedRef.current) {
+        if (isUpdatingRef.current || !isInitializedRef.current) {
             return
         }
 
@@ -155,7 +151,7 @@ export const useTableEntityUrlSync = (seasons: SeasonData[]) => {
             return
         }
 
-        isUpdatingFromUrlRef.current = true
+        isUpdatingRef.current = true
 
         // Re-sync from URL when params change externally
         if (seasonParam === 'all') {
@@ -168,7 +164,7 @@ export const useTableEntityUrlSync = (seasons: SeasonData[]) => {
         } else if (seasonParam) {
             const season = seasons.find(s => s.season === seasonParam)
             if (season) {
-                selectSeason(season.season, seasons)
+                selectSeason(season.season, seasons, false)
                 
                 if (splitParam === 'all') {
                     const allId = season.data.flatMap(split =>
@@ -194,6 +190,6 @@ export const useTableEntityUrlSync = (seasons: SeasonData[]) => {
             }
         }
 
-        isUpdatingFromUrlRef.current = false
+        isUpdatingRef.current = false
     }, [seasonParam, splitParam, tournamentParam, seasons, selectSeason, selectSplit, selectTournament, selectAllSeasons, selectAllSplits])
 }

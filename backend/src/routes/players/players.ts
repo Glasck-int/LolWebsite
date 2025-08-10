@@ -9,7 +9,6 @@ import {
     PlayerImageListResponse
 } from '../../schemas/players'
 import { resolvePlayer, PlayerNotFoundError } from '../../utils/playerUtils'
-import { CleanName } from '../../utils/cleanName'
 
 export default async function playersRoutes(fastify: FastifyInstance) {
     const redis = fastify.redis
@@ -36,7 +35,7 @@ export default async function playersRoutes(fastify: FastifyInstance) {
             // Clean player names in the response
             const cleanedPlayers = players.map(player => ({
                 ...player,
-                name: CleanName(player.name)
+                name: player.name
             }))
             
             return cleanedPlayers
@@ -84,13 +83,18 @@ export default async function playersRoutes(fastify: FastifyInstance) {
                 includeImages: true
             })
 
+            // Check if player was found
+            if (!resolution.player) {
+                return reply.status(404).send({ error: 'Player not found' })
+            }
+
             // Format response to match schema with cleaned names
             const response = {
                 ...resolution.player,
-                name: CleanName(resolution.player.name),
+                name: resolution.player.name, 
                 redirects: resolution.redirects?.map(redirect => ({
                     ...redirect,
-                    name: CleanName(redirect.name)
+                    name: redirect.name
                 })),
                 images: resolution.images
             }
@@ -156,10 +160,10 @@ export default async function playersRoutes(fastify: FastifyInstance) {
 
             const response = {
                 ...player,
-                name: CleanName(player.name),
+                name: player.name,
                 redirects: player.PlayerRedirect.map(redirect => ({
                     ...redirect,
-                    name: CleanName(redirect.name)
+                    name: redirect.name
                 })),
                 images: allImages
             }
@@ -188,7 +192,7 @@ export default async function playersRoutes(fastify: FastifyInstance) {
             // Clean player names in the redirects
             const cleanedRedirects = redirects.map(redirect => ({
                 ...redirect,
-                name: CleanName(redirect.name)
+                name: redirect.name
             }))
             
             return cleanedRedirects
@@ -237,7 +241,7 @@ export default async function playersRoutes(fastify: FastifyInstance) {
             // Clean player names in the search results
             const cleanedRedirects = redirects.map(redirect => ({
                 ...redirect,
-                name: CleanName(redirect.name)
+                name: redirect.name
             }))
 
             return cleanedRedirects

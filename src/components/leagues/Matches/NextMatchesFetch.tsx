@@ -78,7 +78,7 @@ export const NextMatchesFetch = ({
                     <div className="flex flex-row justify-between items-center w-full">
                         <NextMatchesClient
                             initialData={data}
-                            tournamentId={tournamentId}
+                        //     tournamentId={tournamentId}
                             showSingleMatchOnDesktop={showSingleMatchOnDesktop}
                             isHeader={true}
                             bestOf={data.matches[0]?.bestOf}
@@ -89,7 +89,7 @@ export const NextMatchesFetch = ({
             <CardBody>
                 <NextMatchesClient
                     initialData={data}
-                    tournamentId={tournamentId}
+                //     tournamentId={tournamentId}
                     showSingleMatchOnDesktop={showSingleMatchOnDesktop}
                     isHeader={false}
                 />

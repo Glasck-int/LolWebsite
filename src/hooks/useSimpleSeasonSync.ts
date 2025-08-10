@@ -55,7 +55,7 @@ export const useSimpleSeasonSync = (seasons: SeasonData[]) => {
                 const season = seasons.find(s => s.season === seasonParam)
                 if (season) {
                     isInternalUpdateRef.current = true
-                    storeSelectSeason(season.season, seasons)
+                    storeSelectSeason(season.season, seasons, false)
                     
                     // Handle split
                     if (splitParam === 'all') {
@@ -85,7 +85,7 @@ export const useSimpleSeasonSync = (seasons: SeasonData[]) => {
                 }
             }
         }
-    }, [seasonParam, splitParam, tournamentParam, seasons.length]) // Only on mount and when seasons load
+    }, [seasonParam, splitParam, tournamentParam, seasons, storeSelectAllSeasons, storeSelectAllSplits, storeSelectSeason, storeSelectSplit, storeSelectTournament]) // Only on mount and when seasons load
 
     // Update URL when store changes (but not during initialization)
     useEffect(() => {
@@ -107,12 +107,12 @@ export const useSimpleSeasonSync = (seasons: SeasonData[]) => {
             setSplitParam(activeSplit || '')
             setTournamentParam(activeTournament || '')
         }
-    }, [activeHeaderSeason, activeSplit, activeTournament, activeAllSeason, activeAllSplit])
+    }, [activeHeaderSeason, activeSplit, activeTournament, activeAllSeason, activeAllSplit, seasons.length, setSeasonParam, setSplitParam, setTournamentParam])
 
     // Provide methods that update both store and URL
     const selectSeason = (season: string) => {
         isInternalUpdateRef.current = true
-        storeSelectSeason(season, seasons)
+        storeSelectSeason(season, seasons, false)
         setSeasonParam(season)
         setSplitParam('')
         setTournamentParam('')
@@ -131,7 +131,7 @@ export const useSimpleSeasonSync = (seasons: SeasonData[]) => {
         }, 100)
     }
 
-    const selectTournament = (tournament: any) => {
+    const selectTournament = (tournament: { id: number; name: string; tournament: string }) => {
         isInternalUpdateRef.current = true
         storeSelectTournament(tournament)
         setTournamentParam(tournament.tournament)
