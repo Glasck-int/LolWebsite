@@ -2,6 +2,7 @@ import { ButtonBar } from '@/components/ui/Button/ButtonBar'
 import { getTeamImage, getTeamImageByName } from '@/lib/api/image'
 import React, { useState, useMemo, useEffect } from 'react'
 import { CleanName } from '@/lib/utils/cleanName'
+import Link from 'next/link'
 import {
     extractPageNames,
     findPageByName,
@@ -602,13 +603,14 @@ const DisplayTeamLine = ({
                     )}
                 </div>
                 <TeamImage imageUrl={team.imageUrl} teamName={team.name} />
-                <p
-                    className={`text-sm font-semibold ${
+                <Link 
+                    href={`/teams/${encodeURIComponent(team.name)}`}
+                    className={`text-sm font-semibold hover:text-clear-violet/80 transition-all duration-200 ${
                         !team.asWin && 'text-grey'
                     }`}
                 >
                     {CleanName(team.short) || CleanName(team.name)}
-                </p>
+                </Link>
             </div>
             <p className="text-sm font-semibold">{team.score}</p>
         </div>

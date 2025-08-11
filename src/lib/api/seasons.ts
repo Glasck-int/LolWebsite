@@ -26,7 +26,20 @@ async function getSeasonsByPlayerName(playerName: string): Promise<ApiResponse<S
     return apiRequest<SeasonResponse[]>(`/api/seasons/player/${encodedPlayerName}`)
 }
 
+/**
+ * Get seasons, splits, and tournaments data for a team by name
+ * Formatted for use with TableEntityLayout component
+ *
+ * @param teamName - The name of the team to fetch seasons for
+ * @returns Promise with array of seasons or error
+ */
+async function getSeasonsByTeamName(teamName: string): Promise<ApiResponse<SeasonResponse[]>> {
+    const encodedTeamName = encodeURIComponent(teamName)
+    return apiRequest<SeasonResponse[]>(`/api/seasons/team/${encodedTeamName}`)
+}
+
 export {
     getSeasonsByLeagueId,
-    getSeasonsByPlayerName
+    getSeasonsByPlayerName,
+    getSeasonsByTeamName
 }

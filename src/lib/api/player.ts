@@ -1,11 +1,6 @@
-import {
-    PlayerWithRedirectsListResponse as PlayerWithRedirectsListResponseType,
-    PlayerWithRedirectsSchema
-} from '../../../backend/src/schemas/players'
 import { apiRequest, ApiResponse } from './utils'
-import { PlayerImageType } from '@glasck-int/glasck-types'
+import { PlayerImageType, PlayerWithRedirects, PlayerSearchResult } from '@glasck-int/glasck-types'
 import { getPublicPlayerImage } from './image'
-import { Static } from '@sinclair/typebox'
 
 /**
  * Get a player by their link
@@ -15,9 +10,9 @@ import { Static } from '@sinclair/typebox'
  */
 async function getPlayerByLink(
     link: string
-): Promise<ApiResponse<typeof PlayerWithRedirectsListResponseType>> {
+): Promise<ApiResponse<PlayerSearchResult[]>> {
     const encodedLink = encodeURIComponent(link)
-    return apiRequest<typeof PlayerWithRedirectsListResponseType>(
+    return apiRequest<PlayerSearchResult[]>(
         `/api/players/search/${encodedLink}`
     )
 }
@@ -117,11 +112,17 @@ async function getPlayerDetails(
  */
 async function getPlayerByOverviewPage(
     overviewPage: string
-): Promise<ApiResponse<Static<typeof PlayerWithRedirectsSchema>>> {
+): Promise<ApiResponse<PlayerWithRedirects>> {
     const encodedOverviewPage = encodeURIComponent(overviewPage)
-    return apiRequest<Static<typeof PlayerWithRedirectsSchema>>(
+    return apiRequest<PlayerWithRedirects>(
         `/api/players/overview/${encodedOverviewPage}`
     )
 }
 
-export { getPlayerByLink, getPlayerImages, getPlayerImage, getPlayerDetails, getPlayerByOverviewPage }
+export { 
+    getPlayerByLink, 
+    getPlayerImages, 
+    getPlayerImage, 
+    getPlayerDetails, 
+    getPlayerByOverviewPage
+}

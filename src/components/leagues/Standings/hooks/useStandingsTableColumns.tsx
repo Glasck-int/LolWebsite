@@ -1,5 +1,6 @@
 import React from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { TableColumn } from '@/components/ui/table/SortableTable'
 import { Form } from '@/components/utils/Form'
 import { useTranslate } from '@/lib/hooks/useTranslate'
@@ -69,12 +70,12 @@ export const useStandingsTableColumns = (config: StandingsTableConfig): TableCol
                     ) : (
                         <div className="w-6 h-6 flex-shrink-0 mr-1" />
                     )}
-                    <p className={`hidden lg:block ${teamHover}`}>
+                    <Link href={`/teams/${encodeURIComponent(item.standing.team || '')}`} className={`hidden lg:block ${teamHover}`}>
                         {item.standing.team}
-                    </p>
-                    <p className={`block lg:hidden ${teamHover}`}>
+                    </Link>
+                    <Link href={`/teams/${encodeURIComponent(item.standing.team || '')}`} className={`block lg:hidden ${teamHover}`}>
                         {item.teamData?.short || item.standing.team}
-                    </p>
+                    </Link>
                 </div>
             ),
         },
@@ -241,12 +242,12 @@ export const useCombinedStandingsTableColumns = (config: Omit<StandingsTableConf
                     ) : (
                         <div className="w-6 h-6 flex-shrink-0 mr-1" />
                     )}
-                    <p className={`hidden lg:block ${teamHover}`}>
+                    <Link href={`/teams/${encodeURIComponent(item.standing.team || '')}`} className={`hidden lg:block ${teamHover}`}>
                         {item.standing.team}
-                    </p>
-                    <p className={`block lg:hidden ${teamHover}`}>
+                    </Link>
+                    <Link href={`/teams/${encodeURIComponent(item.standing.team || '')}`} className={`block lg:hidden ${teamHover}`}>
                         {item.teamData?.short || item.standing.team}
-                    </p>
+                    </Link>
                 </div>
             )
         },

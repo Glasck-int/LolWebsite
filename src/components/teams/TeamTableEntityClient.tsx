@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState, useCallback } from 'react'
-import { usePlayerTableEntityData } from '@/hooks/usePlayerTableEntityData'
+import { useTeamTableEntityData } from '@/hooks/useTeamTableEntityData'
 import { useTableEntityStore, SeasonData } from '@/store/tableEntityStore'
 import { useSimpleTabSync } from '@/hooks/useSimpleTabSync'
 import { useTableUrlSync } from '@/hooks/useTableUrlSync'
@@ -25,18 +25,18 @@ import { MatchesCalendar } from '@/components/leagues/Matches/MatchesCalendar'
 import { TournamentContentFetch } from '@/components/leagues/Standings/views/TournamentContentFetch'
 import { ButtonBar } from '@/components/ui/Button/ButtonBar'
 import { useTranslate } from '@/lib/hooks/useTranslate'
-import { getPlayerByLink, getPlayerByOverviewPage } from '@/lib/api/player'
-import { PlayerWithRedirects } from '@glasck-int/glasck-types'
+import { getTeamByName } from '@/lib/api/teams'
+import { Team as TeamType } from '@/generated/prisma'
 
-interface PlayerTableEntityClientProps {
-    playerName: string
+interface TeamTableEntityClientProps {
+    teamName: string
 }
 
-const PlayerTableEntityContent = ({
-    playerName,
+const TeamTableEntityContent = ({
+    teamName,
     seasons,
 }: {
-    playerName: string
+    teamName: string
     seasons: SeasonData[]
 }) => {
     const { activeId } = useTableEntityStore()
@@ -63,50 +63,38 @@ const PlayerTableEntityContent = ({
         }
     }, [selectedTournamentId])
 
-    // Player data state
-    const [playerData, setPlayerData] = useState<PlayerWithRedirects | null>(null)
+    // Team data state
+    const [teamData, setTeamData] = useState<TeamType | null>(null)
     const [loading, setLoading] = useState(true)
 
-    // Fetch player data
+    // Fetch team data
     useEffect(() => {
-        const fetchPlayerData = async () => {
+        const fetchTeamData = async () => {
             try {
                 setLoading(true)
                 
-                // First, search for the player to get the overviewPage
-                const searchResult = await getPlayerByLink(playerName)
+                const teamDataResult = await getTeamByName(teamName)
                 
-                if (!searchResult.data || searchResult.data.length === 0) {
-                    setPlayerData(null)
-                    return
-                }
-                
-                // Get the overviewPage from the first result
-                const overviewPage = searchResult.data[0].overviewPage
-                
-                // Now get the complete player data
-                const playerDataResult = await getPlayerByOverviewPage(overviewPage)
-                
-                if (playerDataResult.data) {
-                    setPlayerData(playerDataResult.data)
+                if (teamDataResult.data) {
+                    setTeamData(teamDataResult.data)
                 }
             } catch (error) {
-                console.error('Error fetching player data:', error)
-                setPlayerData(null)
+                console.error('Error fetching team data:', error)
+                setTeamData(null)
             } finally {
                 setLoading(false)
             }
         }
 
-        if (playerName) {
-            fetchPlayerData()
+        if (teamName) {
+            fetchTeamData()
         }
-    }, [playerName])
+    }, [teamName])
 
     if (loading) {
         return (
             <div className="flex justify-center items-center h-32">
-                <div className="text-white">Loading player data...</div>
+                <div className="text-white">Loading team data...</div>
             </div>
         )
     }
@@ -117,19 +105,19 @@ const PlayerTableEntityContent = ({
                 <CardContext>
                     <CardBody>
                         <div className="hidden md:flex p-[15px] h-[130px] gap-3 w-[250px] items-center justify-center">
-                            {playerData ? (
+                            {teamData ? (
                                 <div className="flex flex-col items-center gap-2">
-                                    <h2 className="text-xl font-bold">{playerData.name}</h2>
+                                    <h2 className="text-xl font-bold">{teamData.name}</h2>
                                     <div className="text-sm text-muted-foreground space-y-1">
-                                        {playerData.team && <div>Team: {playerData.team}</div>}
-                                        {playerData.role && <div>Role: {playerData.role}</div>}
-                                        {playerData.country && <div>Country: {playerData.country}</div>}
+                                        {teamData.short && <div>Short: {teamData.short}</div>}
+                                        {teamData.region && <div>Region: {teamData.region}</div>}
+                                        {teamData.location && <div>Location: {teamData.location}</div>}
                                     </div>
                                 </div>
                             ) : (
                                 <div className="flex flex-col items-center gap-2">
-                                    <h2 className="text-xl font-bold">{playerName}</h2>
-                                    <div className="text-sm text-muted-foreground">Player Profile</div>
+                                    <h2 className="text-xl font-bold">{teamName}</h2>
+                                    <div className="text-sm text-muted-foreground">Team Profile</div>
                                 </div>
                             )}
                         </div>
@@ -250,91 +238,70 @@ const PlayerTableEntityContent = ({
                 </TableEntityContent>
                 <TableEntityContent>
                     <div className="space-y-4">
-                        {/* Player Profile Information */}
-                        {playerData ? (
+                        {/* Team Profile Information */}
+                        {teamData ? (
                             <div className="grid gap-6">
-                                {/* Player Overview Card */}
+                                {/* Team Overview Card */}
                                 <div className="bg-card rounded-lg p-6 border border-border">
-                                    <h2 className="text-xl font-semibold mb-4">Player Overview</h2>
+                                    <h2 className="text-xl font-semibold mb-4">Team Overview</h2>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {playerData.nameFull && (
+                                        {teamData.name && (
                                             <div>
-                                                <span className="text-muted-foreground">Full Name:</span>
-                                                <span className="ml-2">{playerData.nameFull}</span>
+                                                <span className="text-muted-foreground">Team Name:</span>
+                                                <span className="ml-2">{teamData.name}</span>
                                             </div>
                                         )}
-                                        {playerData.country && (
+                                        {teamData.short && (
                                             <div>
-                                                <span className="text-muted-foreground">Country:</span>
-                                                <span className="ml-2">{playerData.country}</span>
+                                                <span className="text-muted-foreground">Short Name:</span>
+                                                <span className="ml-2">{teamData.short}</span>
                                             </div>
                                         )}
-                                        {playerData.role && (
+                                        {teamData.region && (
                                             <div>
-                                                <span className="text-muted-foreground">Role:</span>
-                                                <span className="ml-2">{playerData.role}</span>
+                                                <span className="text-muted-foreground">Region:</span>
+                                                <span className="ml-2">{teamData.region}</span>
                                             </div>
                                         )}
-                                        {playerData.team && (
+                                        {teamData.location && (
                                             <div>
-                                                <span className="text-muted-foreground">Current Team:</span>
-                                                <span className="ml-2">{playerData.team}</span>
-                                            </div>
-                                        )}
-                                        {playerData.age && (
-                                            <div>
-                                                <span className="text-muted-foreground">Age:</span>
-                                                <span className="ml-2">{playerData.age}</span>
-                                            </div>
-                                        )}
-                                        {playerData.residency && (
-                                            <div>
-                                                <span className="text-muted-foreground">Residency:</span>
-                                                <span className="ml-2">{playerData.residency}</span>
+                                                <span className="text-muted-foreground">Location:</span>
+                                                <span className="ml-2">{teamData.location}</span>
                                             </div>
                                         )}
                                     </div>
                                 </div>
                                 
                                 {/* Social Media Links */}
-                                {(playerData.twitter || playerData.instagram || playerData.stream || playerData.youtube) && (
+                                {(teamData.twitter || teamData.instagram || teamData.youtube || teamData.subreddit || teamData.vk) && (
                                     <div className="bg-card rounded-lg p-6 border border-border">
                                         <h2 className="text-xl font-semibold mb-4">Social Media</h2>
                                         <div className="flex flex-wrap gap-4">
-                                            {playerData.twitter && (
-                                                <a href={`https://twitter.com/${playerData.twitter}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                                            {teamData.twitter && (
+                                                <a href={`https://twitter.com/${teamData.twitter}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
                                                     Twitter
                                                 </a>
                                             )}
-                                            {playerData.instagram && (
-                                                <a href={`https://instagram.com/${playerData.instagram}`} target="_blank" rel="noopener noreferrer" className="text-pink-500 hover:underline">
+                                            {teamData.instagram && (
+                                                <a href={`https://instagram.com/${teamData.instagram}`} target="_blank" rel="noopener noreferrer" className="text-pink-500 hover:underline">
                                                     Instagram
                                                 </a>
                                             )}
-                                            {playerData.stream && (
-                                                <a href={playerData.stream} target="_blank" rel="noopener noreferrer" className="text-purple-500 hover:underline">
-                                                    Stream
-                                                </a>
-                                            )}
-                                            {playerData.youtube && (
-                                                <a href={playerData.youtube} target="_blank" rel="noopener noreferrer" className="text-red-500 hover:underline">
+                                            {teamData.youtube && (
+                                                <a href={teamData.youtube} target="_blank" rel="noopener noreferrer" className="text-red-500 hover:underline">
                                                     YouTube
                                                 </a>
                                             )}
-                                        </div>
-                                    </div>
-                                )}
-                                
-                                {/* Favorite Champions */}
-                                {playerData.favChamps && playerData.favChamps.length > 0 && (
-                                    <div className="bg-card rounded-lg p-6 border border-border">
-                                        <h2 className="text-xl font-semibold mb-4">Favorite Champions</h2>
-                                        <div className="flex flex-wrap gap-2">
-                                            {playerData.favChamps.map((champ: string, index: number) => (
-                                                <span key={index} className="px-3 py-1 bg-primary/10 rounded-full text-sm">
-                                                    {champ}
-                                                </span>
-                                            ))}
+                                            {teamData.subreddit && (
+                                                <a href={`https://reddit.com/r/${teamData.subreddit}`} target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:underline">
+                                                    Subreddit
+                                                </a>
+                                            )}
+                                            {teamData.vk && (
+                                                <a href={teamData.vk} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                                    VK
+                                                </a>
+                                            )}
                                         </div>
                                     </div>
                                 )}
@@ -342,9 +309,9 @@ const PlayerTableEntityContent = ({
                         ) : (
                             <div className="p-4 bg-gray-700 rounded-lg">
                                 <h3 className="text-lg font-semibold mb-2">
-                                    Player Profile
+                                    Team Profile
                                 </h3>
-                                <p>Player information not available</p>
+                                <p>Team information not available</p>
                             </div>
                         )}
                     </div>
@@ -354,13 +321,13 @@ const PlayerTableEntityContent = ({
     )
 }
 
-export const PlayerTableEntityClient = ({
-    playerName,
-}: PlayerTableEntityClientProps) => {
-    const { data: seasons, loading, error } = usePlayerTableEntityData(playerName)
+export const TeamTableEntityClient = ({
+    teamName,
+}: TeamTableEntityClientProps) => {
+    const { data: seasons, loading, error } = useTeamTableEntityData(teamName)
     
     // Hook pour mettre à jour les métadonnées dynamiquement selon le tournoi sélectionné
-    useDynamicTournamentMetadata(playerName)
+    useDynamicTournamentMetadata(teamName)
 
     if (loading) {
         return (
@@ -382,7 +349,7 @@ export const PlayerTableEntityClient = ({
         return (
             <div className="flex justify-center items-center h-32">
                 <div className="text-gray-500">
-                    No tournament data available for this player
+                    No tournament data available for this team
                 </div>
             </div>
         )
@@ -391,8 +358,8 @@ export const PlayerTableEntityClient = ({
     return (
         <div className="">
             <TableEntityLayout>
-                <PlayerTableEntityContent
-                    playerName={playerName}
+                <TeamTableEntityContent
+                    teamName={teamName}
                     seasons={seasons}
                 />
             </TableEntityLayout>
