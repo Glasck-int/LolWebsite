@@ -173,6 +173,31 @@ export default async function seasonsRoutes(fastify: FastifyInstance) {
                         .send({ error: 'No tournaments found for this league' })
                 }
 
+                // Helper function to extract year from tournament name or date
+                const guessYear = (tournament: typeof tournaments[0]): string => {
+                    // First try to extract year from tournament name
+                    const yearMatch = tournament.name.match(/\b(19|20)\d{2}\b/)
+                    if (yearMatch) {
+                        return yearMatch[0]
+                    }
+                    
+                    // If no year in name, try to use dateStart
+                    if (tournament.dateStart) {
+                        return tournament.dateStart.getFullYear().toString()
+                    }
+                    
+                    // If no date, try to extract from overviewPage URL if exists
+                    if (tournament.overviewPage) {
+                        const urlYearMatch = tournament.overviewPage.match(/\b(19|20)\d{2}\b/)
+                        if (urlYearMatch) {
+                            return urlYearMatch[0]
+                        }
+                    }
+                    
+                    return 'Unknown'
+                }
+
+
                 // Group tournaments by year (season) and split
                 const seasonsMap = new Map<string, Map<string | undefined, { tournaments: TournamentResponse[], splitNumber?: number, dateStart?: Date }>>()
 
@@ -182,8 +207,8 @@ export default async function seasonsRoutes(fastify: FastifyInstance) {
                         return
                     }
 
-                    // Use the year field as season, fallback to 'Unknown'
-                    const season = tournament.year || 'Unknown'
+                    // Use the year field as season, or guess it if missing
+                    const season = tournament.year || guessYear(tournament)
                     
                     // Use split field or detect from splitMainPage/name
                     let split: string | undefined = undefined
@@ -236,7 +261,7 @@ export default async function seasonsRoutes(fastify: FastifyInstance) {
                         tournament.name, 
                         league.name, 
                         league.short, 
-                        tournament.year || undefined
+                        season !== 'Unknown' ? season : undefined
                     )
 
                     // Add tournament to split
