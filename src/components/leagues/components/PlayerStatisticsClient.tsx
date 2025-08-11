@@ -8,6 +8,8 @@ import { PlayerStats, getTournamentPlayerStats, TournamentPlayerStatsResponse } 
 import { getPlayerImage } from '@/lib/api/player'
 import { getRoleImage } from '@/lib/api/image'
 import { CleanName } from '@/lib/utils/cleanName'
+import { MatchSkeleton } from '@/components/ui/skeleton/MatchSkeleton'
+import Link from 'next/link'
 import {
     Card,
     CardContext,
@@ -174,18 +176,15 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
 
     if (isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center p-8 space-y-2">
-                <div className="text-muted-foreground">Loading player statistics...</div>
-            </div>
+            <MatchSkeleton className='min-h-[1280px]' />
         )
     }
 
     if (error) {
         return (
             <div className="flex flex-col items-center justify-center p-8 space-y-4">
-                <div className="text-red-500 text-center">
-                    <div className="font-medium">Error loading player statistics</div>
-                    <div className="text-sm mt-1">{error.message}</div>
+                <div className="text-clear-grey text-center">
+                    <div className="font-medium">No player statistics for this tournament</div>
                 </div>
             </div>
         )
@@ -273,8 +272,10 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
                         </div>
                     )}
                     
+                    <Link href={`/players/${encodeURIComponent(item.player)}`} className="truncate hover:text-clear-violet transition-colors">
                     {/* Player Name */}
-                    <span className="truncate">{CleanName(item.player)}</span>
+                        {CleanName(item.player)}
+                    </Link>
                 </div>
             )
         },

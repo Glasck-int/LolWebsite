@@ -4,7 +4,13 @@ import React, { useEffect, useState, useCallback } from 'react'
 import ChoseDate, { useChoseDate } from '@/components/ui/calendar/ChoseDate'
 import { Card, CardBody } from '@/components/ui/card'
 import { TimeDisplay } from '@/lib/hooks/timeDisplay'
-import { MatchSchedule } from '@/generated/prisma'
+import { 
+    getTournamentInfo, 
+    getTournamentMatchDates, 
+    getMatchesByDate, 
+    type TournamentInfo, 
+    type MatchWithGames 
+} from '@/lib/api/matches'
 
 /**
  * Props for the MatchesCalendar component
@@ -15,40 +21,6 @@ interface MatchesCalendarProps {
     tournamentId: string
 }
 
-/**
- * Tournament information structure
- * @interface TournamentInfo
- */
-interface TournamentInfo {
-    /** Tournament ID */
-    id: number
-    /** Tournament start date in ISO format */
-    dateStart: string
-    /** Tournament end date in ISO format (nullable for ongoing tournaments) */
-    dateEnd: string | null
-}
-
-/**
- * Extended match type that includes game information
- * @typedef {MatchSchedule} MatchWithGames
- */
-type MatchWithGames = MatchSchedule & {
-    /** Array of games within this match */
-    MatchScheduleGame?: Array<{
-        /** Game ID */
-        id: number
-        /** External game identifier */
-        gameId: string | null
-        /** Game number within the match (1, 2, 3, etc.) */
-        nGameInMatch: number
-        /** Winner team number (1 or 2) */
-        winner: number | null
-        /** Blue side team name */
-        blue: string | null
-        /** Red side team name */
-        red: string | null
-    }>
-}
 
 
 /**
@@ -88,7 +60,7 @@ type MatchWithGames = MatchSchedule & {
  * 
  * @since 1.0.0
  */
-export const MatchesCalendar: React.FC<MatchesCalendarProps> = ({ tournamentId }) => {
+export const MatchesCalendar = ({ tournamentId }: MatchesCalendarProps) => {
     const choseDateProps = useChoseDate()
     const { selectedDate, isLive, matchChaud, search } = choseDateProps
     const [matches, setMatches] = useState<MatchWithGames[]>([])
@@ -103,39 +75,41 @@ export const MatchesCalendar: React.FC<MatchesCalendarProps> = ({ tournamentId }
         hasMore: false
     })
 
+    // Track if we've initialized the date
+    const [dateInitialized, setDateInitialized] = useState(false)
+    
     // Fetch tournament info and available dates
     useEffect(() => {
         const fetchTournamentData = async () => {
             try {
                 // Fetch tournament info
-                const tournamentResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tournaments/id/${tournamentId}`)
-                if (tournamentResponse.ok) {
-                    const data = await tournamentResponse.json()
-                    if (data && data.length > 0) {
-                        setTournamentInfo(data[0])
-                    }
+                const info = await getTournamentInfo(tournamentId)
+                if (info) {
+                    setTournamentInfo(info)
                 }
 
                 // Fetch available match dates
-                const datesResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tournaments/id/${tournamentId}/match-dates`)
-                if (datesResponse.ok) {
-                    const datesData = await datesResponse.json()
-                    setAvailableDates(datesData.dates || [])
+                const dates = await getTournamentMatchDates(tournamentId)
+                setAvailableDates(dates)
+                
+                // Only set initial date if we haven't done it before for this tournament
+                if (dates.length > 0 && !dateInitialized) {
+                    const today = new Date()
+                    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+                    const currentDateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`
                     
-                    // Set initial date to the closest date with matches
-                    if (datesData.dates && datesData.dates.length > 0) {
-                        const today = new Date()
-                        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
-                        
+                    // Only update if current date is not in available dates
+                    if (!dates.includes(currentDateStr)) {
                         // Find the closest date (today or next available)
-                        let targetDate = datesData.dates.find((date: string) => date >= todayStr)
+                        let targetDate = dates.find((date: string) => date >= todayStr)
                         if (!targetDate) {
                             // If no future dates, use the last date
-                            targetDate = datesData.dates[datesData.dates.length - 1]
+                            targetDate = dates[dates.length - 1]
                         }
                         
                         choseDateProps.setSelectedDate(new Date(targetDate + 'T12:00:00'))
                     }
+                    setDateInitialized(true)
                 }
             } catch (err) {
                 console.error('Error fetching tournament data:', err)
@@ -145,7 +119,8 @@ export const MatchesCalendar: React.FC<MatchesCalendarProps> = ({ tournamentId }
         if (tournamentId) {
             fetchTournamentData()
         }
-    }, [tournamentId, choseDateProps])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [tournamentId])
 
     /**
      * Fetches matches for a specific date with pagination support
@@ -164,46 +139,15 @@ export const MatchesCalendar: React.FC<MatchesCalendarProps> = ({ tournamentId }
         setError(null)
 
         try {
-            // Format date to YYYY-MM-DD for the API
-            const year = date.getFullYear()
-            const month = String(date.getMonth() + 1).padStart(2, '0')
-            const day = String(date.getDate()).padStart(2, '0')
-            const dateStr = `${year}-${month}-${day}`
-            
-            // Use the by-date endpoint with proper pagination
-            const limit = 50
-            const response = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/api/tournaments/id/${tournamentId}/matches/by-date?date=${dateStr}&limit=${limit}&offset=${offset}`
-            )
-
-            if (!response.ok) {
-                if (response.status === 404) {
-                    setMatches([])
-                    setPagination({
-                        total: 0,
-                        limit: 50,
-                        offset: 0,
-                        hasMore: false
-                    })
-                    return
-                }
-                throw new Error('Failed to fetch matches')
-            }
-
-            const data = await response.json()
+            const response = await getMatchesByDate(tournamentId, date, 50, offset)
             
             if (offset === 0) {
-                setMatches(data.data || [])
+                setMatches(response.data)
             } else {
-                setMatches(prev => [...prev, ...(data.data || [])])
+                setMatches(prev => [...prev, ...response.data])
             }
             
-            setPagination(data.pagination || {
-                total: 0,
-                limit: 50,
-                offset: 0,
-                hasMore: false
-            })
+            setPagination(response.pagination)
         } catch (err) {
             console.error('Error fetching matches:', err)
             setError(err instanceof Error ? err.message : 'Unknown error')
@@ -282,7 +226,8 @@ export const MatchesCalendar: React.FC<MatchesCalendarProps> = ({ tournamentId }
             return targetDate
         }
         return null
-    }, [availableDates, selectedDate, choseDateProps])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [availableDates, selectedDate])
     
     /**
      * Checks if navigation to the next date with matches is possible

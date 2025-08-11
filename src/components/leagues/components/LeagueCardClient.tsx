@@ -16,13 +16,13 @@ interface LeagueCardClientProps {
 /**
  * Client component for LeagueCard - handles only client-side interactions
  */
-export const LeagueCardClient: React.FC<LeagueCardClientProps> = ({
+export const LeagueCardClient = ({
     league,
     imageUrl,
     preloadedImageUrl,
     square = false,
     className = '',
-}) => {
+}: LeagueCardClientProps) => {
     const [imageError, setImageError] = useState(false)
 
     // Use provided imageUrl first, then preloaded, then fallback

@@ -24,11 +24,11 @@ interface NewStandingsWithTabsClientProps {
  * - Automatic responsive behavior
  * - Cleaner separation of concerns
  */
-export const NewStandingsWithTabsClient: React.FC<NewStandingsWithTabsClientProps> = ({
+export const NewStandingsWithTabsClient = ({
     processedData,
     highlightedTeam,
     maxRows
-}) => {
+}: NewStandingsWithTabsClientProps) => {
     if (!processedData?.length) {
         return (
             <div className="flex items-center justify-center p-8 text-muted-foreground">

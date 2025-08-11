@@ -27,11 +27,11 @@ interface OfficialToggleProps {
  * />
  * ```
  */
-export const OfficialToggle: React.FC<OfficialToggleProps> = ({
+export const OfficialToggle = ({
     onlyOfficial,
     onToggle,
     className = '',
-}) => {
+}: OfficialToggleProps) => {
     return (
         <div className={`flex items-center gap-3 ${className}`}>
             <Switch

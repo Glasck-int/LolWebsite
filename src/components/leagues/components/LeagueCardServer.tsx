@@ -12,12 +12,12 @@ interface LeagueCardServerProps {
 /**
  * Wrapper for LeagueCard that can be used in both server and client contexts
  */
-export const LeagueCardServer: React.FC<LeagueCardServerProps> = ({
+export const LeagueCardServer = ({
     league,
     imageUrl,
     square = false,
     className = '',
-}) => {
+}: LeagueCardServerProps) => {
     return (
         <LeagueCardClient
             league={league}

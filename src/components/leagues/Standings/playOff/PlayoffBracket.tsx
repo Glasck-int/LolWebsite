@@ -1,6 +1,7 @@
 import { ButtonBar } from '@/components/ui/Button/ButtonBar'
 import { getTeamImage, getTeamImageByName } from '@/lib/api/image'
 import React, { useState, useMemo, useEffect } from 'react'
+import { CleanName } from '@/lib/utils/cleanName'
 import {
     extractPageNames,
     findPageByName,
@@ -606,7 +607,7 @@ const DisplayTeamLine = ({
                         !team.asWin && 'text-grey'
                     }`}
                 >
-                    {team.short}
+                    {CleanName(team.short) || CleanName(team.name)}
                 </p>
             </div>
             <p className="text-sm font-semibold">{team.score}</p>

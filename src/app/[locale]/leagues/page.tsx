@@ -6,8 +6,6 @@ import { getLeagueImage } from '@/lib/api/image'
 import { generateMetadata } from './metadata'
 
 async function getLeaguesData() {
-    console.log('🔄 [CACHE] Fetching fresh data...')
-
     const [allLeaguesResponse, majorLeaguesResponse] = await Promise.all([
         getAllLeagues(),
         getMajorLeagues(),
@@ -76,7 +74,6 @@ export const revalidate = 86400 // 24 hours
      try {
          const data = await getLeaguesData()
 
-         console.log('✅ [LEAGUES] Data retrieved (cached or fresh)')
 
          return (
              <LeaguesClient

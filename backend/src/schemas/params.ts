@@ -166,6 +166,18 @@ export const PlayerNameParamSchema = Type.Object({
 })
 
 /**
+ * Player name parameter for seasons route
+ */
+export const PlayerNameSeasonsParamSchema = Type.Object({
+    playerName: Type.String({
+        minLength: 1,
+        maxLength: 100,
+        description: 'Player name or alias',
+        examples: ['Caps', 'Faker', 'G2 Caps', 'Jankos']
+    })
+})
+
+/**
  * Player and tournament parameters combined
  */
 export const PlayerTournamentParamsSchema = Type.Object({

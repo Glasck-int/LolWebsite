@@ -30,13 +30,13 @@ interface LeaguesClientProps {
  * @param internationalImages - Image URLs for international leagues
  * @returns Interactive leagues page with search functionality
  */
-export const LeaguesClient: React.FC<LeaguesClientProps> = ({
+export const LeaguesClient = ({
     allLeagues,
     majorLeagues,
     internationalLeagues,
     majorImages,
     internationalImages,
-}) => {
+}: LeaguesClientProps) => {
     const {
         searchTerm,
         setSearchTerm,

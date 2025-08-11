@@ -5,6 +5,7 @@ import { useTableEntityData } from '@/hooks/useTableEntityData'
 import { useTableEntityStore, SeasonData } from '@/store/tableEntityStore'
 import { useSimpleTabSync } from '@/hooks/useSimpleTabSync'
 import { useTableUrlSync } from '@/hooks/useTableUrlSync'
+import { useDynamicTournamentMetadata } from '@/hooks/useDynamicTournamentMetadata'
 import {
     TableEntityLayout,
     TableEntityHeader,
@@ -216,6 +217,7 @@ const LeagueTableEntityContent = ({
                         {/* Tournament content - automatically detects standings vs playoff bracket */}
                         {selectedTournamentId ? (
                             <TournamentContentFetch
+                                key={`tournament-content-${selectedTournamentId}`}
                                 tournamentId={selectedTournamentId}
                                 maxRows={null}
                             />
@@ -237,18 +239,12 @@ const LeagueTableEntityContent = ({
 export const LeagueTableEntityClient = ({
     leagueId,
     league,
-    standings,
-    playerStats,
-    tournamentName,
-    enrichedStandingsData,
-    enrichedGamesData,
-    playerImages,
-    matches,
-    teamsData,
-    teamImages,
     imageData,
 }: LeagueTableEntityClientProps) => {
     const { data: seasons, loading, error } = useTableEntityData(leagueId)
+    
+    // Hook pour mettre à jour les métadonnées dynamiquement selon le tournoi sélectionné
+    useDynamicTournamentMetadata(league?.name || '')
 
     if (loading) {
         return (
@@ -281,15 +277,6 @@ export const LeagueTableEntityClient = ({
             <TableEntityLayout>
                 <LeagueTableEntityContent
                     league={league}
-                    standings={standings}
-                    playerStats={playerStats}
-                    tournamentName={tournamentName}
-                    enrichedStandingsData={enrichedStandingsData}
-                    enrichedGamesData={enrichedGamesData}
-                    playerImages={playerImages}
-                    matches={matches}
-                    teamsData={teamsData}
-                    teamImages={teamImages}
                     imageData={imageData}
                     seasons={seasons}
                 />
