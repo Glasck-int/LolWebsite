@@ -20,12 +20,12 @@ interface LeagueGridProps {
  * @param className - Additional CSS classes for the grid
  * @returns A grid of league cards
  */
-export const LeagueGrid: React.FC<LeagueGridProps> = ({
+export const LeagueGrid = ({
     leagues,
     images = [],
     square = false,
     className = '',
-}) => {
+}: LeagueGridProps) => {
     const gridCols = square
         ? 'grid-cols-3 sm:grid-cols-4'
         : 'grid-cols-1'

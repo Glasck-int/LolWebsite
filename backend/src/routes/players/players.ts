@@ -9,7 +9,6 @@ import {
     PlayerImageListResponse
 } from '../../schemas/players'
 import { resolvePlayer, PlayerNotFoundError } from '../../utils/playerUtils'
-import { CleanName } from '../../utils/cleanName'
 
 export default async function playersRoutes(fastify: FastifyInstance) {
     const redis = fastify.redis
@@ -36,7 +35,7 @@ export default async function playersRoutes(fastify: FastifyInstance) {
             // Clean player names in the response
             const cleanedPlayers = players.map(player => ({
                 ...player,
-                name: CleanName(player.name)
+                name: player.name
             }))
             
             return cleanedPlayers
@@ -84,13 +83,18 @@ export default async function playersRoutes(fastify: FastifyInstance) {
                 includeImages: true
             })
 
+            // Check if player was found
+            if (!resolution.player) {
+                return reply.status(404).send({ error: 'Player not found' })
+            }
+
             // Format response to match schema with cleaned names
             const response = {
                 ...resolution.player,
-                name: CleanName(resolution.player.name),
+                name: resolution.player.name, 
                 redirects: resolution.redirects?.map(redirect => ({
                     ...redirect,
-                    name: CleanName(redirect.name)
+                    name: redirect.name
                 })),
                 images: resolution.images
             }
@@ -156,10 +160,10 @@ export default async function playersRoutes(fastify: FastifyInstance) {
 
             const response = {
                 ...player,
-                name: CleanName(player.name),
+                name: player.name,
                 redirects: player.PlayerRedirect.map(redirect => ({
                     ...redirect,
-                    name: CleanName(redirect.name)
+                    name: redirect.name
                 })),
                 images: allImages
             }
@@ -188,7 +192,7 @@ export default async function playersRoutes(fastify: FastifyInstance) {
             // Clean player names in the redirects
             const cleanedRedirects = redirects.map(redirect => ({
                 ...redirect,
-                name: CleanName(redirect.name)
+                name: redirect.name
             }))
             
             return cleanedRedirects
@@ -237,7 +241,7 @@ export default async function playersRoutes(fastify: FastifyInstance) {
             // Clean player names in the search results
             const cleanedRedirects = redirects.map(redirect => ({
                 ...redirect,
-                name: CleanName(redirect.name)
+                name: redirect.name
             }))
 
             return cleanedRedirects
@@ -284,6 +288,286 @@ export default async function playersRoutes(fastify: FastifyInstance) {
             })
 
             return resolution.images
+        } catch (error) {
+            if (error instanceof PlayerNotFoundError) {
+                return reply.status(404).send({ error: 'Player not found' })
+            }
+            fastify.log.error(error)
+            return reply.status(500).send({ error: 'Internal server error' })
+        }
+    })
+
+    // Get best player image for specific tournament based on temporal proximity
+    fastify.get('/players/name/:playerName/tournament/:tournamentName/image', {
+        schema: {
+            description: 'Get best matching player image for a specific tournament based on dates',
+            tags: ['players'],
+            params: {
+                type: 'object',
+                properties: {
+                    playerName: {
+                        type: 'string',
+                        description: 'Player name or alias',
+                        examples: ['Caps', 'Rasmus Winther', 'G2 Caps']
+                    },
+                    tournamentName: {
+                        type: 'string',
+                        description: 'Tournament name/identifier',
+                        examples: ['LEC 2024 Spring', 'LEC_2024_Spring']
+                    }
+                },
+                required: ['playerName', 'tournamentName']
+            },
+            response: {
+                200: {
+                    type: 'object',
+                    properties: {
+                        fileName: { type: 'string' },
+                        link: { type: 'string' },
+                        team: { type: 'string', nullable: true },
+                        tournament: { type: 'string', nullable: true },
+                        imageType: { type: 'string', nullable: true },
+                        caption: { type: 'string', nullable: true },
+                        isProfileImage: { type: 'boolean', nullable: true },
+                        priority: { type: 'number' },
+                        reason: { type: 'string' },
+                        tournamentDate: { type: 'string', nullable: true },
+                        daysDifference: { type: 'number', nullable: true }
+                    }
+                },
+                404: {
+                    type: 'object',
+                    properties: {
+                        error: { type: 'string' }
+                    }
+                }
+            },
+        },
+    }, async (request, reply) => {
+        try {
+            const { playerName, tournamentName } = request.params as { playerName: string, tournamentName: string }
+            customMetric.inc({ operation: 'get_player_tournament_image' })
+
+            // First verify the player exists - try PlayerRedirect first, then Player table directly
+            let playerCheck = await prisma.playerRedirect.findUnique({
+                where: { name: playerName }
+            })
+            
+            let playerOverviewPage: string
+            
+            if (!playerCheck) {                
+                // Try to find in Player table directly by overviewPage (case insensitive)
+                let playerDirect = await prisma.player.findFirst({
+                    where: { 
+                        overviewPage: { 
+                            equals: playerName,
+                            mode: 'insensitive' 
+                        }
+                    }
+                })
+                
+                if (!playerDirect) {
+                    return reply.status(404).send({ error: 'Player not found' })
+                }
+                
+                playerOverviewPage = playerDirect.overviewPage
+            } else {
+                playerOverviewPage = playerCheck.overviewPage
+            }
+            
+            // First get the target tournament and its dates
+            // Try to find by overviewPage first, then by ID if it's numeric
+            let targetTournament = await prisma.tournament.findUnique({
+                where: { overviewPage: tournamentName },
+                select: {
+                    overviewPage: true,
+                    dateStart: true,
+                    dateEnd: true,
+                    name: true
+                }
+            })
+
+
+            // If not found and tournamentName is numeric, try finding by ID
+            if (!targetTournament && /^\d+$/.test(tournamentName)) {
+                const tournamentId = parseInt(tournamentName)
+                targetTournament = await prisma.tournament.findUnique({
+                    where: { id: tournamentId },
+                    select: {
+                        overviewPage: true,
+                        dateStart: true,
+                        dateEnd: true,
+                        name: true
+                    }
+                })
+            }
+
+            if (!targetTournament) {
+                return reply.status(404).send({ error: 'Tournament not found' })
+            }
+
+
+            // Use the player utility to resolve the player and get images with tournament data
+            const resolution = await resolvePlayer(playerName, {
+                includePlayer: true,
+                includeImages: true
+            })
+
+            
+            if (!resolution.player) {
+                return reply.status(404).send({ error: 'Player not found' })
+            }
+
+            if (!resolution.images || resolution.images.length === 0) {
+                return reply.status(404).send({ error: 'No images found for player' })
+            }
+
+
+
+            // Get all tournaments that have images for this player to calculate date proximity
+            const tournamentsWithImages = await prisma.tournament.findMany({
+                where: {
+                    overviewPage: {
+                        in: resolution.images
+                            .map(img => img.tournament)
+                            .filter(t => t !== null) as string[]
+                    }
+                },
+                select: {
+                    overviewPage: true,
+                    dateStart: true,
+                    dateEnd: true,
+                    name: true
+                }
+            })
+
+            // Create a map for quick tournament date lookup
+            const tournamentDateMap = new Map(
+                tournamentsWithImages.map(t => [
+                    t.overviewPage, 
+                    { 
+                        dateStart: t.dateStart, 
+                        dateEnd: t.dateEnd, 
+                        name: t.name 
+                    }
+                ])
+            )
+
+            // Calculate target tournament reference date (use dateStart or dateEnd, prefer dateStart)
+            const targetDate = targetTournament.dateStart || targetTournament.dateEnd
+            if (!targetDate) {
+                // If target tournament has no dates, fall back to name matching
+                return reply.status(404).send({ error: 'Target tournament has no date information' })
+            }
+
+            // Prioritize images based on temporal proximity and other factors
+            const imagesWithPriority = resolution.images.map(image => {
+                let priority = 0
+                let reason = ''
+                let daysDifference: number | null = null
+                let tournamentDate: Date | null = null
+
+                // Exact tournament match gets highest priority
+                if (image.tournament === tournamentName) {
+                    priority = 1000
+                    reason = 'Exact tournament match'
+                    tournamentDate = targetDate
+                    daysDifference = 0
+                } else if (image.tournament) {
+                    // Check if we have date information for this image's tournament
+                    const imageTournamentData = tournamentDateMap.get(image.tournament)
+                    if (imageTournamentData && (imageTournamentData.dateStart || imageTournamentData.dateEnd)) {
+                        // Calculate temporal proximity
+                        const imageDate = imageTournamentData.dateStart || imageTournamentData.dateEnd!
+                        tournamentDate = imageDate
+                        const timeDifference = Math.abs(targetDate.getTime() - imageDate.getTime())
+                        daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24))
+                        
+                        // Closer dates get higher priority (max 500 points, decreasing with distance)
+                        // Images within 30 days get max priority, then gradually decrease
+                        if (daysDifference <= 30) {
+                            priority = 500 - daysDifference
+                            reason = `Close tournament (${daysDifference} days apart)`
+                        } else if (daysDifference <= 90) {
+                            priority = 400 - Math.floor(daysDifference / 2)
+                            reason = `Nearby tournament (${daysDifference} days apart)`
+                        } else if (daysDifference <= 365) {
+                            priority = 300 - Math.floor(daysDifference / 10)
+                            reason = `Same season (${daysDifference} days apart)`
+                        } else {
+                            priority = 200 - Math.floor(daysDifference / 30)
+                            reason = `Different season (${daysDifference} days apart)`
+                        }
+                    } else {
+                        // Tournament exists but no date info - lower priority
+                        priority = 150
+                        reason = 'Tournament without date info'
+                    }
+                } else {
+                    // No tournament info - fallback priorities
+                    if (image.isProfileImage) {
+                        priority = 100
+                        reason = 'Profile image fallback'
+                    } else if (image.imageType === 'profile' || image.imageType === 'headshot') {
+                        priority = 80
+                        reason = 'Profile type fallback'
+                    } else {
+                        priority = 50
+                        reason = 'Generic image fallback'
+                    }
+                }
+
+                // Boost for more recent images based on createdAt
+                if (image.createdAt) {
+                    const imageAge = Math.floor((Date.now() - image.createdAt.getTime()) / (1000 * 60 * 60 * 24))
+                    if (imageAge < 365) {
+                        priority += Math.floor((365 - imageAge) / 10) // Up to 36 bonus points for recent images
+                        reason += ` (recent: ${imageAge} days old)`
+                    }
+                }
+
+                return {
+                    ...image,
+                    priority,
+                    reason,
+                    tournamentDate: tournamentDate?.toISOString() || null,
+                    daysDifference
+                }
+            })
+
+            // Sort by priority (highest first) and get the best match
+            imagesWithPriority.sort((a, b) => b.priority - a.priority)
+            const bestImage = imagesWithPriority[0]
+
+            // Enhanced logging with image details
+            const logDetails = {
+                player: playerName,
+                targetTournament: tournamentName,
+                selectedImage: bestImage.fileName,
+                fromTournament: bestImage.tournament || 'No tournament',
+                reason: bestImage.reason,
+                priority: bestImage.priority,
+                daysDifference: bestImage.daysDifference,
+                imageType: bestImage.imageType || 'Unknown',
+                totalImagesConsidered: imagesWithPriority.length
+            }
+            
+
+            
+            // Log top 3 candidates for debugging
+            if (imagesWithPriority.length > 1) {
+                const topCandidates = imagesWithPriority.slice(0, 3).map((img, index) => ({
+                    rank: index + 1,
+                    fileName: img.fileName,
+                    tournament: img.tournament || 'None',
+                    priority: img.priority,
+                    reason: img.reason,
+                    daysDifference: img.daysDifference
+                }))
+                fastify.log.info(`🏆 [TOP CANDIDATES] ${JSON.stringify(topCandidates, null, 2)}`)
+            }
+            
+            return bestImage
         } catch (error) {
             if (error instanceof PlayerNotFoundError) {
                 return reply.status(404).send({ error: 'Player not found' })

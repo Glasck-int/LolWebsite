@@ -1,4 +1,5 @@
 import { Type } from '@sinclair/typebox'
+import { LeagueSchema } from './league'
 /**
  * Tournament schema with comprehensive field descriptions and validation
  */
@@ -317,12 +318,96 @@ const CreateTournamentSchema = Type.Omit(TournamentSchema, ['id', 'createdAt', '
 const UpdateTournamentSchema = Type.Partial(CreateTournamentSchema)
 
 /**
+ * Tournament with league information schema
+ */
+const TournamentWithLeagueSchema = Type.Object({
+    id: Type.Number({ 
+        description: 'Unique identifier for the tournament',
+        examples: [1, 2, 3]
+    }),
+    name: Type.String({ 
+        minLength: 1,
+        maxLength: 200,
+        description: 'Full name of the tournament',
+        examples: ['LEC 2024 Spring', 'World Championship 2024']
+    }),
+    overviewPage: Type.String({
+        minLength: 1,
+        maxLength: 300,
+        description: 'Leaguepedia overview page identifier for the tournament',
+        examples: ['LEC_2024_Spring', 'Worlds_2024_Main']
+    }),
+    dateStart: Type.Union([
+        Type.String({ 
+            format: 'date-time',
+            description: 'Tournament start date in ISO format'
+        }),
+        Type.Null()
+    ]),
+    dateEnd: Type.Union([
+        Type.String({ 
+            format: 'date-time',
+            description: 'Tournament end date in ISO format'
+        }),
+        Type.Null()
+    ]),
+    league: Type.Union([
+        Type.String({ 
+            minLength: 1,
+            maxLength: 100,
+            description: 'League name that organizes this tournament',
+            examples: ['LEC', 'LCS', 'Worlds']
+        }),
+        Type.Null()
+    ]),
+    League: Type.Union([
+        Type.Object({
+            id: Type.Number({ description: 'League unique identifier' }),
+            name: Type.String({ description: 'Full league name' }),
+            short: Type.String({ description: 'League short name/abbreviation' }),
+            region: Type.String({ description: 'League region' }),
+            level: Type.String({ description: 'League level (Primary, Secondary, etc.)' }),
+            isOfficial: Type.Boolean({ description: 'Whether this is an official Riot league' }),
+            isMajor: Type.Boolean({ description: 'Whether this is a major international tournament' })
+        }),
+        Type.Null()
+    ])
+})
+
+/**
+ * Player team information for a specific tournament
+ */
+const PlayerTeamInTournamentSchema = Type.Object({
+    name: Type.String({ 
+        description: 'Team name',
+        examples: ['G2 Esports', 'T1', 'Fnatic']
+    }),
+    overviewPage: Type.Optional(Type.String({ 
+        description: 'Team overview page identifier',
+        examples: ['G2_Esports', 'T1_Official', 'Fnatic']
+    })),
+    image: Type.Optional(Type.String({
+        description: 'Team logo/image filename',
+        examples: ['G2esportslogo_square.png', 'T1logo_square.png']
+    }))
+}, {
+    description: 'Player team information for a specific tournament',
+    examples: [{
+        name: 'G2 Esports',
+        overviewPage: 'G2_Esports',
+        image: 'G2esportslogo_square.png'
+    }]
+})
+
+/**
  * Response arrays
  */
 const TournamentListResponse = Type.Array(TournamentSchema)
 const TournamentStandingsListResponse = Type.Array(TournamentStandingsResponse)
 export {
     TournamentSchema,
+    TournamentWithLeagueSchema,
+    PlayerTeamInTournamentSchema,
     CreateTournamentSchema,
     UpdateTournamentSchema,
     TournamentListResponse,

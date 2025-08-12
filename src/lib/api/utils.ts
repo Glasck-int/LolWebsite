@@ -88,6 +88,7 @@ async function apiRequest<T>(
         }
 
         const data = await response.json()
+        
         return { data }
     } catch (error) {
         console.error('API request failed:', error)

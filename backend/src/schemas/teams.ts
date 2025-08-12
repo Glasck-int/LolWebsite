@@ -107,6 +107,58 @@ export const TeamSchema = Type.Object({
         description: 'Last update timestamp',
         examples: ['2024-01-15T10:30:00Z']
     }),
+    latestLeague: Type.Optional(Type.Object({
+        id: Type.Number({ 
+            description: 'League unique identifier' 
+        }),
+        name: Type.String({ 
+            description: 'League name',
+            examples: ['League of Legends Championship Series', 'LoL Champions Korea']
+        }),
+        createdAt: Type.String({ 
+            format: 'date-time',
+            description: 'League creation timestamp' 
+        }),
+        updatedAt: Type.String({ 
+            format: 'date-time',
+            description: 'League last update timestamp' 
+        }),
+        slug: Type.Union([Type.String(), Type.Null()], { 
+            description: 'League URL slug' 
+        }),
+        short: Type.String({ 
+            description: 'League short name/abbreviation',
+            examples: ['LCS', 'LCK', 'LEC']
+        }),
+        region: Type.String({ 
+            description: 'League region',
+            examples: ['North America', 'Korea', 'Europe']
+        }),
+        level: Type.String({ 
+            description: 'League level/tier',
+            examples: ['Primary', 'Secondary', 'Academy']
+        }),
+        isOfficial: Type.Boolean({ 
+            description: 'Whether the league is official' 
+        }),
+        isMajor: Type.Boolean({ 
+            description: 'Whether the league is a major league' 
+        }),
+    }, {
+        description: 'Latest league the team participated in',
+        examples: [{
+            id: 1,
+            name: 'League of Legends Championship Series',
+            createdAt: '2024-01-01T00:00:00Z',
+            updatedAt: '2024-01-01T00:00:00Z',
+            slug: 'lcs',
+            short: 'LCS',
+            region: 'North America',
+            level: 'Primary',
+            isOfficial: true,
+            isMajor: true
+        }]
+    })),
     // PlayerImage: Type.Array(PlayerImageSchema),
     // ScoreboardTeam: Type.Array(ScoreboardTeamSchema),
     // Standings: Type.Array(StandingsSchema),

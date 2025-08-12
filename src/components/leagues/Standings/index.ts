@@ -17,6 +17,7 @@ export { StandingsOverview } from './views/StandingsOverview'
 export { StandingsWithTabs } from './views/StandingsWithTabs'
 export { StandingsOverviewFetch } from './views/StandingsOverviewFetch'
 export { NewStandingsWithTabsFetch } from './views/NewStandingsWithTabsFetch'
+export { TournamentContentFetch } from './views/TournamentContentFetch'
 
 // Clients
 export { StandingsOverviewClient } from './clients/StandingsOverviewClient'
@@ -35,6 +36,9 @@ export {
     type ProcessedGameStats,
 } from './utils/StandingsDataProcessor'
 export { SortedRows } from './utils/SortedRows'
+
+// Playoff Components
+export { PlayoffBracket } from './playOff/PlayoffBracket'
 
 // Types
 export { type Column } from './types'

@@ -2,7 +2,7 @@
 
 import Footer from '@/components/layout/Footer/Footer'
 import { useQueryString, useQueryBoolean } from '@/lib/hooks/createQueryState'
-import { Image } from 'lucide-react'
+import Image from 'next/image'
 
 import {
     Card,
@@ -690,8 +690,8 @@ export default function Home() {
                                         - page sur le cote, mettre balise aside{' '}
                                     </p>
                                     <p>- colorier les matchs suivis avec la ligne en violet</p>
-                                    <p>- gerer l'affichage 3 match round1/ puis 2 round2</p>
-                                    <p>- ajouter la page choisis dans playoff bracket dans l'url</p>
+                                    <p>- gerer l&apos;affichage 3 match round1/ puis 2 round2</p>
+                                    <p>- ajouter la page choisis dans playoff bracket dans l&apos;url</p>
                                 </CardBodyMultipleContent>
                                 <CardBodyMultipleContent>
                                     <p>body 2</p>
@@ -707,13 +707,13 @@ export default function Home() {
             <br />
             <h3>Calendar</h3>
             <div className="w-full h-1 bg-white/40" />
-            <ChoseDate {...calendar} displayWeek={true} />
+            <ChoseDate {...calendar} />
             <ChoseDate {...calendar} />
             <Card>
                 <h3>INFO</h3>
                 <p>Live: {calendar.isLive ? 'true' : 'false'}</p>
                 <p>MatchChaud: {calendar.matchChaud ? 'true' : 'false'}</p>
-                <p>Search: '{calendar.search}'</p>
+                <p>Search: &apos;{calendar.search}&apos;</p>
             </Card>
             <br />
             <h3>DropDown Card</h3>

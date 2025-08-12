@@ -41,7 +41,13 @@ export interface ChoseDateProps
         ChoseDateActions,
         ChoseDateHelpers {
     className?: string
-    displayWeek?: boolean
+    weekDisplay?:boolean
+    minDate?: Date
+    maxDate?: Date
+    onNavigateNext?: () => void
+    onNavigatePrev?: () => void
+    canNavigateNext?: boolean
+    canNavigatePrev?: boolean
 }
 
 /**
@@ -68,11 +74,12 @@ export interface ChoseDateProps
  * @see `ChoseDate` component
  */
 export function useChoseDate() {
-    const [selectedDate, setSelectedDate] = useQueryDate('date', new Date())
+    const [selectedDate, setSelectedDate] = useQueryDate("date", new Date())
     const [isLive, setIsLive] = useState(false)
     const [matchChaud, setMatchChaud] = useState(false)
     const [search, setSearch] = useState('')
-
+    
+    
     /**
      * Converts a JavaScript Date to a CalendarDate format used by @internationalized/date.
      *
@@ -93,7 +100,7 @@ export function useChoseDate() {
         if (!date) return null
         return toCalendarDate(fromDate(date, getLocalTimeZone()))
     }
-
+    
     return {
         // States
         selectedDate,
@@ -122,7 +129,7 @@ export function useChoseDate() {
  * @param setSearch - Function to set the search query.
  * @param dateToCalendarDate - Helper function to convert a JS Date to `CalendarDate`.
  * @param className - Optional className for custom styling.
- * @param displayWeek - Whether to display the calendar with week grouping.
+ * @param weekDisplay - Whether to display the calendar with week grouping (not used internally yet).
  * @returns A nav element rendering the full interactive date chooser UI.
  *
  * @example
@@ -144,7 +151,12 @@ export default function ChoseDate({
     setSearch,
     className = '',
     dateToCalendarDate,
-    displayWeek = false,
+    minDate,
+    maxDate,
+    onNavigateNext,
+    onNavigatePrev,
+    canNavigateNext,
+    canNavigatePrev
 }: ChoseDateProps) {
     const { isDown, setIsDown } = useDropdownArrow()
     const calendarRef = useRef<HTMLDivElement>(null)
@@ -164,37 +176,13 @@ export default function ChoseDate({
     }
     const currentLocale = normalizeLocale(locale)
 
-    const formatSelectedDate = (displayWeek = false) => {
+    const formatSelectedDate = () => {
         if (!selectedDate) return ''
 
-        if (displayWeek) {
-            const date = new Date(selectedDate)
-            const dayOfWeek = date.getDay()
-            const monday = new Date(date)
-
-            const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1
-            monday.setDate(date.getDate() - daysFromMonday)
-
-            const sunday = new Date(monday)
-            sunday.setDate(monday.getDate() + 6)
-
-            const startFormat = monday.toLocaleDateString(currentLocale, {
-                day: 'numeric',
-                month: 'long',
-            })
-
-            const endFormat = sunday.toLocaleDateString(currentLocale, {
-                day: 'numeric',
-                month: 'long',
-            })
-
-            return `${startFormat} - ${endFormat}`
-        }
-
-        const today = new Date()
+        const todayDate = new Date()
         const dayMs = 86400000
         const diff =
-            selectedDate.setHours(0, 0, 0, 0) - today.setHours(0, 0, 0, 0)
+            selectedDate.setHours(0, 0, 0, 0) - todayDate.setHours(0, 0, 0, 0)
 
         switch (diff) {
             case 0:
@@ -214,23 +202,27 @@ export default function ChoseDate({
         }
     }
 
-    const clickRight = (date: Date): Date => {
+    const addOneDay = (date: Date): Date => {
         const newDate = new Date(date)
-        if (displayWeek) {
-            newDate.setDate(newDate.getDate() + 7)
-        } else {
-            newDate.setDate(newDate.getDate() + 1)
+        newDate.setDate(newDate.getDate() + 1)
+        
+        // Check if we exceed maxDate
+        if (maxDate && newDate > maxDate) {
+            return date // Return original date if we would exceed max
         }
+        
         return newDate
     }
 
-    const clickLeft = (date: Date): Date => {
+    const removeOneDay = (date: Date): Date => {
         const newDate = new Date(date)
-        if (displayWeek) {
-            newDate.setDate(newDate.getDate() - 7)
-        } else {
-            newDate.setDate(newDate.getDate() - 1)
+        newDate.setDate(newDate.getDate() - 1)
+        
+        // Check if we go below minDate
+        if (minDate && newDate < minDate) {
+            return date // Return original date if we would go below min
         }
+        
         return newDate
     }
 
@@ -261,21 +253,25 @@ export default function ChoseDate({
         setSearch(term)
     }
 
+    // Vérifier si on est au premier ou dernier jour
+    const isFirstDay = minDate && selectedDate.toDateString() === minDate.toDateString()
+    const isLastDay = maxDate && selectedDate.toDateString() === maxDate.toDateString()
+    
+    // Determine if arrows should be disabled
+    const leftArrowDisabled = canNavigatePrev !== undefined ? !canNavigatePrev : (isFirstDay && !onNavigatePrev)
+    const rightArrowDisabled = canNavigateNext !== undefined ? !canNavigateNext : (isLastDay && !onNavigateNext)
+
     return (
-        <nav
-            className={`w-full ${
-                displayWeek ? 'h-18' : 'h-31'
-            } md:bg-white/6 flex flex-col pt-[5px] pb-[10px] px-[10px] relative default-border-radius ${className}`}
-        >
+        <nav className={`w-full h-31 md:bg-white/6 flex flex-col pt-[5px] pb-[10px] px-[10px] relative default-border-radius ${className}`}>
             <ArrowButton
                 className="flex-1"
-                onLeftClick={() => setSelectedDate(clickLeft(selectedDate))}
-                onRightClick={() => setSelectedDate(clickRight(selectedDate))}
+                onLeftClick={onNavigatePrev || (() => setSelectedDate(removeOneDay(selectedDate)))}
+                onRightClick={onNavigateNext || (() => setSelectedDate(addOneDay(selectedDate)))}
+                leftDisabled={leftArrowDisabled}
+                rightDisabled={rightArrowDisabled}
             >
                 <div className="flex items-center gap-3">
-                    <h3 className="text-clear-grey">
-                        <time>{formatSelectedDate(displayWeek)}</time>
-                    </h3>
+                    <h3 className="text-clear-grey"><time>{formatSelectedDate()}</time></h3>
                     <DropDownArrow
                         size={15}
                         sizeMd={20}
@@ -304,6 +300,8 @@ export default function ChoseDate({
                                 onChange={(calendarDate) =>
                                     onChangeDateCalendar(calendarDate)
                                 }
+                                minValue={minDate ? dateToCalendarDate(minDate) : undefined}
+                                maxValue={maxDate ? dateToCalendarDate(maxDate) : undefined}
                                 classNames={{
                                     base: 'bg-white/4 rounded-lg backdrop-blur border border-grey/30',
                                     headerWrapper:
@@ -332,25 +330,21 @@ export default function ChoseDate({
                     </motion.div>
                 )}
             </AnimatePresence>
-            {!displayWeek && (
-                <div className=" flex-1 w-full ">
-                    <div className="flex gap-2 ">
-                        <ButtonBar
-                            options={[translate('live'), translate('hotGame')]}
-                            onButtonChange={(option) =>
-                                handleButtonClick(option)
-                            }
+            <div className=" flex-1 w-full ">
+                <div className="flex gap-2 ">
+                    <ButtonBar
+                        options={[translate('live'), translate('hotGame')]}
+                        onButtonChange={(option) => handleButtonClick(option)}
+                    />
+                    <div className="flex-1 min-w-0">
+                        <FunctionalSearchBar
+                            searchLogo="textSearch"
+                            className="h-[40px] !rounded-2xl border md:border-none border-solid border-dark-grey bg-white-06"
+                            onSearch={handleSearch}
                         />
-                        <div className="flex-1 min-w-0">
-                            <FunctionalSearchBar
-                                searchLogo="textSearch"
-                                className="h-[40px] !rounded-2xl border md:border-none border-solid border-dark-grey bg-white-06"
-                                onSearch={handleSearch}
-                            />
-                        </div>
                     </div>
                 </div>
-            )}
+            </div>
         </nav>
     )
 }

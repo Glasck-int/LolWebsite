@@ -49,27 +49,27 @@ export default function ArrowButton({
 }: Props) {
     return (
         <div className={`flex items-center justify-between ${className}`}>
-            <button
-                className={` ${
-                    !leftDisabled
-                        ? 'text-clear-grey hover:text-white cursor-pointer'
-                        : 'text-grey'
-                }`}
-                onClick={onLeftClick}
-            >
-                <ChevronLeft />
-            </button>
+            {!leftDisabled ? (
+                <button
+                    className="text-clear-grey hover:text-white cursor-pointer"
+                    onClick={onLeftClick}
+                >
+                    <ChevronLeft />
+                </button>
+            ) : (
+                <div className="w-6" />
+            )}
             {children}
-            <button
-                className={` ${
-                    !rightDisabled
-                        ? 'text-clear-grey hover:text-white cursor-pointer'
-                        : 'text-grey'
-                }`}
-                onClick={onRightClick}
-            >
-                <ChevronRight />
-            </button>
+            {!rightDisabled ? (
+                <button
+                    className="text-clear-grey hover:text-white cursor-pointer"
+                    onClick={onRightClick}
+                >
+                    <ChevronRight />
+                </button>
+            ) : (
+                <div className="w-6" />
+            )}
         </div>
     )
 }

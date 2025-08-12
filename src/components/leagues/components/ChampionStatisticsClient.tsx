@@ -15,6 +15,7 @@ import {
     // CardHeaderBase,
     useCard,
 } from '@/components/ui/card/index'
+import { MatchSkeleton } from '@/components/ui/skeleton/MatchSkeleton'
 import Image from 'next/image'
 import { DDragon } from '@/lib/api/ddragon'
 import { useDDragonVersions } from '@/lib/swr/useDDragonVersions'
@@ -75,18 +76,15 @@ export function ChampionStatisticsClient({ tournamentId, initialData }: Champion
 
     if (isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center p-8 space-y-2">
-                <div className="text-muted-foreground">Loading champion statistics...</div>
-            </div>
+            <MatchSkeleton className='min-h-[1280px]' />
         )
     }
 
     if (error) {
         return (
             <div className="flex flex-col items-center justify-center p-8 space-y-4">
-                <div className="text-red-500 text-center">
-                    <div className="font-medium">Error loading champion statistics</div>
-                    <div className="text-sm mt-1">{error.message}</div>
+                <div className="text-clear-grey text-center">
+                    <div className="font-medium">No champion statistics for this tournament</div>
                 </div>
             </div>
         )

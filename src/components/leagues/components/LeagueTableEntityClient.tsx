@@ -1,9 +1,11 @@
 'use client'
 
 import React, { useEffect, useState, useCallback } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { useTableEntityData } from '@/hooks/useTableEntityData'
 import { useTableEntityStore, SeasonData } from '@/store/tableEntityStore'
+import { useSimpleTabSync } from '@/hooks/useSimpleTabSync'
+import { useTableUrlSync } from '@/hooks/useTableUrlSync'
+import { useDynamicTournamentMetadata } from '@/hooks/useDynamicTournamentMetadata'
 import {
     TableEntityLayout,
     TableEntityHeader,
@@ -15,16 +17,17 @@ import {
     CardBody,
     CardContext,
 } from '@/components/ui/card'
-import { SmartCardFooter, SmartCardFooterContent, useSmartTabsInit } from '@/components/ui/SmartTabs'
+import { SmartCardFooterSync, SmartCardFooterContentSync } from '@/components/ui/SmartTabsSync'
 import {
     LeagueDescription,
     StandingsOverviewFetch,
 } from '@/components/leagues'
 import { NextMatchesFetch } from '@/components/leagues/Matches/NextMatchesFetch'
+import { MatchesCalendar } from '@/components/leagues/Matches/MatchesCalendar'
 import { ChampionStatisticsClient } from './ChampionStatisticsClient'
 import { PlayerStatisticsClient } from './PlayerStatisticsClient'
 import { ButtonBar } from '@/components/ui/Button/ButtonBar'
-import { NewStandingsWithTabsFetch } from '@/components/leagues/Standings/views/NewStandingsWithTabsFetch'
+import { TournamentContentFetch } from '@/components/leagues/Standings/views/TournamentContentFetch'
 import {
     League,
     Standings,
@@ -63,17 +66,20 @@ const LeagueTableEntityContent = ({
 }: Omit<LeagueTableEntityClientProps, 'leagueId'> & {
     seasons: SeasonData[]
 }) => {
-    const searchParams = useSearchParams()
     const { activeId } = useTableEntityStore()
-    const { initializeFromUrl } = useSmartTabsInit()
     const selectedTournamentId = activeId.length > 0 ? activeId[0] : null
     const t = useTranslate('Tabs')
+    
+    // Initialize simple tab URL synchronization
+    useSimpleTabSync()
+    
+    // Initialize season/split/tournament URL synchronization
+    useTableUrlSync(seasons)
     
     // State for managing which statistics to show
     const [activeStatsView, setActiveStatsView] = useState<string | null>('Players')
     
     const handleStatsViewChange = useCallback((option: string | null) => {
-        console.log('ButtonBar changed to:', option)
         setActiveStatsView(option)
     }, [])
     
@@ -81,31 +87,15 @@ const LeagueTableEntityContent = ({
     useEffect(() => {
         if (selectedTournamentId) {
             setActiveStatsView('Players')
-            console.log('Resetting activeStatsView to Players for tournament:', selectedTournamentId)
         }
     }, [selectedTournamentId])
-    
-    
-    
-    // Initialize from URL once all tabs are registered
-    const hasSeasons = seasons.length > 0
-    useEffect(() => {
-        if (hasSeasons) {
-            // Small delay to ensure all tabs are registered first
-            const timer = setTimeout(() => {
-                initializeFromUrl(searchParams, seasons)
-            }, 100)
-            
-            return () => clearTimeout(timer)
-        }
-    }, [hasSeasons, initializeFromUrl, searchParams, seasons])
 
     return (
         <>
             <Card>
                 <CardContext>
                     <CardBody>
-                    <div className="hidden md:flex p-[15px] h-[130px] gap-3 w-[250px] items-center justify-center">
+                    <div className="hidden md:flex p-[15px] h-[130px] gap-3 w-full items-center justify-left">
                         {league && (
                             <LeagueDescription
                                 league={league}
@@ -115,20 +105,20 @@ const LeagueTableEntityContent = ({
                     </div>
                     <TableEntityHeader seasons={seasons} />
                 </CardBody>
-                <SmartCardFooter>
-                    <SmartCardFooterContent>
+                <SmartCardFooterSync>
+                    <SmartCardFooterContentSync>
                         <p className="text-inherit">{t('Overview')}</p>
-                    </SmartCardFooterContent>
-                    <SmartCardFooterContent>
+                    </SmartCardFooterContentSync>
+                    <SmartCardFooterContentSync>
                         <p className="text-inherit">{t('Matches')}</p>
-                    </SmartCardFooterContent>
-                    <SmartCardFooterContent>
+                    </SmartCardFooterContentSync>
+                    <SmartCardFooterContentSync>
                         <p className="text-inherit">{t('Statistics')}</p>
-                    </SmartCardFooterContent>
-                    <SmartCardFooterContent>
+                    </SmartCardFooterContentSync>
+                    <SmartCardFooterContentSync>
                         <p className="text-inherit">{t('Tournaments')}</p>
-                    </SmartCardFooterContent>
-                </SmartCardFooter>
+                    </SmartCardFooterContentSync>
+                </SmartCardFooterSync>
                 </CardContext>
             </Card>
             {/* Body avec le contenu des différents onglets */}
@@ -172,7 +162,16 @@ const LeagueTableEntityContent = ({
                 </TableEntityContent>
                 <TableEntityContent>
                     <div className="space-y-4">
-                        <p>matchs</p>
+                        {selectedTournamentId ? (
+                            <MatchesCalendar tournamentId={selectedTournamentId.toString()} />
+                        ) : (
+                            <div className="p-4 bg-gray-700 rounded-lg">
+                                <h3 className="text-lg font-semibold mb-2">
+                                    Matchs
+                                </h3>
+                                <p>Sélectionnez un tournoi pour voir les matchs</p>
+                            </div>
+                        )}
                     </div>
                 </TableEntityContent>
                 <TableEntityContent>
@@ -185,13 +184,10 @@ const LeagueTableEntityContent = ({
                                             key={`buttonbar-${selectedTournamentId}-${activeStatsView}`}
                                             options={['Players', 'Champions']}
                                             onButtonChange={handleStatsViewChange}
-                                            initialActiveIndex={activeStatsView === 'Players' ? 0 : activeStatsView === 'Champions' ? 1 : 0}
+                                            defaultActiveIndex={activeStatsView === 'Players' ? 0 : activeStatsView === 'Champions' ? 1 : 0}
                                         />
                                     </div>
                                     
-                                    <div style={{ display: 'none' }}>
-                                        Debug - Current view: "{activeStatsView}" | Players? {activeStatsView === 'Players'} | Champions? {activeStatsView === 'Champions'}
-                                    </div>
                                     
                                     {activeStatsView === 'Players' && (
                                         <div>
@@ -218,9 +214,10 @@ const LeagueTableEntityContent = ({
                 </TableEntityContent>
                 <TableEntityContent>
                     <div className="space-y-4">
-                        {/* Nouveau système de tableaux avec vraies balises HTML */}
+                        {/* Tournament content - automatically detects standings vs playoff bracket */}
                         {selectedTournamentId ? (
-                            <NewStandingsWithTabsFetch
+                            <TournamentContentFetch
+                                key={`tournament-content-${selectedTournamentId}`}
                                 tournamentId={selectedTournamentId}
                                 maxRows={null}
                             />
@@ -242,18 +239,12 @@ const LeagueTableEntityContent = ({
 export const LeagueTableEntityClient = ({
     leagueId,
     league,
-    standings,
-    playerStats,
-    tournamentName,
-    enrichedStandingsData,
-    enrichedGamesData,
-    playerImages,
-    matches,
-    teamsData,
-    teamImages,
     imageData,
 }: LeagueTableEntityClientProps) => {
     const { data: seasons, loading, error } = useTableEntityData(leagueId)
+    
+    // Hook pour mettre à jour les métadonnées dynamiquement selon le tournoi sélectionné
+    useDynamicTournamentMetadata(league?.name || '')
 
     if (loading) {
         return (
@@ -286,15 +277,6 @@ export const LeagueTableEntityClient = ({
             <TableEntityLayout>
                 <LeagueTableEntityContent
                     league={league}
-                    standings={standings}
-                    playerStats={playerStats}
-                    tournamentName={tournamentName}
-                    enrichedStandingsData={enrichedStandingsData}
-                    enrichedGamesData={enrichedGamesData}
-                    playerImages={playerImages}
-                    matches={matches}
-                    teamsData={teamsData}
-                    teamImages={teamImages}
                     imageData={imageData}
                     seasons={seasons}
                 />

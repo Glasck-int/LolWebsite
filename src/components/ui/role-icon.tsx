@@ -1,4 +1,5 @@
 import React from 'react'
+import Image from 'next/image'
 
 interface RoleIconProps {
   role: string | null | undefined
@@ -33,16 +34,12 @@ export function RoleIcon({ role, size = 18, className = '' }: RoleIconProps) {
       className={`flex items-center justify-center ${className}`}
       style={{ width: size, height: size }}
     >
-      <img
+      <Image
         src={`/assets/SVG/${iconName}.svg`}
         alt={`${role} role`}
         width={size}
         height={size}
         className="object-contain"
-        onError={(e) => {
-          // Hide image on error
-          e.currentTarget.style.display = 'none'
-        }}
       />
     </div>
   )

@@ -22,13 +22,13 @@ interface LeagueSectionProps {
  * @param className - Additional CSS classes
  * @returns A complete section with title and league grid
  */
-export const LeagueSection: React.FC<LeagueSectionProps> = ({
+export const LeagueSection = ({
     title,
     leagues,
     images,
     square = false,
     className = '',
-}) => {
+}: LeagueSectionProps) => {
     return (
         <div className={`mb-8 ${className}`}>
             <div className="flex flex-col">

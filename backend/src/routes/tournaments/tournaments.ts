@@ -1,8 +1,11 @@
 import { FastifyInstance } from 'fastify'
+import { Type } from '@sinclair/typebox'
 
 import {
     TournamentListResponse,
     TournamentStandingsListResponse,
+    TournamentWithLeagueSchema,
+    PlayerTeamInTournamentSchema,
 } from '../../schemas/tournaments'
 import { ErrorResponseSchema } from '../../schemas/common'
 import prisma from '../../services/prisma'
@@ -10,6 +13,7 @@ import { MatchScheduleGameListResponse } from '../../schemas/matchScheduleGame'
 import { ScoreboardPlayersListResponse, PlayerStatsListResponse } from '../../schemas/scoreboardPlayers'
 import { TournamentLeagueNameParamSchema, TournamentIdParamSchema, OverviewPageParamSchema, TournamentOverviewPageParamSchema } from '../../schemas/params'
 import { MatchScheduleListResponse } from '../../schemas/matchShedule'
+import { PlayoffBracketResponse } from '../../schemas/playoffBracket'
 
 export default async function tournamentsRoutes(fastify: FastifyInstance) {
     const redis = fastify.redis
@@ -1059,6 +1063,498 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
         }
     )
 
+    // Get available match dates for a tournament
+    fastify.get<{ Params: { tournamentId: string } }>(
+        '/tournaments/id/:tournamentId/match-dates',
+        {
+            schema: {
+                description: 'Get all dates that have matches for a tournament',
+                tags: ['tournaments'],
+                params: TournamentIdParamSchema,
+                response: {
+                    200: {
+                        type: 'object',
+                        properties: {
+                            dates: {
+                                type: 'array',
+                                items: { type: 'string', format: 'date' },
+                                description: 'Array of dates (YYYY-MM-DD) that have matches'
+                            },
+                            totalMatches: { type: 'number' }
+                        }
+                    },
+                    404: ErrorResponseSchema,
+                    500: ErrorResponseSchema,
+                },
+            },
+        },
+        async (request, reply) => {
+            try {
+                const { tournamentId } = request.params
+                const cacheKey = `tournament_match_dates:${tournamentId}`
+
+                // Check cache first
+                const cached = await redis.get(cacheKey)
+                if (cached) {
+                    return JSON.parse(cached)
+                }
+
+                // Get all matches for the tournament
+                const matches = await prisma.matchSchedule.findMany({
+                    where: {
+                        Tournament: {
+                            id: parseInt(tournamentId)
+                        }
+                    },
+                    select: {
+                        dateTime_UTC: true
+                    },
+                    orderBy: {
+                        dateTime_UTC: 'asc'
+                    }
+                })
+
+                if (matches.length === 0) {
+                    return reply.status(404).send({
+                        error: 'No matches found for this tournament'
+                    })
+                }
+
+                // Extract unique dates (YYYY-MM-DD format)
+                const dateSet = new Set<string>()
+                matches.forEach(match => {
+                    if (match.dateTime_UTC) {
+                        const date = new Date(match.dateTime_UTC)
+                        const year = date.getUTCFullYear()
+                        const month = String(date.getUTCMonth() + 1).padStart(2, '0')
+                        const day = String(date.getUTCDate()).padStart(2, '0')
+                        dateSet.add(`${year}-${month}-${day}`)
+                    }
+                })
+
+                const result = {
+                    dates: Array.from(dateSet).sort(),
+                    totalMatches: matches.length
+                }
+
+                // Cache for 1 hour
+                await redis.setex(cacheKey, 3600, JSON.stringify(result))
+                return result
+
+            } catch (error) {
+                console.error('Error in tournament match dates route:', error)
+                return reply
+                    .status(500)
+                    .send({ error: 'Internal server error' })
+            }
+        }
+    )
+
+    // Get matches for a tournament filtered by date range
+    fastify.get<{ 
+        Params: { tournamentId: string },
+        Querystring: { 
+            date?: string,
+            startDate?: string,
+            endDate?: string,
+            limit?: number,
+            offset?: number
+        }
+    }>(
+        '/tournaments/id/:tournamentId/matches/by-date',
+        {
+            schema: {
+                description: 'Get matches for a tournament filtered by date range',
+                tags: ['tournaments'],
+                params: TournamentIdParamSchema,
+                querystring: {
+                    type: 'object',
+                    properties: {
+                        date: { 
+                            type: 'string', 
+                            format: 'date',
+                            description: 'Specific date to filter matches (YYYY-MM-DD)'
+                        },
+                        startDate: { 
+                            type: 'string', 
+                            format: 'date',
+                            description: 'Start date for range filter (YYYY-MM-DD)'
+                        },
+                        endDate: { 
+                            type: 'string', 
+                            format: 'date',
+                            description: 'End date for range filter (YYYY-MM-DD)'
+                        },
+                        limit: { 
+                            type: 'number', 
+                            minimum: 1,
+                            default: 50,
+                            description: 'Maximum number of matches to return'
+                        },
+                        offset: { 
+                            type: 'number', 
+                            minimum: 0,
+                            default: 0,
+                            description: 'Number of matches to skip for pagination'
+                        }
+                    },
+                    additionalProperties: false
+                },
+                response: {
+                    200: {
+                        type: 'object',
+                        properties: {
+                            data: MatchScheduleListResponse,
+                            pagination: {
+                                type: 'object',
+                                properties: {
+                                    total: { type: 'number' },
+                                    limit: { type: 'number' },
+                                    offset: { type: 'number' },
+                                    hasMore: { type: 'boolean' }
+                                }
+                            }
+                        }
+                    },
+                    404: ErrorResponseSchema,
+                    500: ErrorResponseSchema,
+                },
+            },
+        },
+        async (request, reply) => {
+            try {
+                const { tournamentId } = request.params
+                const { date, startDate, endDate, limit = 50, offset = 0 } = request.query || {}
+                
+                // Validate date parameters
+                if (date && (startDate || endDate)) {
+                    return reply.status(400).send({ 
+                        error: 'Cannot use both "date" and date range parameters' 
+                    })
+                }
+
+                if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+                    return reply.status(400).send({ 
+                        error: 'Start date must be before end date' 
+                    })
+                }
+
+                // Build date filter
+                let dateFilter: any = {}
+                if (date) {
+                    // Single day filter - ensure we cover the full day in UTC
+                    const targetDate = new Date(date + 'T00:00:00.000Z')
+                    const nextDay = new Date(date + 'T00:00:00.000Z')
+                    nextDay.setUTCDate(nextDay.getUTCDate() + 1)
+                    
+                    dateFilter = {
+                        gte: targetDate,
+                        lt: nextDay
+                    }
+                } else if (startDate || endDate) {
+                    // Date range filter
+                    if (startDate) {
+                        dateFilter.gte = new Date(startDate)
+                    }
+                    if (endDate) {
+                        const endOfDay = new Date(endDate)
+                        endOfDay.setHours(23, 59, 59, 999)
+                        dateFilter.lte = endOfDay
+                    }
+                }
+                
+                // Create cache key that includes query parameters
+                const cacheKey = `tournament_matches_by_date:${tournamentId}:${date || ''}:${startDate || ''}:${endDate || ''}:${limit}:${offset}`
+
+                // Check cache first
+                const cached = await redis.get(cacheKey)
+                if (cached) {
+                    return JSON.parse(cached)
+                }
+
+                // Get total count for pagination
+                const whereCondition = {
+                    Tournament: {
+                        id: parseInt(tournamentId)
+                    },
+                    ...(Object.keys(dateFilter).length > 0 && {
+                        dateTime_UTC: dateFilter
+                    })
+                }
+
+                const total = await prisma.matchSchedule.count({
+                    where: whereCondition
+                })
+
+
+                // Get paginated matches
+                const matches = await prisma.matchSchedule.findMany({
+                    where: whereCondition,
+                    orderBy: {
+                        dateTime_UTC: 'asc'
+                    },
+                    skip: offset,
+                    take: limit,
+                    include: {
+                        MatchScheduleGame: {
+                            select: {
+                                id: true,
+                                gameId: true,
+                                nGameInMatch: true,
+                                winner: true,
+                                blue: true,
+                                red: true
+                            }
+                        }
+                    }
+                })
+
+                if (matches.length === 0 && offset === 0) {
+                    return reply.status(404).send({
+                        error: 'No matches found for the specified criteria'
+                    })
+                }
+
+                const result = { 
+                    data: matches,
+                    pagination: {
+                        total,
+                        limit,
+                        offset,
+                        hasMore: offset + matches.length < total
+                    }
+                }
+                
+                // Cache for 30 minutes for date-specific queries
+                await redis.setex(cacheKey, 1800, JSON.stringify(result))
+                return result
+
+            } catch (error) {
+                console.error('Error in tournament matches by date route:', error)
+                return reply
+                    .status(500)
+                    .send({ error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' })
+            }
+        }
+    )
+
+    // Get tournament by ID
+    fastify.get<{ Params: { tournamentId: string } }>(
+        '/tournaments/id/:tournamentId',
+        {
+            schema: {
+                description: 'Get tournament by ID',
+                tags: ['tournaments'],
+                params: TournamentIdParamSchema,
+                response: {
+                    200: TournamentListResponse,
+                    404: ErrorResponseSchema,
+                    500: ErrorResponseSchema,
+                },
+            },
+        },
+        async (request, reply) => {
+            try {
+                const { tournamentId } = request.params
+                const cacheKey = `tournament:${tournamentId}`
+
+                // Check cache first
+                const cached = await redis.get(cacheKey)
+                if (cached) {
+                    return JSON.parse(cached)
+                }
+
+                const tournament = await prisma.tournament.findUnique({
+                    where: { id: parseInt(tournamentId) },
+                })
+
+                if (!tournament) {
+                    return reply
+                        .status(404)
+                        .send({ error: 'Tournament not found' })
+                }
+
+                // Cache for 1 day (86400 seconds)
+                await redis.setex(cacheKey, 86400, JSON.stringify([tournament]))
+                return [tournament]
+            } catch (error) {
+                console.error('Error in tournament by ID route:', error)
+                return reply
+                    .status(500)
+                    .send({ error: 'Internal server error' })
+            }
+        }
+    )
+
+    // Get tournament with league information by ID
+    fastify.get<{ Params: { tournamentId: string } }>(
+        '/tournaments/id/:tournamentId/league',
+        {
+            schema: {
+                description: 'Get tournament with league information by ID',
+                tags: ['tournaments'],
+                params: TournamentIdParamSchema,
+                response: {
+                    200: TournamentWithLeagueSchema,
+                    404: ErrorResponseSchema,
+                    500: ErrorResponseSchema,
+                },
+            },
+        },
+        async (request, reply) => {
+            try {
+                const { tournamentId } = request.params
+                const cacheKey = `tournament_league:${tournamentId}`
+                customMetric.inc({ operation: 'get_tournament_league_by_id' })
+
+                // Check cache first
+                const cached = await redis.get(cacheKey)
+                if (cached) {
+                    return JSON.parse(cached)
+                }
+
+                const tournament = await prisma.tournament.findUnique({
+                    where: { id: parseInt(tournamentId) },
+                    select: {
+                        id: true,
+                        name: true,
+                        overviewPage: true,
+                        dateStart: true,
+                        dateEnd: true,
+                        league: true,
+                        League: {
+                            select: {
+                                id: true,
+                                name: true,
+                                short: true,
+                                region: true,
+                                level: true,
+                                isOfficial: true,
+                                isMajor: true,
+                            }
+                        }
+                    }
+                })
+
+                if (!tournament) {
+                    return reply
+                        .status(404)
+                        .send({ error: 'Tournament not found' })
+                }
+
+                // Cache for 1 day (86400 seconds)
+                await redis.setex(cacheKey, 86400, JSON.stringify(tournament))
+                return tournament
+            } catch (error) {
+                console.error('Error in tournament with league by ID route:', error)
+                return reply
+                    .status(500)
+                    .send({ error: 'Internal server error' })
+            }
+        }
+    )
+
+    // Debug route to check matches for a tournament
+    fastify.get<{ Params: { tournamentId: string } }>(
+        '/tournaments/id/:tournamentId/debug/matches',
+        {
+            schema: {
+                description: 'Debug route to check all matches for a tournament',
+                tags: ['tournaments'],
+                params: TournamentIdParamSchema,
+                response: {
+                    200: {
+                        type: 'object',
+                        properties: {
+                            tournament: { type: 'object' },
+                            totalMatches: { type: 'number' },
+                            firstMatch: { type: 'object' },
+                            lastMatch: { type: 'object' },
+                            sampleMatches: { type: 'array' }
+                        }
+                    },
+                    404: ErrorResponseSchema,
+                    500: ErrorResponseSchema,
+                },
+            },
+        },
+        async (request, reply) => {
+            try {
+                const { tournamentId } = request.params
+                
+                const tournament = await prisma.tournament.findUnique({
+                    where: { id: parseInt(tournamentId) },
+                    select: {
+                        id: true,
+                        name: true,
+                        dateStart: true,
+                        dateEnd: true,
+                        overviewPage: true
+                    }
+                })
+
+                if (!tournament) {
+                    return reply.status(404).send({ error: 'Tournament not found' })
+                }
+
+                const totalMatches = await prisma.matchSchedule.count({
+                    where: {
+                        Tournament: {
+                            id: parseInt(tournamentId)
+                        }
+                    }
+                })
+
+                const firstMatch = await prisma.matchSchedule.findFirst({
+                    where: {
+                        Tournament: {
+                            id: parseInt(tournamentId)
+                        }
+                    },
+                    orderBy: {
+                        dateTime_UTC: 'asc'
+                    }
+                })
+
+                const lastMatch = await prisma.matchSchedule.findFirst({
+                    where: {
+                        Tournament: {
+                            id: parseInt(tournamentId)
+                        }
+                    },
+                    orderBy: {
+                        dateTime_UTC: 'desc'
+                    }
+                })
+
+                const sampleMatches = await prisma.matchSchedule.findMany({
+                    where: {
+                        Tournament: {
+                            id: parseInt(tournamentId)
+                        }
+                    },
+                    take: 5,
+                    orderBy: {
+                        dateTime_UTC: 'asc'
+                    }
+                })
+
+                return {
+                    tournament,
+                    totalMatches,
+                    firstMatch,
+                    lastMatch,
+                    sampleMatches
+                }
+            } catch (error) {
+                console.error('Error in debug matches route:', error)
+                return reply
+                    .status(500)
+                    .send({ error: 'Internal server error' })
+            }
+        }
+    )
+
     // Debug route to list all tournaments
     fastify.get(
         '/tournaments/debug/list',
@@ -1103,6 +1599,410 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
                 return { tournaments }
             } catch (error) {
                 console.error('Error in debug route:', error)
+                return reply
+                    .status(500)
+                    .send({ error: 'Internal server error' })
+            }
+        }
+    )
+
+    // Get tournament type (standings, groups, or playoff)
+    fastify.get<{ Params: { tournamentId: string } }>(
+        '/tournaments/:tournamentId/type',
+        {
+            schema: {
+                description: 'Determine the tournament type (standings, groups, or playoff)',
+                tags: ['tournaments'],
+                params: TournamentIdParamSchema,
+                response: {
+                    200: Type.Object({
+                        type: Type.Union([
+                            Type.Literal('standings'),
+                            Type.Literal('groups'),
+                            Type.Literal('playoff'),
+                            Type.Literal('unknown')
+                        ]),
+                        hasStandings: Type.Boolean(),
+                        hasGroups: Type.Boolean(),
+                        hasPlayoffStructure: Type.Boolean(),
+                    }),
+                    404: ErrorResponseSchema,
+                    500: ErrorResponseSchema,
+                },
+            },
+        },
+        async (request, reply) => {
+            try {
+                const { tournamentId } = request.params
+                
+                // Get tournament
+                const tournament = await prisma.tournament.findUnique({
+                    where: { id: parseInt(tournamentId) },
+                    select: { overviewPage: true },
+                })
+
+                if (!tournament) {
+                    return reply.status(404).send({ error: 'Tournament not found' })
+                }
+
+                // Check for standings
+                const standingsCount = await prisma.standings.count({
+                    where: { overviewPage: tournament.overviewPage }
+                })
+
+                // Check for groups
+                const groupsCount = await prisma.tournamentGroups.count({
+                    where: { overviewPage: tournament.overviewPage }
+                })
+
+                // Check for playoff structure (matches with nPage and nTabInPage)
+                const playoffMatchesCount = await prisma.matchSchedule.count({
+                    where: {
+                        overviewPage: tournament.overviewPage,
+                        nPage: { not: null },
+                        nTabInPage: { not: null },
+                        tab: { not: null },
+                    }
+                })
+
+                // Determine type
+                let type: 'standings' | 'groups' | 'playoff' | 'unknown' = 'unknown'
+                
+                if (groupsCount > 0) {
+                    type = 'groups'
+                } else if (standingsCount > 0) {
+                    type = 'standings'
+                } else if (playoffMatchesCount > 0) {
+                    type = 'playoff'
+                }
+
+                return {
+                    type,
+                    hasStandings: standingsCount > 0,
+                    hasGroups: groupsCount > 0,
+                    hasPlayoffStructure: playoffMatchesCount > 0,
+                }
+            } catch (error) {
+                console.error('Error determining tournament type:', error)
+                return reply.status(500).send({ error: 'Internal server error' })
+            }
+        }
+    )
+
+    // Playoff bracket route
+    fastify.get<{ Params: { tournamentId: string } }>(
+        '/tournaments/:tournamentId/playoff-bracket',
+        {
+            schema: {
+                description: 'Get playoff bracket data for a tournament',
+                tags: ['tournaments'],
+                params: TournamentIdParamSchema,
+                response: {
+                    200: PlayoffBracketResponse,
+                    404: ErrorResponseSchema,
+                    500: ErrorResponseSchema,
+                },
+            },
+        },
+        async (request, reply) => {
+            try {
+                const { tournamentId } = request.params
+                const cacheKey = `tournament_playoff_bracket:${tournamentId}`
+
+                // Check cache first
+                const cached = await redis.get(cacheKey)
+                if (cached) {
+                    return JSON.parse(cached)
+                }
+
+                // Get tournament first to get the overviewPage
+                const tournament = await prisma.tournament.findUnique({
+                    where: { id: parseInt(tournamentId) },
+                    select: { overviewPage: true, dateEnd: true },
+                })
+
+                if (!tournament) {
+                    return reply
+                        .status(404)
+                        .send({ error: 'Tournament not found' })
+                }
+
+                // Get all matches for the tournament that have playoff structure
+                // Playoffs are identified by having nPage and nTabInPage structure
+                // We don't filter by specific round/tab names since they vary by tournament
+                const matches = await prisma.matchSchedule.findMany({
+                    where: {
+                        overviewPage: tournament.overviewPage,
+                        // Exclude nullified matches
+                        isNullified: { not: true },
+                        // Only get matches that have page and tab information (playoff structure)
+                        nPage: { not: null },
+                        nTabInPage: { not: null },
+                        // Must have tab information to be a playoff bracket
+                        tab: { not: null },
+                    },
+                    orderBy: [
+                        { nPage: 'asc' },
+                        { nTabInPage: 'asc' },
+                        { nMatchInTab: 'asc' },
+                    ],
+                })
+
+                if (matches.length === 0) {
+                    return reply.status(404).send({
+                        error: 'No playoff matches found for this tournament',
+                    })
+                }
+
+                // Get team short names - optimize by only fetching teams we need
+                const teamNames = new Set<string>()
+                matches.forEach((match) => {
+                    if (match.team1) teamNames.add(match.team1)
+                    if (match.team2) teamNames.add(match.team2)
+                })
+
+                const teams = await prisma.team.findMany({
+                    where: {
+                        name: { in: Array.from(teamNames) },
+                    },
+                    select: {
+                        name: true,
+                        short: true,
+                        image: true,
+                    },
+                })
+
+                const teamShortMap = new Map(
+                    teams.map((team) => [team.name, team.short || team.name])
+                )
+                const teamImageMap = new Map(
+                    teams.map((team) => [team.name, team.image])
+                )
+
+                // Group matches by page and tab
+                const pagesMap = new Map<number, {
+                    pageName: string,
+                    tabsMap: Map<number, { tabName: string, matches: any[] }>
+                }>()
+
+                matches.forEach((match) => {
+                    const pageNum = match.nPage || 0
+                    const tabNum = match.nTabInPage || 0
+                    const tabName = match.tab || match.round || 'Unknown'
+
+		    const pageName = match.round || match.phase || match.shownRound || `Stage ${pageNum}`
+
+                    if (!pagesMap.has(pageNum)) {
+                        pagesMap.set(pageNum, {
+                            pageName: pageName,
+                            tabsMap: new Map()
+                        })
+                    }
+
+                    const pageData = pagesMap.get(pageNum)!
+                    
+                    if (!pageData.tabsMap.has(tabNum)) {
+                        pageData.tabsMap.set(tabNum, {
+                            tabName: tabName,
+                            matches: []
+                        })
+                    }
+
+                    const matchData = {
+                        matchId: match.matchId || match.id.toString(),
+                        teamA: match.team1 || '',
+                        teamB: match.team2 || '',
+                        shortA: teamShortMap.get(match.team1 || '') || match.team1 || '',
+                        shortB: teamShortMap.get(match.team2 || '') || match.team2 || '',
+                        team1Score: match.team1Score,
+                        team2Score: match.team2Score,
+                        dateTime_UTC: match.dateTime_UTC
+                            ? match.dateTime_UTC.toISOString()
+                            : null,
+                        imageA: teamImageMap.get(match.team1 || '') || null,
+                        imageB: teamImageMap.get(match.team2 || '') || null,
+                    }
+
+                    pageData.tabsMap.get(tabNum)!.matches.push(matchData)
+                })
+
+                const bracketData = Array.from(pagesMap.entries())
+                    .sort(([a], [b]) => a - b)
+                    .map(([_, pageData]) => {
+                        const tabs = Array.from(pageData.tabsMap.entries())
+                            .sort(([a], [b]) => a - b)
+                            .map(([_, tabData]) => ({
+                                tabName: tabData.tabName,
+                                matchs: tabData.matches
+                            }))
+
+                        return {
+                            pageName: pageData.pageName,
+                            nTabInPage: tabs.length,
+                            tabs,
+                        }
+                    })
+
+                // Dynamic cache strategy based on tournament status
+                let cacheTime: number
+
+                if (!tournament?.dateEnd) {
+                    // Tournament without end date = active
+                    cacheTime = 300 // 5 minutes
+                } else {
+                    const tournamentEndDate = new Date(tournament.dateEnd)
+                    const now = new Date()
+                    const daysSinceEnd = Math.floor(
+                        (now.getTime() - tournamentEndDate.getTime()) /
+                            (1000 * 60 * 60 * 24)
+                    )
+
+                    if (tournamentEndDate > now) {
+                        // Tournament not yet finished
+                        cacheTime = 300 // 5 minutes
+                    } else if (daysSinceEnd <= 2) {
+                        // Tournament finished ≤ 2 days ago (possible corrections)
+                        cacheTime = 3600 // 1 hour
+                    } else if (daysSinceEnd <= 30) {
+                        // Tournament finished 3-30 days ago
+                        cacheTime = 604800 // 7 days
+                    } else {
+                        // Tournament finished > 30 days ago (historical data is fixed)
+                        cacheTime = 2592000 // 30 days
+                    }
+                }
+
+                await redis.setex(cacheKey, cacheTime, JSON.stringify(bracketData))
+                return bracketData
+            } catch (error) {
+                console.error('Error in tournament playoff bracket route:', error)
+                return reply
+                    .status(500)
+                    .send({ error: 'Internal server error' })
+            }
+        }
+    )
+
+    // Get player's team for a specific tournament
+    fastify.get<{ Params: { tournamentId: string; playerName: string } }>(
+        '/tournaments/id/:tournamentId/player-team/:playerName',
+        {
+            schema: {
+                description: 'Get the team of a player for a specific tournament',
+                tags: ['tournaments'],
+                params: Type.Object({
+                    tournamentId: Type.String({ description: 'Tournament ID' }),
+                    playerName: Type.String({ description: 'Player name/link' })
+                }),
+                response: {
+                    200: PlayerTeamInTournamentSchema,
+                    404: ErrorResponseSchema,
+                    500: ErrorResponseSchema,
+                },
+            },
+        },
+        async (request, reply) => {
+            try {
+                const { tournamentId, playerName } = request.params
+                const decodedPlayerName = decodeURIComponent(playerName)
+                const cacheKey = `tournament_player_team:${tournamentId}:${decodedPlayerName}`
+                customMetric.inc({ operation: 'get_tournament_player_team' })
+
+                // Check cache first
+                const cached = await redis.get(cacheKey)
+                if (cached) {
+                    return JSON.parse(cached)
+                }
+
+
+                // Get tournament first to get the overviewPage
+                const tournament = await prisma.tournament.findUnique({
+                    where: { id: parseInt(tournamentId) },
+                    select: { 
+                        overviewPage: true,
+                        name: true,
+                        dateEnd: true 
+                    }
+                })
+
+                if (!tournament) {
+                    return reply
+                        .status(404)
+                        .send({ error: 'Tournament not found' })
+                }
+
+                // Look for the player in ScoreboardPlayers for this tournament
+                const playerRecord = await prisma.scoreboardPlayers.findFirst({
+                    where: {
+                        overviewPage: tournament.overviewPage,
+                        OR: [
+                            { name: decodedPlayerName },
+                            { link: decodedPlayerName }
+                        ]
+                    },
+                    select: {
+                        name: true,
+                        link: true,
+                        team: true
+                    }
+                })
+
+                if (!playerRecord || !playerRecord.team) {
+                    return reply.status(404).send({
+                        error: `Player team not found for tournament`
+                    })
+                }
+
+                // Get team details to find overviewPage and image
+                const teamDetails = await prisma.team.findFirst({
+                    where: {
+                        OR: [
+                            { name: playerRecord.team },
+                            { short: playerRecord.team }
+                        ]
+                    },
+                    select: {
+                        name: true,
+                        overviewPage: true,
+                        image: true
+                    }
+                })
+
+                const result = {
+                    name: teamDetails?.name || playerRecord.team,
+                    overviewPage: teamDetails?.overviewPage || undefined,
+                    image: teamDetails?.image || undefined
+                }
+
+                // Dynamic cache strategy based on tournament status
+                let cacheTime: number
+                if (!tournament?.dateEnd) {
+                    // Tournament without end date = active
+                    cacheTime = 300 // 5 minutes
+                } else {
+                    const tournamentEndDate = new Date(tournament.dateEnd)
+                    const now = new Date()
+                    const daysSinceEnd = Math.floor((now.getTime() - tournamentEndDate.getTime()) / (1000 * 60 * 60 * 24))
+                    
+                    if (tournamentEndDate > now) {
+                        // Tournament not yet finished
+                        cacheTime = 300 // 5 minutes
+                    } else if (daysSinceEnd <= 2) {
+                        // Tournament finished ≤ 2 days ago (possible corrections)
+                        cacheTime = 3600 // 1 hour
+                    } else if (daysSinceEnd <= 30) {
+                        // Tournament finished 3-30 days ago
+                        cacheTime = 604800 // 7 days
+                    } else {
+                        // Tournament finished > 30 days ago (historical data is fixed)
+                        cacheTime = 2592000 // 30 days
+                    }
+                }
+
+                await redis.setex(cacheKey, cacheTime, JSON.stringify(result))
+                return result
+            } catch (error) {
+                console.error('Error in tournament player team route:', error)
                 return reply
                     .status(500)
                     .send({ error: 'Internal server error' })

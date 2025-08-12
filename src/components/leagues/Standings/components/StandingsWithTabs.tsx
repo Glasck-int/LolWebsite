@@ -30,11 +30,11 @@ interface StandingsWithTabsProps {
  * Standings component with tabs that reproduces the exact visual style of the original.
  * Uses the Card structure and styling from the original system.
  */
-export const StandingsWithTabs: React.FC<StandingsWithTabsProps> = ({
+export const StandingsWithTabs = ({
     processedData,
     highlightedTeam,
     maxRows
-}) => {
+}: StandingsWithTabsProps) => {
     const t = useTranslate('Standings.tabs')
     
     // Check if we have groups

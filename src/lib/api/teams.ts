@@ -1,4 +1,5 @@
 import { Team as TeamType } from '@/generated/prisma'
+import { TeamWithLatestLeague } from '@/lib/types/team'
 import { apiRequest, ApiResponse } from './utils'
 import { MatchSchedule as MatchScheduleType } from '@/generated/prisma'
 import { MatchScheduleGame as MatchScheduleGameType } from '@/generated/prisma'
@@ -17,10 +18,10 @@ export interface TeamRecentMatchesResponse {
  * Get a team by name
  *
  * @param name - The name of the team to fetch
- * @returns Promise with team data or error
+ * @returns Promise with team data (including latest league) or error
  */
-async function getTeamByName(name: string): Promise<ApiResponse<TeamType>> {
-    return apiRequest<TeamType>(`/api/teams/name/${encodeURIComponent(name)}`)
+async function getTeamByName(name: string): Promise<ApiResponse<TeamWithLatestLeague>> {
+    return apiRequest<TeamWithLatestLeague>(`/api/teams/name/${encodeURIComponent(name)}`)
 }
 
 /**
@@ -170,6 +171,22 @@ async function getTeamsRecentGames(
     return { data: games }
 }
 
+/**
+ * Get team information for a specific player in a tournament
+ *
+ * @param tournamentId - The ID of the tournament
+ * @param playerName - The name of the player
+ * @returns Promise with team data including image field
+ */
+async function getPlayerTeamInTournament(
+    tournamentId: string,
+    playerName: string
+): Promise<ApiResponse<{ name: string; overviewPage?: string; image?: string }>> {
+    return apiRequest<{ name: string; overviewPage?: string; image?: string }>(
+        `/api/tournaments/id/${tournamentId}/player-team/${encodeURIComponent(playerName)}`
+    )
+}
+
 export {
     getTeamByName,
     getTeamsByNames,
@@ -177,4 +194,5 @@ export {
     getTeamsRecentMatches,
     getTeamRecentGames,
     getTeamsRecentGames,
+    getPlayerTeamInTournament,
 }

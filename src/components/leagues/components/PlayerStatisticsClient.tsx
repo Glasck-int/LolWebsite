@@ -5,9 +5,11 @@ import Image from 'next/image'
 import useSWR from 'swr'
 import { SortableTable, TableColumn } from '@/components/ui/table/SortableTable'
 import { PlayerStats, getTournamentPlayerStats, TournamentPlayerStatsResponse } from '@/lib/api/players'
-import { getPlayerImage } from '@/lib/api/player'
-import { getTeamImageByName, getRoleImage } from '@/lib/api/image'
+import { getPlayerImage, getPlayerTournamentImage } from '@/lib/api/player'
+import { getRoleImage } from '@/lib/api/image'
 import { CleanName } from '@/lib/utils/cleanName'
+import { MatchSkeleton } from '@/components/ui/skeleton/MatchSkeleton'
+import Link from 'next/link'
 import {
     Card,
     CardContext,
@@ -58,7 +60,6 @@ const imageCache = new Map<string, { playerImage: string; teamImage: string; rol
 
 export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStatisticsClientProps) {
     const [playerImages, setPlayerImages] = useState<Record<string, { playerImage: string; teamImage: string; roleImage: string }>>({})
-    const [imagesLoading, setImagesLoading] = useState(false)
 
     const { data, error, isLoading } = useSWR(
         tournamentId ? `player-stats-${tournamentId}` : null,
@@ -84,7 +85,6 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
         }
 
         const fetchData = async () => {
-            setImagesLoading(true)
             
             // Vérifier d'abord le cache et ne récupérer que les images manquantes
             const cachedImages: Record<string, { playerImage: string; teamImage: string; roleImage: string }> = {}
@@ -104,7 +104,6 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
             // Si toutes les images sont en cache, les utiliser directement
             if (playersNeedingImages.length === 0) {
                 setPlayerImages(cachedImages)
-                setImagesLoading(false)
                 return
             }
             
@@ -113,8 +112,14 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
                 const cacheKey = `${player.player}-${data.tournament}-${player.role || 'unknown'}`
                 
                 try {
-                    // Get player image using the player name and tournament
-                    const playerImageResponse = await getPlayerImage(player.player, data.tournament)
+                    // Get player image using intelligent tournament-specific selection
+                    let playerImageResponse = await getPlayerTournamentImage(player.player, data.tournament)
+                    
+                    // Fallback to legacy method if intelligent search fails
+                    if (!playerImageResponse.data) {
+                        console.log(`⚠️ [PLAYER STATS] Intelligent search failed for ${player.player}, trying legacy fallback...`)
+                        playerImageResponse = await getPlayerImage(player.player, data.tournament)
+                    }
                     
                     // Get team image using team name (we'll need to derive this from player data)
                     // For now, we'll use an empty string as we don't have team info in PlayerStats
@@ -169,8 +174,6 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
             } catch (error) {
                 console.error('Failed to fetch player data:', error)
                 setPlayerImages(cachedImages)
-            } finally {
-                setImagesLoading(false)
             }
         }
 
@@ -179,18 +182,15 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
 
     if (isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center p-8 space-y-2">
-                <div className="text-muted-foreground">Loading player statistics...</div>
-            </div>
+            <MatchSkeleton className='min-h-[1280px]' />
         )
     }
 
     if (error) {
         return (
             <div className="flex flex-col items-center justify-center p-8 space-y-4">
-                <div className="text-red-500 text-center">
-                    <div className="font-medium">Error loading player statistics</div>
-                    <div className="text-sm mt-1">{error.message}</div>
+                <div className="text-clear-grey text-center">
+                    <div className="font-medium">No player statistics for this tournament</div>
                 </div>
             </div>
         )
@@ -278,8 +278,10 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
                         </div>
                     )}
                     
+                    <Link href={`/players/${encodeURIComponent(item.player)}`} className="truncate hover:text-clear-violet transition-colors">
                     {/* Player Name */}
-                    <span className="truncate">{CleanName(item.player)}</span>
+                        {CleanName(item.player)}
+                    </Link>
                 </div>
             )
         },

@@ -1,12 +1,13 @@
 import { ButtonBar } from '@/components/ui/Button/ButtonBar'
-import { getTeamImageByName } from '@/lib/api/image'
-import React, { useState, useMemo } from 'react'
+import { getTeamImage, getTeamImageByName } from '@/lib/api/image'
+import React, { useState, useMemo, useEffect } from 'react'
+import { CleanName } from '@/lib/utils/cleanName'
+import Link from 'next/link'
 import {
     extractPageNames,
     findPageByName,
     extractTeamInfo,
     getLoserMatch,
-    getWinnerMatch,
     hasTeamLost,
     getMatchCounts,
     getLinkPosition,
@@ -15,8 +16,6 @@ import {
 } from './utils'
 import Image from 'next/image'
 import './animeBorder.css'
-import { delay } from 'framer-motion'
-import { match } from 'assert'
 
 export interface Page {
     pageName: string
@@ -30,7 +29,7 @@ export interface Tab {
 }
 
 export interface Match {
-    matchId: number
+    matchId: number | string
     teamA: string
     teamB: string
     shortA: string
@@ -38,6 +37,8 @@ export interface Match {
     team1Score: number
     team2Score: number
     dateTime_UTC: string
+    imageA?: string | null
+    imageB?: string | null
 }
 
 interface PlayoffProps {
@@ -77,9 +78,6 @@ interface TabProps {
     hasLoserBracket: boolean
 }
 
-interface LooserTabProps extends TabProps {
-    bracket: Page
-}
 
 interface TeamLineContainerProps {
     team: Team
@@ -93,12 +91,60 @@ interface TabHeaderProps {
     isLast: boolean
 }
 
+// Component for team image with fallback handling
+const TeamImage = ({ imageUrl, teamName }: { imageUrl: string; teamName: string }) => {
+    const [imageSrc, setImageSrc] = useState<string | null>(null)
+
+    useEffect(() => {
+        const loadImage = async () => {
+            if (imageUrl) {
+                // Convert .png to .webp like in other components
+                const imageWithWebp = imageUrl.replace('.png', '.webp')
+                const result = await getTeamImage(imageWithWebp)
+                if (result.data) {
+                    setImageSrc(result.data)
+                } else if (teamName) {
+                    // Fallback to team name if image doesn't work
+                    const fallbackResult = await getTeamImageByName(teamName)
+                    if (fallbackResult.data) {
+                        setImageSrc(fallbackResult.data)
+                    }
+                }
+            } else if (teamName) {
+                // No image URL, try with team name directly
+                const result = await getTeamImageByName(teamName)
+                if (result.data) {
+                    setImageSrc(result.data)
+                }
+            }
+        }
+        loadImage()
+    }, [imageUrl, teamName])
+
+    if (!imageSrc) {
+        return null // Don't show anything if no image
+    }
+
+    return (
+        <Image
+            src={imageSrc}
+            width={20}
+            height={20}
+            alt={teamName}
+            className="object-contain"
+        />
+    )
+}
+
 export const PlayoffBracket = ({
     tournaments,
     trackTeamName = '',
 }: PlayoffProps) => {
+    const [pageSelected, setPageSelected] = useState(() => {
+        return tournaments.length > 0 ? tournaments[0] : null
+    })
+    
     if (tournaments.length == 0) return <p>Error: no matchs as been found</p>
-    const [pageSelected, setPageSelected] = useState(tournaments[0])
 
     const handleButtonClick = (option: string | null) => {
         if (!option) return
@@ -113,7 +159,7 @@ export const PlayoffBracket = ({
                 defaultActiveIndex={0}
                 onButtonChange={handleButtonClick}
             />
-            <Page page={pageSelected} trackTeamName={trackTeamName} />
+            {pageSelected && <Page page={pageSelected} trackTeamName={trackTeamName} />}
         </div>
     )
 }
@@ -170,7 +216,7 @@ const Page = ({ page, trackTeamName }: PageProps) => {
         winnerBracket.tabs = processedTabs
 
         return { looserBracket, winnerBracket }
-    }, [page.tabs])
+    }, [page.tabs, page.nTabInPage])
 
     const hasLooserBracket = hasAnyMatch(looserBracket)
 
@@ -369,7 +415,6 @@ const TopLink = ({ nTab }: { nTab: number }) => {
 
 const BotLink = ({ nTab }: { nTab: number }) => {
     const delay = 0.3 * nTab + 's'
-    const secondDelay = 0.3 * nTab + 0.3 + 's'
 
     return (
         <div className="h-full flex-3 flex flex-col">
@@ -431,7 +476,6 @@ const LoserBracketTopLink = ({ nTab }: { nTab: number }) => {
 
 const LoserBracketBotLink = ({ nTab }: { nTab: number }) => {
     const delay = 0.3 * nTab + 's'
-    const secondDelay = 0.3 * nTab + 0.3 + 's'
 
     return (
         <div className="h-full flex-3 flex flex-col">
@@ -452,11 +496,16 @@ const LoserBracketBotLink = ({ nTab }: { nTab: number }) => {
 const VsCard = ({ match, isLast, isTopMatch, trackTeamName }: MatchProps) => {
     const teamA = extractTeamInfo(match, 0)
     const teamB = extractTeamInfo(match, 1)
-    const url =
-        'http://49.13.26.198:8080/static/teamPng/Karmine Corplogo square.webp'
-
-    const teamAWithImage = { ...teamA, imageUrl: url || '' }
-    const teamBWithImage = { ...teamB, imageUrl: url || '' }
+    
+    // Pass both image URL from DB and team name for fallback
+    const teamAWithImage = { 
+        ...teamA, 
+        imageUrl: match.imageA || '' 
+    }
+    const teamBWithImage = { 
+        ...teamB, 
+        imageUrl: match.imageB || '' 
+    }
 
     return (
         <div
@@ -553,21 +602,15 @@ const DisplayTeamLine = ({
                         ></div>
                     )}
                 </div>
-                {team.imageUrl && (
-                    <Image
-                        src={team.imageUrl}
-                        width={20}
-                        height={20}
-                        alt={team.name}
-                    />
-                )}
-                <p
-                    className={`text-sm font-semibold ${
+                <TeamImage imageUrl={team.imageUrl} teamName={team.name} />
+                <Link 
+                    href={`/teams/${encodeURIComponent(team.name)}`}
+                    className={`text-sm font-semibold hover:text-clear-violet/80 transition-all duration-200 ${
                         !team.asWin && 'text-grey'
                     }`}
                 >
-                    {team.short}
-                </p>
+                    {CleanName(team.short) || CleanName(team.name)}
+                </Link>
             </div>
             <p className="text-sm font-semibold">{team.score}</p>
         </div>

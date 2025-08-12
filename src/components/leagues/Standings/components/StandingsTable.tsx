@@ -22,13 +22,13 @@ interface StandingsTableProps {
  * Simple standings table component using the new table system.
  * Replaces the complex CSS Grid implementation with semantic HTML tables.
  */
-export const StandingsTable: React.FC<StandingsTableProps> = ({
+export const StandingsTable = ({
     data,
     config,
     highlightedTeam,
     className,
     maxRows
-}) => {
+}: StandingsTableProps) => {
     const columns = useStandingsTableColumns(config)
     
     // Apply row limit if specified
@@ -72,7 +72,7 @@ interface CombinedStandingsTableProps {
  * Combined standings table showing both matches and games statistics.
  * Uses the new table system for better accessibility and maintainability.
  */
-export const CombinedStandingsTable: React.FC<CombinedStandingsTableProps> = ({
+export const CombinedStandingsTable = ({
     data,
     groupName,
     highlightedTeam,
@@ -80,7 +80,7 @@ export const CombinedStandingsTable: React.FC<CombinedStandingsTableProps> = ({
     maxRows,
     sortable = true,
     showSectionHeaders = true
-}) => {
+}: CombinedStandingsTableProps) => {
     const columns = useCombinedStandingsTableColumns({ groupName, sortable })
     
     // Apply row limit if specified

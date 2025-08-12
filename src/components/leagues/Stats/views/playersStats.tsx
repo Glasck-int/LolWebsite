@@ -13,7 +13,7 @@ import { useTournament } from '@/contexts/TournamentContext'
 
 export default function PlayersStats() {
     const t = useTranslations()
-    const { tournament } = useTournament()
+    const { tournamentName } = useTournament()
     
     return (
         <div>
@@ -28,9 +28,9 @@ export default function PlayersStats() {
                 </CardHeader>
                 <CardBody>
                     <FlexColumn>
-                        {tournament?.id && (
+                        {tournamentName && (
                             <PlayerStatisticsClient 
-                                tournamentId={tournament.id} 
+                                tournamentId={tournamentName} 
                                 initialData={null}
                             />
                         )}

@@ -10,7 +10,7 @@ export const generateMetadata = async () => {
         ])
     return {
         title: {
-            default: `Leagues (${allLeaguesResponse.data?.length} leagues, ${majorLeaguesResponse.data?.length} major leagues)`,
+            default: `Leagues`,
             template: `%s - Leagues (${allLeaguesResponse.data?.length} leagues, ${majorLeaguesResponse.data?.length} major leagues)`,
         },
         description: `All ${allLeaguesResponse.data?.length} leagues from League of Legends Esport scene.`,

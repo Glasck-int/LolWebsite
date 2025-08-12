@@ -37,13 +37,13 @@ interface FunctionalSearchBarProps {
  * The component uses debouncing to avoid excessive API calls during typing.
  * Always displays a full search bar that's immediately functional.
  */
-export const FunctionalSearchBar: React.FC<FunctionalSearchBarProps> = ({
+export const FunctionalSearchBar = ({
     onSearch,
     placeholder,
     className = '',
     debounceMs = 150,
     searchLogo = 'loop',
-}) => {
+}: FunctionalSearchBarProps) => {
     const translate = useTranslate('SearchBar')
     const [searchTerm, setSearchTerm] = useState('')
     const [isFocused, setIsFocused] = useState(false)

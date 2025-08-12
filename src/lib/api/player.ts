@@ -1,6 +1,5 @@
-import {PlayerWithRedirectsListResponse as PlayerWithRedirectsListResponseType } from '../../../backend/src/schemas/players'
 import { apiRequest, ApiResponse } from './utils'
-import { PlayerImageType } from '@Glasck-int/glasck-types'
+import { PlayerImageType, PlayerWithRedirects, PlayerSearchResult } from '@glasck-int/glasck-types'
 import { getPublicPlayerImage } from './image'
 
 /**
@@ -11,9 +10,9 @@ import { getPublicPlayerImage } from './image'
  */
 async function getPlayerByLink(
     link: string
-): Promise<ApiResponse<typeof PlayerWithRedirectsListResponseType>> {
+): Promise<ApiResponse<PlayerSearchResult[]>> {
     const encodedLink = encodeURIComponent(link)
-    return apiRequest<typeof PlayerWithRedirectsListResponseType>(
+    return apiRequest<PlayerSearchResult[]>(
         `/api/players/search/${encodedLink}`
     )
 }
@@ -87,7 +86,7 @@ async function getPlayerDetails(
     name: string
 ): Promise<ApiResponse<{ role?: string; team?: string }>> {
     try {
-        const response = await apiRequest<any>(`/api/players/search/${encodeURIComponent(name)}`)
+        const response = await apiRequest<Array<{ role?: string; team?: string }>>(`/api/players/search/${encodeURIComponent(name)}`)
         
         if (!response.data || response.data.length === 0) {
             return { error: 'Player not found', data: { role: undefined, team: undefined } }
@@ -101,9 +100,76 @@ async function getPlayerDetails(
                 team: player.team || undefined 
             } 
         }
-    } catch (error) {
+    } catch {
         return { error: 'Failed to fetch player details', data: { role: undefined, team: undefined } }
     }
 }
 
-export { getPlayerByLink, getPlayerImages, getPlayerImage, getPlayerDetails }
+/**
+ * Get the best player image for a specific tournament
+ * @param name - The player name
+ * @param tournament - The tournament name
+ * @returns The best matching image URL or null if none found
+ */
+async function getPlayerTournamentImage(
+    name: string,
+    tournament: string
+): Promise<ApiResponse<string>> {
+    const encodedName = encodeURIComponent(name)
+    const encodedTournament = encodeURIComponent(tournament)
+    
+    try {
+        const response = await apiRequest<{
+            fileName: string;
+            link: string;
+            team?: string;
+            tournament?: string;
+            imageType?: string;
+            caption?: string;
+            isProfileImage?: boolean;
+            priority: number;
+            reason: string;
+            tournamentDate?: string;
+            daysDifference?: number;
+        }>(`/api/players/name/${encodedName}/tournament/${encodedTournament}/image`)
+        
+        if (!response.data) {
+            return { error: 'No image found for tournament', data: '' }
+        }
+        
+        // Get the actual image URL using the image API
+        const imageUrl = response.data.fileName.replace('.png', '.webp')
+        const imageCheck = await getPublicPlayerImage(imageUrl)
+        
+        if (imageCheck.data) {
+            return { data: imageCheck.data }
+        }
+        
+        return { error: 'Image file not accessible', data: '' }
+    } catch {
+        return { error: 'Failed to fetch tournament image', data: '' }
+    }
+}
+
+/**
+ * Get a player by their overview page identifier
+ * @param overviewPage - The overview page identifier of the player
+ * @returns The complete player data with redirects and images
+ */
+async function getPlayerByOverviewPage(
+    overviewPage: string
+): Promise<ApiResponse<PlayerWithRedirects>> {
+    const encodedOverviewPage = encodeURIComponent(overviewPage)
+    return apiRequest<PlayerWithRedirects>(
+        `/api/players/overview/${encodedOverviewPage}`
+    )
+}
+
+export { 
+    getPlayerByLink, 
+    getPlayerImages, 
+    getPlayerImage, 
+    getPlayerTournamentImage,
+    getPlayerDetails, 
+    getPlayerByOverviewPage
+}

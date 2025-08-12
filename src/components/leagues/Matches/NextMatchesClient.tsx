@@ -14,7 +14,6 @@ import {
     CardHeaderBase,
     CardContext,
 } from '@/components/ui/card/index'
-import { MatchSkeleton } from '@/components/ui/skeleton/MatchSkeleton'
 import SpoilerWrapper from '@/components/leagues/Matches/SpoilerWrapper'
 
 
@@ -35,7 +34,6 @@ interface NextMatchesData {
 
 interface NextMatchesClientProps {
     initialData?: NextMatchesData
-    tournamentId?: number
     showSingleMatchOnDesktop: boolean
     isHeader?: boolean
     bestOf?: number | null
@@ -60,7 +58,6 @@ interface NextMatchesClientProps {
  */
 export const NextMatchesClient = ({
     initialData,
-    tournamentId,
     showSingleMatchOnDesktop,
     isHeader = false,
     // bestOf,

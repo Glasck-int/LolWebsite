@@ -40,10 +40,14 @@ async function getLeagueImage(
         const STATIC_BASE_URL = getStaticBaseUrl()
         const imageUrl = `${STATIC_BASE_URL}/static/leagues/${leagueName}.webp`
 
+        // Skip verification on server-side to avoid CORS issues and improve performance
+        if (typeof window === 'undefined') {
+            return { data: imageUrl }
+        }
+
         try {
             const response = await fetch(imageUrl, { method: 'HEAD' })
             if (response.ok) {
-
                 return { data: response.url }
             }
         } catch {
@@ -171,4 +175,54 @@ async function getRoleImage(
     return { data: imageUrl }
 }
 
-export { getLeagueImage, getTeamImage, getPublicPlayerImage, getTeamImageByName, getRoleImage }
+async function getPlayerImageByName(
+    playerName: string
+): Promise<ApiResponse<string | null>> {
+    if (!playerName || playerName.trim() === '') {
+        return { data: null }
+    }
+    const STATIC_BASE_URL = getStaticBaseUrl()
+    const possibleNames = [
+        `${playerName}.webp`,
+        `${playerName.replace(/ /g, '_')}.webp`,
+        `${playerName.replace(/[^a-zA-Z0-9]/g, '')}.webp`,
+    ]
+    
+    // Skip verification on server-side to avoid CORS issues
+    if (typeof window === 'undefined') {
+        // Return first possible name for server-side rendering
+        return { data: `${STATIC_BASE_URL}/static/playerWebp/${possibleNames[0]}` }
+    }
+    
+    for (const imageName of possibleNames) {
+        const imageUrl = `${STATIC_BASE_URL}/static/playerWebp/${imageName}`
+        try {
+            const response = await fetch(imageUrl, { method: 'HEAD' })
+            if (response.ok) {
+                return { data: imageUrl }
+            }
+        } catch {
+        }
+    }
+    
+    return { data: null }
+}
+
+async function getPlayerImageByNameServerSafe(
+    playerName: string
+): Promise<ApiResponse<string | null>> {
+    if (!playerName || playerName.trim() === '') {
+        return { data: null }
+    }
+    
+    // Always return null on server-side for players to prevent Next.js optimization errors
+    // Player images will be loaded client-side if needed
+    if (typeof window === 'undefined') {
+        return { data: null }
+    }
+    
+    // Client-side behavior is the same as getPlayerImageByName
+    return getPlayerImageByName(playerName)
+}
+
+export { getLeagueImage, getTeamImage, getPublicPlayerImage, getTeamImageByName, getPlayerImageByName, getPlayerImageByNameServerSafe, getRoleImage }
