@@ -348,14 +348,31 @@ export default async function playersRoutes(fastify: FastifyInstance) {
             const { playerName, tournamentName } = request.params as { playerName: string, tournamentName: string }
             customMetric.inc({ operation: 'get_player_tournament_image' })
 
-            // First verify the player exists before searching for tournaments
-            const playerCheck = await prisma.playerRedirect.findUnique({
+            // First verify the player exists - try PlayerRedirect first, then Player table directly
+            let playerCheck = await prisma.playerRedirect.findUnique({
                 where: { name: playerName }
             })
             
-            if (!playerCheck) {
-                console.log(`❌ [DEBUG] Player "${playerName}" not found in PlayerRedirect table`)
-                return reply.status(404).send({ error: 'Player not found' })
+            let playerOverviewPage: string
+            
+            if (!playerCheck) {                
+                // Try to find in Player table directly by overviewPage (case insensitive)
+                let playerDirect = await prisma.player.findFirst({
+                    where: { 
+                        overviewPage: { 
+                            equals: playerName,
+                            mode: 'insensitive' 
+                        }
+                    }
+                })
+                
+                if (!playerDirect) {
+                    return reply.status(404).send({ error: 'Player not found' })
+                }
+                
+                playerOverviewPage = playerDirect.overviewPage
+            } else {
+                playerOverviewPage = playerCheck.overviewPage
             }
             
             // First get the target tournament and its dates

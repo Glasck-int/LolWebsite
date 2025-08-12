@@ -142,28 +142,11 @@ async function getPlayerTournamentImage(
         const imageCheck = await getPublicPlayerImage(imageUrl)
         
         if (imageCheck.data) {
-            const reasonText = response.data.daysDifference !== null 
-                ? `${response.data.reason} - ${response.data.daysDifference} days difference`
-                : response.data.reason
-            
-            console.log(`🎯 [PLAYER API] Selected intelligent image: "${response.data.fileName}"`)
-            console.log(`📊 [PLAYER API] Details:`, {
-                player: name,
-                targetTournament: tournament,
-                selectedImage: response.data.fileName,
-                fromTournament: response.data.tournament || 'No tournament',
-                imageType: response.data.imageType || 'Unknown',
-                priority: response.data.priority,
-                reason: reasonText,
-                daysDifference: response.data.daysDifference
-            })
-            
             return { data: imageCheck.data }
         }
         
         return { error: 'Image file not accessible', data: '' }
-    } catch (error) {
-        console.error(`❌ [PLAYER API] Failed to get tournament image for ${name} in ${tournament}:`, error)
+    } catch {
         return { error: 'Failed to fetch tournament image', data: '' }
     }
 }

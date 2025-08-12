@@ -99,17 +99,38 @@ export async function resolvePlayer(
     const { includePlayer = false, includeRedirects = false, includeImages = false } = options
 
     // First, try to find the player redirect entry for the given name
-    const playerRedirect = await prisma.playerRedirect.findUnique({
+    let playerRedirect = await prisma.playerRedirect.findUnique({
         where: { name: playerName }
     })
 
+    let overviewPage: string
 
     if (!playerRedirect) {
-        throw new PlayerNotFoundError(playerName)
+        // Try to find in Player table directly by overviewPage (case insensitive)
+        const playerDirect = await prisma.player.findFirst({
+            where: { 
+                overviewPage: { 
+                    equals: playerName,
+                    mode: 'insensitive' 
+                }
+            }
+        })
+        
+        if (!playerDirect) {
+            throw new PlayerNotFoundError(playerName)
+        }
+        
+        overviewPage = playerDirect.overviewPage
+        
+        // Create a virtual redirect for consistency with the rest of the function
+        playerRedirect = {
+            id: -1, // Virtual ID
+            name: playerName,
+            overviewPage: playerDirect.overviewPage
+        }
+    } else {
+        overviewPage = playerRedirect.overviewPage
     }
-
-
-    const overviewPage = playerRedirect.overviewPage
 
     // Initialize the result with the basic information
     const result: PlayerResolution = {

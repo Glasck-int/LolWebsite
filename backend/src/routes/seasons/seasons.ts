@@ -417,10 +417,10 @@ export default async function seasonsRoutes(fastify: FastifyInstance) {
                     // Get unique tournament overviewPages from ScoreboardPlayers
                     prisma.scoreboardPlayers.findMany({
                         where: {
-                            OR: [
-                                { name: { in: redirectNames } },
-                                { link: { in: redirectNames } }
-                            ]
+                            OR: redirectNames.flatMap(name => [
+                                { name: { equals: name, mode: 'insensitive' } },
+                                { link: { equals: name, mode: 'insensitive' } }
+                            ])
                         },
                         select: {
                             overviewPage: true
@@ -430,10 +430,10 @@ export default async function seasonsRoutes(fastify: FastifyInstance) {
                     // Get unique tournament overviewPages from TournamentPlayer
                     prisma.tournamentPlayer.findMany({
                         where: {
-                            OR: [
-                                { player: { in: redirectNames } },
-                                { link: { in: redirectNames } }
-                            ]
+                            OR: redirectNames.flatMap(name => [
+                                { player: { equals: name, mode: 'insensitive' } },
+                                { link: { equals: name, mode: 'insensitive' } }
+                            ])
                         },
                         select: {
                             overviewPage: true
@@ -714,7 +714,9 @@ export default async function seasonsRoutes(fastify: FastifyInstance) {
                     // Get unique tournament overviewPages from ScoreboardTeam
                     prisma.scoreboardTeam.findMany({
                         where: {
-                            team: { in: redirectNames }
+                            OR: redirectNames.map(name => ({
+                                team: { equals: name, mode: 'insensitive' }
+                            }))
                         },
                         select: {
                             overviewPage: true
@@ -724,10 +726,10 @@ export default async function seasonsRoutes(fastify: FastifyInstance) {
                     // Get unique tournament overviewPages from TournamentRosters
                     prisma.tournamentRosters.findMany({
                         where: {
-                            OR: [
-                                { teamName: { in: redirectNames } },
-                                { rosterLinks: { hasSome: redirectNames } }
-                            ]
+                            OR: redirectNames.flatMap(name => [
+                                { teamName: { equals: name, mode: 'insensitive' } },
+                                { rosterLinks: { hasSome: [name] } } // hasSome is already case-sensitive but we keep one entry per name
+                            ])
                         },
                         select: {
                             overviewPage: true

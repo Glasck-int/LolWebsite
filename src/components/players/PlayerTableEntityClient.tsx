@@ -82,14 +82,14 @@ const PlayerTableEntityContent = ({
     const [fallbackTeamData, setFallbackTeamData] = useState<{ name: string; overviewPage?: string; image?: string } | null>(null)
 
     // Get team data for the selected tournament dynamically
-    const { teamData: tournamentTeamData, loading: teamLoading } = useTournamentPlayerTeam(selectedTournamentId, playerName)
+    const { teamData: tournamentTeamData } = useTournamentPlayerTeam(selectedTournamentId, playerName)
     
     // Priority: tournament-specific team > fallback team with overviewPage > player's current team from API
     const currentTeamData = tournamentTeamData || fallbackTeamData || (playerData ? { name: playerData.team || '', overviewPage: undefined, image: undefined } : null)
     
     // State for team image URL
     const [teamImageUrl, setTeamImageUrl] = useState<string | null>(null)
-    const [teamImageLoading, setTeamImageLoading] = useState(false)
+    const [, setTeamImageLoading] = useState(false)
     
     // Fetch team image when team data changes
     useEffect(() => {
@@ -101,8 +101,8 @@ const PlayerTableEntityContent = ({
         const fetchTeamImage = async () => {
             setTeamImageLoading(true)
             try {
-                const imageResult = await getTeamImage(currentTeamData.image.replace('.png', '.webp'))
-                setTeamImageUrl(imageResult.data)
+                const imageResult = await getTeamImage(currentTeamData.image!.replace('.png', '.webp'))
+                setTeamImageUrl(imageResult.data || null)
             } catch (error) {
                 console.error('Failed to fetch team image:', error)
                 setTeamImageUrl(null)
@@ -115,7 +115,7 @@ const PlayerTableEntityContent = ({
     }, [currentTeamData?.image])
     
     // Use team image from API if available, otherwise use hook if we have overviewPage
-    const { teamImage: dynamicTeamImage, loading: dynamicTeamImageLoading } = useTeamImage(
+    const { teamImage: dynamicTeamImage } = useTeamImage(
         currentTeamData?.image ? null : currentTeamData?.overviewPage
     )
     
@@ -124,7 +124,7 @@ const PlayerTableEntityContent = ({
 
     // State for player image loaded dynamically with tournament context
     const [dynamicPlayerImage, setDynamicPlayerImage] = useState<string | null>(null)
-    const [playerImageLoading, setPlayerImageLoading] = useState(false)
+    const [, setPlayerImageLoading] = useState(false)
 
     // Use dynamic player image from client-side fetch or server-side prop fallback
     const currentPlayerImage = dynamicPlayerImage || playerImage
