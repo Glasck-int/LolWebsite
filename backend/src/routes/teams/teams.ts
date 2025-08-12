@@ -79,15 +79,7 @@ export default async function teamsRoutes(fastify: FastifyInstance) {
                 console.log(`🔎 [TEAM API] Query result for "${name}": ${latestTournament ? 'Tournament found' : 'No tournament found'}`)
 
                 if (latestTournament?.League) {
-                    latestLeague = {
-                        id: latestTournament.League.id,
-                        name: latestTournament.League.name,
-                        short: latestTournament.League.short,
-                        region: latestTournament.League.region,
-                        level: latestTournament.League.level,
-                        isOfficial: latestTournament.League.isOfficial,
-                        isMajor: latestTournament.League.isMajor,
-                    }
+                    latestLeague = latestTournament.League
                     
                     console.log(`🔍 [TEAM API] Latest league found for team "${name}":`, {
                         tournamentName: latestTournament.name,

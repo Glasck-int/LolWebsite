@@ -26,15 +26,16 @@ import { MatchesCalendar } from '@/components/leagues/Matches/MatchesCalendar'
 import { TournamentContentFetch } from '@/components/leagues/Standings/views/TournamentContentFetch'
 import { ButtonBar } from '@/components/ui/Button/ButtonBar'
 import { useTranslate } from '@/lib/hooks/useTranslate'
-import { Team as TeamType, League as LeagueType } from '@/generated/prisma'
+import { League as LeagueType } from '@/generated/prisma'
 import { TeamWithLatestLeague } from '@/lib/types/team'
+import { useTournamentLeague } from '@/hooks/useTournamentLeague'
+import { useLeagueImage } from '@/hooks/useLeagueImage'
 
 interface TeamTableEntityClientProps {
     teamName: string
     teamData?: TeamWithLatestLeague
     teamImage?: string
     leagueData?: LeagueType
-    leagueImage?: string
 }
 
 const TeamTableEntityContent = ({
@@ -43,14 +44,12 @@ const TeamTableEntityContent = ({
     teamData,
     teamImage,
     leagueData,
-    leagueImage,
 }: {
     teamName: string
     seasons: SeasonData[]
     teamData?: TeamWithLatestLeague
     teamImage?: string
     leagueData?: LeagueType
-    leagueImage?: string
 }) => {
     const { activeId } = useTableEntityStore()
     const selectedTournamentId = activeId.length > 0 ? activeId[0] : null
@@ -69,11 +68,37 @@ const TeamTableEntityContent = ({
         setActiveStatsView(option)
     }, [])
 
-    // Use latestLeague from teamData if available, otherwise fall back to leagueData prop
-    const currentLeagueData = teamData?.latestLeague || leagueData
+    // Get league data for the selected tournament dynamically
+    const { leagueData: tournamentLeagueData, loading: leagueLoading } = useTournamentLeague(selectedTournamentId)
+    
+    // Priority: tournament-specific league > team's latest league > fallback league prop
+    const currentLeagueData = tournamentLeagueData || teamData?.latestLeague || leagueData
+    
+    // Get dynamic league image based on current league data
+    const { leagueImage: dynamicLeagueImage, loading: leagueImageLoading } = useLeagueImage(currentLeagueData?.name)
+    
+    // Use only dynamic league image, no fallback to prop - if no image found, will show SVG
+    const currentLeagueImage = dynamicLeagueImage
     
 
-    // Update league data based on selected tournament
+    // Debug log to see what league data is being used
+    console.log('🔍 [COMPONENT] League data sources:', {
+        selectedTournamentId,
+        hasTournamentLeagueData: !!tournamentLeagueData,
+        tournamentLeagueShort: tournamentLeagueData?.short || 'N/A',
+        tournamentLeagueName: tournamentLeagueData?.name || 'N/A',
+        hasTeamLatestLeague: !!(teamData?.latestLeague),
+        teamLatestLeagueShort: teamData?.latestLeague?.short || 'N/A',
+        hasLeagueDataProp: !!leagueData,
+        leagueDataPropShort: leagueData?.short || 'N/A',
+        finalLeagueShort: currentLeagueData?.short || 'N/A',
+        finalLeagueName: currentLeagueData?.name || 'N/A',
+        leagueLoading,
+        // Image information
+        hasDynamicLeagueImage: !!dynamicLeagueImage,
+        willShowSVG: !dynamicLeagueImage,
+        leagueImageLoading
+    })
 
     return (
         <>
@@ -116,9 +141,9 @@ const TeamTableEntityContent = ({
                                             {teamData.name}
                                         </h1>
                                         <div className="flex items-center gap-3">
-                                            {leagueImage ? (
+                                            {currentLeagueImage ? (
                                                 <Image
-                                                    src={leagueImage}
+                                                    src={currentLeagueImage}
                                                     alt={currentLeagueData?.name || ''}
                                                     width={34}
                                                     height={34}
@@ -402,7 +427,6 @@ export const TeamTableEntityClient = ({
     teamData,
     teamImage,
     leagueData,
-    leagueImage,
 }: TeamTableEntityClientProps) => {
     const { data: seasons, loading, error } = useTeamTableEntityData(teamName)
     
@@ -448,7 +472,6 @@ export const TeamTableEntityClient = ({
                     teamData={teamData}
                     teamImage={teamImage}
                     leagueData={leagueData}
-                    leagueImage={leagueImage}
                 />
             </TableEntityLayout>
         </div>

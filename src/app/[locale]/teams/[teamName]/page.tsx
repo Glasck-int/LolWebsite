@@ -1,7 +1,7 @@
 import { TeamTableEntityClient } from '@/components/teams/TeamTableEntityClient'
 import { Metadata } from 'next'
 import { getTeamByName } from '@/lib/api/teams'
-import { getTeamImage, getTeamImageByName, getLeagueImage } from '@/lib/api/image'
+import { getTeamImage, getTeamImageByName } from '@/lib/api/image'
 import { TeamWithLatestLeague } from '@/lib/types/team'
 
 interface TeamPageProps {
@@ -29,7 +29,6 @@ export default async function TeamPage({ params }: TeamPageProps) {
     let teamData: TeamWithLatestLeague | null = null
     let teamImage = null
     let leagueData = null
-    let leagueImage = null
     
     try {
         const teamResult = await getTeamByName(decodedTeamName)
@@ -60,16 +59,6 @@ export default async function TeamPage({ params }: TeamPageProps) {
             if (teamData.latestLeague) {
                 console.log('🎯 [FRONTEND] Latest league data from team API:', teamData.latestLeague)
                 leagueData = teamData.latestLeague
-                
-                // Fetch league image
-                try {
-                    const leagueImageResult = await getLeagueImage(teamData.latestLeague.name)
-                    if (leagueImageResult.data) {
-                        leagueImage = leagueImageResult.data
-                    }
-                } catch (error) {
-                    console.error('Error fetching league image:', error)
-                }
             }
         }
     } catch (error) {
@@ -81,7 +70,8 @@ export default async function TeamPage({ params }: TeamPageProps) {
         hasTeamData: !!teamData,
         hasLeagueData: !!leagueData,
         leagueDataShort: leagueData?.short || 'N/A',
-        leagueDataName: leagueData?.name || 'N/A'
+        leagueDataName: leagueData?.name || 'N/A',
+        note: 'League images now handled dynamically in component'
     })
 
     return (
@@ -91,7 +81,6 @@ export default async function TeamPage({ params }: TeamPageProps) {
                 teamData={teamData || undefined}
                 teamImage={teamImage || undefined}
                 leagueData={leagueData || undefined}
-                leagueImage={leagueImage || undefined}
             />
         </div>
     )

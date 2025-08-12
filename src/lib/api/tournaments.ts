@@ -1,10 +1,23 @@
-import { Standings, Tournament, MatchSchedule } from '@/generated/prisma'
+import { Standings, Tournament, MatchSchedule, League as LeagueType } from '@/generated/prisma'
 import {
     MatchScheduleGame,
     ScoreboardPlayers,
 } from '@/generated/prisma'
 import { apiRequest, ApiResponse } from './utils'
 import { PlayerStatsType } from '@glasck-int/glasck-types'
+
+/**
+ * Tournament with league information response structure
+ */
+export interface TournamentWithLeague {
+    id: number
+    name: string
+    overviewPage: string
+    dateStart: string | null
+    dateEnd: string | null
+    league: string | null
+    League: LeagueType | null
+}
 
 
 async function getLastThreeMatchesForTournament(
@@ -129,6 +142,16 @@ async function getTournamentPlayoffBracket(
     )
 }
 
+/**
+ * Get tournament with league information by ID
+ *
+ * @param tournamentId - The ID of the tournament to fetch
+ * @returns Promise with tournament and league data or error
+ */
+async function getTournamentWithLeague(tournamentId: string | number): Promise<ApiResponse<TournamentWithLeague>> {
+    return apiRequest<TournamentWithLeague>(`/api/tournaments/id/${tournamentId}/league`)
+}
+
 export {
     getTournamentsByLeagueName,
     getTournamentsStandingsByTournamentOverviewPage,
@@ -140,4 +163,5 @@ export {
     getNextThreeMatchesForTournament,
     getMatchesForTournament,
     getTournamentPlayoffBracket,
+    getTournamentWithLeague,
 }

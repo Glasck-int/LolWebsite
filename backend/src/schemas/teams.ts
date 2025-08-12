@@ -115,6 +115,17 @@ export const TeamSchema = Type.Object({
             description: 'League name',
             examples: ['League of Legends Championship Series', 'LoL Champions Korea']
         }),
+        createdAt: Type.String({ 
+            format: 'date-time',
+            description: 'League creation timestamp' 
+        }),
+        updatedAt: Type.String({ 
+            format: 'date-time',
+            description: 'League last update timestamp' 
+        }),
+        slug: Type.Union([Type.String(), Type.Null()], { 
+            description: 'League URL slug' 
+        }),
         short: Type.String({ 
             description: 'League short name/abbreviation',
             examples: ['LCS', 'LCK', 'LEC']
@@ -138,6 +149,9 @@ export const TeamSchema = Type.Object({
         examples: [{
             id: 1,
             name: 'League of Legends Championship Series',
+            createdAt: '2024-01-01T00:00:00Z',
+            updatedAt: '2024-01-01T00:00:00Z',
+            slug: 'lcs',
             short: 'LCS',
             region: 'North America',
             level: 'Primary',

@@ -4,6 +4,7 @@ import { Type } from '@sinclair/typebox'
 import {
     TournamentListResponse,
     TournamentStandingsListResponse,
+    TournamentWithLeagueSchema,
 } from '../../schemas/tournaments'
 import { ErrorResponseSchema } from '../../schemas/common'
 import prisma from '../../services/prisma'
@@ -1377,6 +1378,81 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
                 return [tournament]
             } catch (error) {
                 console.error('Error in tournament by ID route:', error)
+                return reply
+                    .status(500)
+                    .send({ error: 'Internal server error' })
+            }
+        }
+    )
+
+    // Get tournament with league information by ID
+    fastify.get<{ Params: { tournamentId: string } }>(
+        '/tournaments/id/:tournamentId/league',
+        {
+            schema: {
+                description: 'Get tournament with league information by ID',
+                tags: ['tournaments'],
+                params: TournamentIdParamSchema,
+                response: {
+                    200: TournamentWithLeagueSchema,
+                    404: ErrorResponseSchema,
+                    500: ErrorResponseSchema,
+                },
+            },
+        },
+        async (request, reply) => {
+            try {
+                const { tournamentId } = request.params
+                const cacheKey = `tournament_league:${tournamentId}`
+                customMetric.inc({ operation: 'get_tournament_league_by_id' })
+
+                // Check cache first
+                const cached = await redis.get(cacheKey)
+                if (cached) {
+                    return JSON.parse(cached)
+                }
+
+                const tournament = await prisma.tournament.findUnique({
+                    where: { id: parseInt(tournamentId) },
+                    select: {
+                        id: true,
+                        name: true,
+                        overviewPage: true,
+                        dateStart: true,
+                        dateEnd: true,
+                        league: true,
+                        League: {
+                            select: {
+                                id: true,
+                                name: true,
+                                short: true,
+                                region: true,
+                                level: true,
+                                isOfficial: true,
+                                isMajor: true,
+                            }
+                        }
+                    }
+                })
+
+                if (!tournament) {
+                    return reply
+                        .status(404)
+                        .send({ error: 'Tournament not found' })
+                }
+
+                console.log(`🏆 [TOURNAMENT API] Tournament ${tournamentId} league info:`, {
+                    tournamentName: tournament.name,
+                    hasLeague: !!tournament.League,
+                    leagueName: tournament.League?.name || 'N/A',
+                    leagueShort: tournament.League?.short || 'N/A'
+                })
+
+                // Cache for 1 day (86400 seconds)
+                await redis.setex(cacheKey, 86400, JSON.stringify(tournament))
+                return tournament
+            } catch (error) {
+                console.error('Error in tournament with league by ID route:', error)
                 return reply
                     .status(500)
                     .send({ error: 'Internal server error' })
