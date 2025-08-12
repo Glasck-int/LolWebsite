@@ -35,9 +35,7 @@ export function useTournamentLeague(tournamentId: string | number | null): UseTo
             setLoading(true)
             setError(null)
 
-            try {
-                console.log(`🔄 [HOOK] Fetching league for tournament ID: ${tournamentId}`)
-                
+            try {                
                 const result = await getTournamentWithLeague(tournamentId)
                 
                 if (isCancelled) return
@@ -48,11 +46,6 @@ export function useTournamentLeague(tournamentId: string | number | null): UseTo
                     console.error(`❌ [HOOK] Error fetching tournament league:`, result.error)
                 } else if (result.data) {
                     setLeagueData(result.data.League)
-                    console.log(`✅ [HOOK] Successfully fetched league:`, {
-                        tournamentName: result.data.name,
-                        leagueName: result.data.League?.name || 'No league',
-                        leagueShort: result.data.League?.short || 'N/A'
-                    })
                 }
             } catch (err) {
                 if (isCancelled) return
@@ -60,7 +53,6 @@ export function useTournamentLeague(tournamentId: string | number | null): UseTo
                 const errorMessage = err instanceof Error ? err.message : 'Unknown error'
                 setError(errorMessage)
                 setLeagueData(null)
-                console.error(`❌ [HOOK] Exception fetching tournament league:`, err)
             } finally {
                 if (!isCancelled) {
                     setLoading(false)

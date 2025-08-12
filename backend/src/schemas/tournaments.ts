@@ -375,6 +375,31 @@ const TournamentWithLeagueSchema = Type.Object({
 })
 
 /**
+ * Player team information for a specific tournament
+ */
+const PlayerTeamInTournamentSchema = Type.Object({
+    name: Type.String({ 
+        description: 'Team name',
+        examples: ['G2 Esports', 'T1', 'Fnatic']
+    }),
+    overviewPage: Type.Optional(Type.String({ 
+        description: 'Team overview page identifier',
+        examples: ['G2_Esports', 'T1_Official', 'Fnatic']
+    })),
+    image: Type.Optional(Type.String({
+        description: 'Team logo/image filename',
+        examples: ['G2esportslogo_square.png', 'T1logo_square.png']
+    }))
+}, {
+    description: 'Player team information for a specific tournament',
+    examples: [{
+        name: 'G2 Esports',
+        overviewPage: 'G2_Esports',
+        image: 'G2esportslogo_square.png'
+    }]
+})
+
+/**
  * Response arrays
  */
 const TournamentListResponse = Type.Array(TournamentSchema)
@@ -382,6 +407,7 @@ const TournamentStandingsListResponse = Type.Array(TournamentStandingsResponse)
 export {
     TournamentSchema,
     TournamentWithLeagueSchema,
+    PlayerTeamInTournamentSchema,
     CreateTournamentSchema,
     UpdateTournamentSchema,
     TournamentListResponse,

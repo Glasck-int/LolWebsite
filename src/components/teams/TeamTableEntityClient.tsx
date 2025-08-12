@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useCallback } from 'react'
+import Link from 'next/link'
 import Image from 'next/image'
 import { useTeamTableEntityData } from '@/hooks/useTeamTableEntityData'
 import { useTableEntityStore, SeasonData } from '@/store/tableEntityStore'
@@ -69,36 +70,17 @@ const TeamTableEntityContent = ({
     }, [])
 
     // Get league data for the selected tournament dynamically
-    const { leagueData: tournamentLeagueData, loading: leagueLoading } = useTournamentLeague(selectedTournamentId)
+    const { leagueData: tournamentLeagueData } = useTournamentLeague(selectedTournamentId)
     
     // Priority: tournament-specific league > team's latest league > fallback league prop
     const currentLeagueData = tournamentLeagueData || teamData?.latestLeague || leagueData
     
     // Get dynamic league image based on current league data
-    const { leagueImage: dynamicLeagueImage, loading: leagueImageLoading } = useLeagueImage(currentLeagueData?.name)
-    
+    const { leagueImage: dynamicLeagueImage } = useLeagueImage(currentLeagueData?.name)
+
     // Use only dynamic league image, no fallback to prop - if no image found, will show SVG
     const currentLeagueImage = dynamicLeagueImage
     
-
-    // Debug log to see what league data is being used
-    console.log('🔍 [COMPONENT] League data sources:', {
-        selectedTournamentId,
-        hasTournamentLeagueData: !!tournamentLeagueData,
-        tournamentLeagueShort: tournamentLeagueData?.short || 'N/A',
-        tournamentLeagueName: tournamentLeagueData?.name || 'N/A',
-        hasTeamLatestLeague: !!(teamData?.latestLeague),
-        teamLatestLeagueShort: teamData?.latestLeague?.short || 'N/A',
-        hasLeagueDataProp: !!leagueData,
-        leagueDataPropShort: leagueData?.short || 'N/A',
-        finalLeagueShort: currentLeagueData?.short || 'N/A',
-        finalLeagueName: currentLeagueData?.name || 'N/A',
-        leagueLoading,
-        // Image information
-        hasDynamicLeagueImage: !!dynamicLeagueImage,
-        willShowSVG: !dynamicLeagueImage,
-        leagueImageLoading
-    })
 
     return (
         <>
@@ -140,7 +122,10 @@ const TeamTableEntityContent = ({
                                         <h1 className="font-medium m-0 leading-none truncate w-full">
                                             {teamData.name}
                                         </h1>
-                                        <div className="flex items-center gap-3">
+                                        <Link 
+                                            href={`/leagues/${currentLeagueData?.name || ''}`} 
+                                            className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                                        >
                                             {currentLeagueImage ? (
                                                 <Image
                                                     src={currentLeagueImage}
@@ -190,7 +175,7 @@ const TeamTableEntityContent = ({
                                                     : 'League'
                                                 }
                                             </p>
-                                        </div>
+                                        </Link>
                                     </div>
                                 </div>
                             ) : (

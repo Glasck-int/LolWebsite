@@ -35,7 +35,6 @@ export function useLeagueImage(leagueName: string | null | undefined): UseLeague
             setError(null)
 
             try {
-                console.log(`🖼️ [LEAGUE IMAGE HOOK] Fetching image for league: ${leagueName}`)
                 
                 const result = await getLeagueImage(leagueName)
                 
@@ -44,13 +43,10 @@ export function useLeagueImage(leagueName: string | null | undefined): UseLeague
                 if (result.error) {
                     setError(result.error)
                     setLeagueImage(null)
-                    console.error(`❌ [LEAGUE IMAGE HOOK] Error fetching league image:`, result.error)
                 } else if (result.data) {
                     setLeagueImage(result.data)
-                    console.log(`✅ [LEAGUE IMAGE HOOK] Successfully fetched league image for: ${leagueName}`)
                 } else {
                     setLeagueImage(null)
-                    console.log(`⚠️ [LEAGUE IMAGE HOOK] No image found for league: ${leagueName}`)
                 }
             } catch (err) {
                 if (isCancelled) return
@@ -58,7 +54,6 @@ export function useLeagueImage(leagueName: string | null | undefined): UseLeague
                 const errorMessage = err instanceof Error ? err.message : 'Unknown error'
                 setError(errorMessage)
                 setLeagueImage(null)
-                console.error(`❌ [LEAGUE IMAGE HOOK] Exception fetching league image:`, err)
             } finally {
                 if (!isCancelled) {
                     setLoading(false)

@@ -34,9 +34,6 @@ export default async function TeamPage({ params }: TeamPageProps) {
         const teamResult = await getTeamByName(decodedTeamName)
         
         if (teamResult.data) {
-            console.log('📡 [FRONTEND] Raw data from backend:', teamResult.data)
-            console.log('📡 [FRONTEND] latestLeague field specifically:', teamResult.data.latestLeague)
-            console.log('📡 [FRONTEND] All keys in data:', Object.keys(teamResult.data))
             teamData = teamResult.data as TeamWithLatestLeague
             
             // Try to get team image from the team's image field first
@@ -57,25 +54,15 @@ export default async function TeamPage({ params }: TeamPageProps) {
             
             // Use the latest league data from the team API (now included)
             if (teamData.latestLeague) {
-                console.log('🎯 [FRONTEND] Latest league data from team API:', teamData.latestLeague)
                 leagueData = teamData.latestLeague
             }
         }
     } catch (error) {
         console.error('Error fetching team data on server:', error)
     }
-    
-    console.log('🚀 [FRONTEND] Passing to component:', {
-        teamName: decodedTeamName,
-        hasTeamData: !!teamData,
-        hasLeagueData: !!leagueData,
-        leagueDataShort: leagueData?.short || 'N/A',
-        leagueDataName: leagueData?.name || 'N/A',
-        note: 'League images now handled dynamically in component'
-    })
 
     return (
-        <div className="">
+        <div>
             <TeamTableEntityClient 
                 teamName={decodedTeamName}
                 teamData={teamData || undefined}

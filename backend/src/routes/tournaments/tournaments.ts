@@ -5,6 +5,7 @@ import {
     TournamentListResponse,
     TournamentStandingsListResponse,
     TournamentWithLeagueSchema,
+    PlayerTeamInTournamentSchema,
 } from '../../schemas/tournaments'
 import { ErrorResponseSchema } from '../../schemas/common'
 import prisma from '../../services/prisma'
@@ -1441,13 +1442,6 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
                         .send({ error: 'Tournament not found' })
                 }
 
-                console.log(`🏆 [TOURNAMENT API] Tournament ${tournamentId} league info:`, {
-                    tournamentName: tournament.name,
-                    hasLeague: !!tournament.League,
-                    leagueName: tournament.League?.name || 'N/A',
-                    leagueShort: tournament.League?.short || 'N/A'
-                })
-
                 // Cache for 1 day (86400 seconds)
                 await redis.setex(cacheKey, 86400, JSON.stringify(tournament))
                 return tournament
@@ -1882,6 +1876,133 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
                 return bracketData
             } catch (error) {
                 console.error('Error in tournament playoff bracket route:', error)
+                return reply
+                    .status(500)
+                    .send({ error: 'Internal server error' })
+            }
+        }
+    )
+
+    // Get player's team for a specific tournament
+    fastify.get<{ Params: { tournamentId: string; playerName: string } }>(
+        '/tournaments/id/:tournamentId/player-team/:playerName',
+        {
+            schema: {
+                description: 'Get the team of a player for a specific tournament',
+                tags: ['tournaments'],
+                params: Type.Object({
+                    tournamentId: Type.String({ description: 'Tournament ID' }),
+                    playerName: Type.String({ description: 'Player name/link' })
+                }),
+                response: {
+                    200: PlayerTeamInTournamentSchema,
+                    404: ErrorResponseSchema,
+                    500: ErrorResponseSchema,
+                },
+            },
+        },
+        async (request, reply) => {
+            try {
+                const { tournamentId, playerName } = request.params
+                const decodedPlayerName = decodeURIComponent(playerName)
+                const cacheKey = `tournament_player_team:${tournamentId}:${decodedPlayerName}`
+                customMetric.inc({ operation: 'get_tournament_player_team' })
+
+                // Check cache first
+                const cached = await redis.get(cacheKey)
+                if (cached) {
+                    return JSON.parse(cached)
+                }
+
+
+                // Get tournament first to get the overviewPage
+                const tournament = await prisma.tournament.findUnique({
+                    where: { id: parseInt(tournamentId) },
+                    select: { 
+                        overviewPage: true,
+                        name: true,
+                        dateEnd: true 
+                    }
+                })
+
+                if (!tournament) {
+                    return reply
+                        .status(404)
+                        .send({ error: 'Tournament not found' })
+                }
+
+                // Look for the player in ScoreboardPlayers for this tournament
+                const playerRecord = await prisma.scoreboardPlayers.findFirst({
+                    where: {
+                        overviewPage: tournament.overviewPage,
+                        OR: [
+                            { name: decodedPlayerName },
+                            { link: decodedPlayerName }
+                        ]
+                    },
+                    select: {
+                        name: true,
+                        link: true,
+                        team: true
+                    }
+                })
+
+                if (!playerRecord || !playerRecord.team) {
+                    return reply.status(404).send({
+                        error: `Player team not found for tournament`
+                    })
+                }
+
+                // Get team details to find overviewPage and image
+                const teamDetails = await prisma.team.findFirst({
+                    where: {
+                        OR: [
+                            { name: playerRecord.team },
+                            { short: playerRecord.team }
+                        ]
+                    },
+                    select: {
+                        name: true,
+                        overviewPage: true,
+                        image: true
+                    }
+                })
+
+                const result = {
+                    name: teamDetails?.name || playerRecord.team,
+                    overviewPage: teamDetails?.overviewPage || undefined,
+                    image: teamDetails?.image || undefined
+                }
+
+                // Dynamic cache strategy based on tournament status
+                let cacheTime: number
+                if (!tournament?.dateEnd) {
+                    // Tournament without end date = active
+                    cacheTime = 300 // 5 minutes
+                } else {
+                    const tournamentEndDate = new Date(tournament.dateEnd)
+                    const now = new Date()
+                    const daysSinceEnd = Math.floor((now.getTime() - tournamentEndDate.getTime()) / (1000 * 60 * 60 * 24))
+                    
+                    if (tournamentEndDate > now) {
+                        // Tournament not yet finished
+                        cacheTime = 300 // 5 minutes
+                    } else if (daysSinceEnd <= 2) {
+                        // Tournament finished ≤ 2 days ago (possible corrections)
+                        cacheTime = 3600 // 1 hour
+                    } else if (daysSinceEnd <= 30) {
+                        // Tournament finished 3-30 days ago
+                        cacheTime = 604800 // 7 days
+                    } else {
+                        // Tournament finished > 30 days ago (historical data is fixed)
+                        cacheTime = 2592000 // 30 days
+                    }
+                }
+
+                await redis.setex(cacheKey, cacheTime, JSON.stringify(result))
+                return result
+            } catch (error) {
+                console.error('Error in tournament player team route:', error)
                 return reply
                     .status(500)
                     .send({ error: 'Internal server error' })

@@ -171,6 +171,22 @@ async function getTeamsRecentGames(
     return { data: games }
 }
 
+/**
+ * Get team information for a specific player in a tournament
+ *
+ * @param tournamentId - The ID of the tournament
+ * @param playerName - The name of the player
+ * @returns Promise with team data including image field
+ */
+async function getPlayerTeamInTournament(
+    tournamentId: string,
+    playerName: string
+): Promise<ApiResponse<{ name: string; overviewPage?: string; image?: string }>> {
+    return apiRequest<{ name: string; overviewPage?: string; image?: string }>(
+        `/api/tournaments/id/${tournamentId}/player-team/${encodeURIComponent(playerName)}`
+    )
+}
+
 export {
     getTeamByName,
     getTeamsByNames,
@@ -178,4 +194,5 @@ export {
     getTeamsRecentMatches,
     getTeamRecentGames,
     getTeamsRecentGames,
+    getPlayerTeamInTournament,
 }

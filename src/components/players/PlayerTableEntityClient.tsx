@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useCallback, useState } from 'react'
+import Link from 'next/link'
 import { usePlayerTableEntityData } from '@/hooks/usePlayerTableEntityData'
 import { useTableEntityStore, SeasonData } from '@/store/tableEntityStore'
 import { useSimpleTabSync } from '@/hooks/useSimpleTabSync'
@@ -25,19 +26,31 @@ import { MatchesCalendar } from '@/components/leagues/Matches/MatchesCalendar'
 import { TournamentContentFetch } from '@/components/leagues/Standings/views/TournamentContentFetch'
 import { ButtonBar } from '@/components/ui/Button/ButtonBar'
 import { useTranslate } from '@/lib/hooks/useTranslate'
-import { getPlayerByLink, getPlayerByOverviewPage } from '@/lib/api/player'
 import { PlayerWithRedirects } from '@glasck-int/glasck-types'
+import { useTournamentPlayerTeam } from '@/hooks/useTournamentPlayerTeam'
+import { useTeamImage } from '@/hooks/useTeamImage'
+import { getPlayerImage } from '@/lib/api/player'
+import { getTournamentPlayerStats } from '@/lib/api/players'
+import { getTeamByName } from '@/lib/api/teams'
+import { getTeamImage } from '@/lib/api/image'
+import Image from 'next/image'
 
 interface PlayerTableEntityClientProps {
     playerName: string
+    playerData?: PlayerWithRedirects
+    playerImage?: string
 }
 
 const PlayerTableEntityContent = ({
     playerName,
     seasons,
+    playerData,
+    playerImage,
 }: {
     playerName: string
     seasons: SeasonData[]
+    playerData?: PlayerWithRedirects
+    playerImage?: string
 }) => {
     const { activeId } = useTableEntityStore()
     const selectedTournamentId = activeId.length > 0 ? activeId[0] : null
@@ -63,73 +76,298 @@ const PlayerTableEntityContent = ({
         }
     }, [selectedTournamentId])
 
-    // Player data state
-    const [playerData, setPlayerData] = useState<PlayerWithRedirects | null>(null)
-    const [loading, setLoading] = useState(true)
+    // Player data from server-side props
 
-    // Fetch player data
+    // State for team data when we need to fetch it by name (fallback case)
+    const [fallbackTeamData, setFallbackTeamData] = useState<{ name: string; overviewPage?: string; image?: string } | null>(null)
+
+    // Get team data for the selected tournament dynamically
+    const { teamData: tournamentTeamData, loading: teamLoading } = useTournamentPlayerTeam(selectedTournamentId, playerName)
+    
+    // Priority: tournament-specific team > fallback team with overviewPage > player's current team from API
+    const currentTeamData = tournamentTeamData || fallbackTeamData || (playerData ? { name: playerData.team || '', overviewPage: undefined, image: undefined } : null)
+    
+    // State for team image URL
+    const [teamImageUrl, setTeamImageUrl] = useState<string | null>(null)
+    const [teamImageLoading, setTeamImageLoading] = useState(false)
+    
+    // Fetch team image when team data changes
     useEffect(() => {
-        const fetchPlayerData = async () => {
+        if (!currentTeamData?.image) {
+            setTeamImageUrl(null)
+            return
+        }
+        
+        const fetchTeamImage = async () => {
+            setTeamImageLoading(true)
             try {
-                setLoading(true)
+                const imageResult = await getTeamImage(currentTeamData.image.replace('.png', '.webp'))
+                setTeamImageUrl(imageResult.data)
+            } catch (error) {
+                console.error('Failed to fetch team image:', error)
+                setTeamImageUrl(null)
+            } finally {
+                setTeamImageLoading(false)
+            }
+        }
+        
+        fetchTeamImage()
+    }, [currentTeamData?.image])
+    
+    // Use team image from API if available, otherwise use hook if we have overviewPage
+    const { teamImage: dynamicTeamImage, loading: dynamicTeamImageLoading } = useTeamImage(
+        currentTeamData?.image ? null : currentTeamData?.overviewPage
+    )
+    
+    // Use team image URL from direct fetch or dynamic fetch from overviewPage
+    const currentTeamImage = teamImageUrl || dynamicTeamImage
+
+    // State for player image loaded dynamically with tournament context
+    const [dynamicPlayerImage, setDynamicPlayerImage] = useState<string | null>(null)
+    const [playerImageLoading, setPlayerImageLoading] = useState(false)
+
+    // Use dynamic player image from client-side fetch or server-side prop fallback
+    const currentPlayerImage = dynamicPlayerImage || playerImage
+
+    // Fetch player image when tournament or player changes
+    useEffect(() => {
+        if (!selectedTournamentId || !playerName) {
+            setDynamicPlayerImage(null)
+            return
+        }
+
+        const fetchPlayerImage = async () => {
+            setPlayerImageLoading(true)
+            try {
+                // First get tournament data to get tournament name
+                const response = await getTournamentPlayerStats(selectedTournamentId.toString())
                 
-                // First, search for the player to get the overviewPage
-                const searchResult = await getPlayerByLink(playerName)
-                
-                if (!searchResult.data || searchResult.data.length === 0) {
-                    setPlayerData(null)
-                    return
-                }
-                
-                // Get the overviewPage from the first result
-                const overviewPage = searchResult.data[0].overviewPage
-                
-                // Now get the complete player data
-                const playerDataResult = await getPlayerByOverviewPage(overviewPage)
-                
-                if (playerDataResult.data) {
-                    setPlayerData(playerDataResult.data)
+                if (response.data && response.data.tournament) {
+                    // Now get player image with tournament context
+                    const imageResponse = await getPlayerImage(playerName, response.data.tournament)
+                    if (imageResponse.data) {
+                        setDynamicPlayerImage(imageResponse.data)
+                        console.log(`✅ [PLAYER COMPONENT] Fetched image for ${playerName} in tournament ${response.data.tournament}`)
+                    } else {
+                        setDynamicPlayerImage(null)
+                        console.log(`⚠️ [PLAYER COMPONENT] No image found for ${playerName} in tournament ${response.data.tournament}`)
+                    }
                 }
             } catch (error) {
-                console.error('Error fetching player data:', error)
-                setPlayerData(null)
+                console.error('Failed to fetch player image:', error)
+                setDynamicPlayerImage(null)
             } finally {
-                setLoading(false)
+                setPlayerImageLoading(false)
             }
         }
 
-        if (playerName) {
-            fetchPlayerData()
-        }
-    }, [playerName])
+        fetchPlayerImage()
+    }, [selectedTournamentId, playerName])
 
-    if (loading) {
-        return (
-            <div className="flex justify-center items-center h-32">
-                <div className="text-white">Loading player data...</div>
-            </div>
-        )
-    }
+    // Fetch complete team data when we only have team name but no overviewPage
+    useEffect(() => {
+        const needsFallbackTeamData = !tournamentTeamData && playerData?.team && !fallbackTeamData
+        
+        if (!needsFallbackTeamData) {
+            return
+        }
+
+        const fetchTeamData = async () => {
+            try {
+                console.log(`🔄 [PLAYER COMPONENT] Fetching complete team data for: ${playerData.team}`)
+                const teamResult = await getTeamByName(playerData.team!)
+                
+                if (teamResult.data) {
+                    setFallbackTeamData({
+                        name: teamResult.data.name || playerData.team!,
+                        overviewPage: teamResult.data.overviewPage || undefined,
+                        image: teamResult.data.image || undefined
+                    })
+                    console.log(`✅ [PLAYER COMPONENT] Fetched team data - overviewPage: ${teamResult.data.overviewPage || 'N/A'}`)
+                } else {
+                    console.log(`⚠️ [PLAYER COMPONENT] No team data found for: ${playerData.team}`)
+                    setFallbackTeamData(null)
+                }
+            } catch (error) {
+                console.error('Failed to fetch team data:', error)
+                setFallbackTeamData(null)
+            }
+        }
+
+        fetchTeamData()
+    }, [tournamentTeamData, playerData?.team, fallbackTeamData])
+
+
+    // Debug log to see what team data is being used
+    console.log('🔍 [PLAYER COMPONENT] Team data sources:', {
+        selectedTournamentId,
+        hasTournamentTeamData: !!tournamentTeamData,
+        tournamentTeamName: tournamentTeamData?.name || 'N/A',
+        tournamentTeamOverviewPage: tournamentTeamData?.overviewPage || 'N/A',
+        tournamentTeamImage: tournamentTeamData?.image || 'N/A',
+        hasFallbackTeamData: !!fallbackTeamData,
+        fallbackTeamName: fallbackTeamData?.name || 'N/A',
+        fallbackTeamOverviewPage: fallbackTeamData?.overviewPage || 'N/A',
+        fallbackTeamImage: fallbackTeamData?.image || 'N/A',
+        hasPlayerData: !!playerData,
+        playerCurrentTeam: playerData?.team || 'N/A',
+        finalTeamName: currentTeamData?.name || 'N/A',
+        finalTeamOverviewPage: currentTeamData?.overviewPage || 'N/A',
+        finalTeamImage: currentTeamData?.image || 'N/A',
+        teamLoading,
+        // Image information
+        hasTeamImageUrl: !!teamImageUrl,
+        hasDynamicTeamImage: !!dynamicTeamImage,
+        hasCurrentTeamImage: !!currentTeamImage,
+        willShowTeamSVG: !currentTeamImage,
+        teamImageLoading: teamImageLoading || dynamicTeamImageLoading,
+        hasServerPlayerImage: !!playerImage,
+        hasDynamicPlayerImage: !!dynamicPlayerImage,
+        hasCurrentPlayerImage: !!currentPlayerImage,
+        willShowPlayerSVG: !currentPlayerImage,
+        playerImageLoading
+    })
+
 
     return (
         <>
             <Card>
                 <CardContext>
                     <CardBody>
-                        <div className="hidden md:flex p-[15px] h-[130px] gap-3 w-full items-center justify-center">
+                        <div className="hidden md:flex p-[15px] h-[130px] gap-3 w-full items-center justify-center overflow-hidden">
                             {playerData ? (
-                                <div className="flex flex-col items-center gap-2">
-                                    <h2 className="text-xl font-bold">{playerData.name}</h2>
-                                    <div className="text-sm text-muted-foreground space-y-1">
-                                        {playerData.team && <div>Team: {playerData.team}</div>}
-                                        {playerData.role && <div>Role: {playerData.role}</div>}
-                                        {playerData.country && <div>Country: {playerData.country}</div>}
+                                <div className="flex flex-row gap-4 items-center w-full">
+                                    <div className="flex-shrink-0">
+                                        {currentPlayerImage ? (
+                                            <Image
+                                                src={currentPlayerImage}
+                                                alt={playerData.name || playerName}
+                                                width={75}
+                                                height={75}
+                                                className="object-contain drop-shadow-lg rounded-lg"
+                                            />
+                                        ) : (
+                                            <div className="w-[75px] h-[75px] rounded-lg bg-gradient-to-br from-dark-grey to-clear-violet/30 flex items-center justify-center flex-shrink-0 ring-1 ring-white/10">
+                                                <svg
+                                                    width="40"
+                                                    height="40"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    className="text-white"
+                                                >
+                                                    <path
+                                                        d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                                                        fill="currentColor"
+                                                        opacity="0.9"
+                                                    />
+                                                </svg>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="flex flex-col justify-center items-start gap-0 min-w-0 flex-1">
+                                        <h1 className="font-medium m-0 leading-none truncate w-full">
+                                            {playerData.name}
+                                        </h1>
+                                        {currentTeamData?.name ? (
+                                            <Link 
+                                                href={`/teams/${currentTeamData.name}`}
+                                                className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                                            >
+                                                {currentTeamImage ? (
+                                                    <Image
+                                                        src={currentTeamImage}
+                                                        alt={currentTeamData?.name || ''}
+                                                        width={34}
+                                                        height={34}
+                                                        className="object-contain"
+                                                    />
+                                                ) : (
+                                                    <div className="w-10 h-10 rounded bg-gradient-to-br from-dark-grey to-clear-violet/30 flex items-center justify-center flex-shrink-0">
+                                                        <svg
+                                                            width="12"
+                                                            height="12"
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            className="text-white"
+                                                        >
+                                                            <path
+                                                                d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                                                                fill="currentColor"
+                                                                opacity="0.9"
+                                                            />
+                                                        </svg>
+                                                    </div>
+                                                )}
+                                                <p className="text-clear-grey font-semibold m-0 leading-none truncate">
+                                                    {(() => {
+                                                        // Si l'équipe a un nom
+                                                        if (currentTeamData.name) {
+                                                            const words = currentTeamData.name.split(' ');
+                                                            if (words.length >= 2) {
+                                                                // Prendre la première lettre de chaque mot
+                                                                return words.map(word => word[0]).join('').slice(0, 3).toUpperCase();
+                                                            } else {
+                                                                // Si un seul mot, prendre les 3 premières lettres
+                                                                return currentTeamData.name.slice(0, 3).toUpperCase();
+                                                            }
+                                                        }
+                                                        return '';
+                                                    })()}
+                                                </p>
+                                            </Link>
+                                        ) : (
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded bg-gradient-to-br from-dark-grey to-clear-violet/30 flex items-center justify-center flex-shrink-0">
+                                                    <svg
+                                                        width="12"
+                                                        height="12"
+                                                        viewBox="0 0 24 24"
+                                                        fill="none"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        className="text-white"
+                                                    >
+                                                        <path
+                                                            d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                                                            fill="currentColor"
+                                                            opacity="0.9"
+                                                        />
+                                                    </svg>
+                                                </div>
+                                                <p className="text-clear-grey font-semibold m-0 leading-none truncate">
+                                                    Team
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ) : (
-                                <div className="flex flex-col items-center gap-2">
-                                    <h2 className="text-xl font-bold">{playerName}</h2>
-                                    <div className="text-sm text-muted-foreground">Player Profile</div>
+                                <div className="flex flex-row gap-4 items-center">
+                                    <div className="w-[75px] h-[75px] rounded-lg bg-gradient-to-br from-dark-grey to-clear-violet/30 flex items-center justify-center flex-shrink-0 ring-1 ring-white/10">
+                                        <svg
+                                            width="40"
+                                            height="40"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="text-white"
+                                        >
+                                            <path
+                                                d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                                                fill="currentColor"
+                                                opacity="0.9"
+                                            />
+                                        </svg>
+                                    </div>
+                                    <div className="flex flex-col justify-center items-start gap-2">
+                                        <h1 className="font-medium text-xl m-0 leading-none">
+                                            {playerName}
+                                        </h1>
+                                        <p className="text-clear-grey font-semibold m-0 leading-none text-sm">
+                                            Player Profile
+                                        </p>
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -356,6 +594,8 @@ const PlayerTableEntityContent = ({
 
 export const PlayerTableEntityClient = ({
     playerName,
+    playerData,
+    playerImage,
 }: PlayerTableEntityClientProps) => {
     const { data: seasons, loading, error } = usePlayerTableEntityData(playerName)
     
@@ -394,6 +634,8 @@ export const PlayerTableEntityClient = ({
                 <PlayerTableEntityContent
                     playerName={playerName}
                     seasons={seasons}
+                    playerData={playerData}
+                    playerImage={playerImage}
                 />
             </TableEntityLayout>
         </div>
