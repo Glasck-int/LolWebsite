@@ -47,13 +47,6 @@ export function useTournamentPlayerTeam(tournamentId: string | number | null, pl
                     console.error(`❌ [PLAYER TEAM HOOK] Error fetching player team:`, result.error)
                 } else if (result.data) {
                     setTeamData(result.data)
-                    console.log(`✅ [PLAYER TEAM HOOK] Successfully fetched team:`, {
-                        playerName,
-                        tournamentId,
-                        teamName: result.data.name || 'N/A',
-                        teamOverviewPage: result.data.overviewPage || 'N/A',
-                        teamImage: result.data.image || 'N/A'
-                    })
                 }
             } catch (err) {
                 if (isCancelled) return

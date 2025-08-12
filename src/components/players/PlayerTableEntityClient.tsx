@@ -29,7 +29,7 @@ import { useTranslate } from '@/lib/hooks/useTranslate'
 import { PlayerWithRedirects } from '@glasck-int/glasck-types'
 import { useTournamentPlayerTeam } from '@/hooks/useTournamentPlayerTeam'
 import { useTeamImage } from '@/hooks/useTeamImage'
-import { getPlayerImage } from '@/lib/api/player'
+import { getPlayerImage, getPlayerTournamentImage } from '@/lib/api/player'
 import { getTournamentPlayerStats } from '@/lib/api/players'
 import { getTeamByName } from '@/lib/api/teams'
 import { getTeamImage } from '@/lib/api/image'
@@ -143,14 +143,23 @@ const PlayerTableEntityContent = ({
                 const response = await getTournamentPlayerStats(selectedTournamentId.toString())
                 
                 if (response.data && response.data.tournament) {
-                    // Now get player image with tournament context
-                    const imageResponse = await getPlayerImage(playerName, response.data.tournament)
+                    // Use the new tournament-specific image API
+                    console.log(`🔍 [PLAYER COMPONENT] Starting intelligent image search for ${playerName} in ${response.data.tournament}`)
+                    const imageResponse = await getPlayerTournamentImage(playerName, response.data.tournament)
                     if (imageResponse.data) {
                         setDynamicPlayerImage(imageResponse.data)
-                        console.log(`✅ [PLAYER COMPONENT] Fetched image for ${playerName} in tournament ${response.data.tournament}`)
+                        console.log(`🎯 [PLAYER COMPONENT] Successfully applied intelligent image for ${playerName}`)
                     } else {
-                        setDynamicPlayerImage(null)
-                        console.log(`⚠️ [PLAYER COMPONENT] No image found for ${playerName} in tournament ${response.data.tournament}`)
+                        // Fallback to the old method if new API doesn't find anything
+                        console.log(`⚠️ [PLAYER COMPONENT] Intelligent search failed, trying legacy fallback for ${playerName}...`)
+                        const fallbackResponse = await getPlayerImage(playerName, response.data.tournament)
+                        if (fallbackResponse.data) {
+                            setDynamicPlayerImage(fallbackResponse.data)
+                            console.log(`✅ [PLAYER COMPONENT] Applied legacy fallback image for ${playerName}`)
+                        } else {
+                            setDynamicPlayerImage(null)
+                            console.log(`❌ [PLAYER COMPONENT] No image found anywhere for ${playerName} in ${response.data.tournament}`)
+                        }
                     }
                 }
             } catch (error) {
@@ -196,37 +205,6 @@ const PlayerTableEntityContent = ({
 
         fetchTeamData()
     }, [tournamentTeamData, playerData?.team, fallbackTeamData])
-
-
-    // Debug log to see what team data is being used
-    console.log('🔍 [PLAYER COMPONENT] Team data sources:', {
-        selectedTournamentId,
-        hasTournamentTeamData: !!tournamentTeamData,
-        tournamentTeamName: tournamentTeamData?.name || 'N/A',
-        tournamentTeamOverviewPage: tournamentTeamData?.overviewPage || 'N/A',
-        tournamentTeamImage: tournamentTeamData?.image || 'N/A',
-        hasFallbackTeamData: !!fallbackTeamData,
-        fallbackTeamName: fallbackTeamData?.name || 'N/A',
-        fallbackTeamOverviewPage: fallbackTeamData?.overviewPage || 'N/A',
-        fallbackTeamImage: fallbackTeamData?.image || 'N/A',
-        hasPlayerData: !!playerData,
-        playerCurrentTeam: playerData?.team || 'N/A',
-        finalTeamName: currentTeamData?.name || 'N/A',
-        finalTeamOverviewPage: currentTeamData?.overviewPage || 'N/A',
-        finalTeamImage: currentTeamData?.image || 'N/A',
-        teamLoading,
-        // Image information
-        hasTeamImageUrl: !!teamImageUrl,
-        hasDynamicTeamImage: !!dynamicTeamImage,
-        hasCurrentTeamImage: !!currentTeamImage,
-        willShowTeamSVG: !currentTeamImage,
-        teamImageLoading: teamImageLoading || dynamicTeamImageLoading,
-        hasServerPlayerImage: !!playerImage,
-        hasDynamicPlayerImage: !!dynamicPlayerImage,
-        hasCurrentPlayerImage: !!currentPlayerImage,
-        willShowPlayerSVG: !currentPlayerImage,
-        playerImageLoading
-    })
 
 
     return (

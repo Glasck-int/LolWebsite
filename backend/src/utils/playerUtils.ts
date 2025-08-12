@@ -103,9 +103,11 @@ export async function resolvePlayer(
         where: { name: playerName }
     })
 
+
     if (!playerRedirect) {
         throw new PlayerNotFoundError(playerName)
     }
+
 
     const overviewPage = playerRedirect.overviewPage
 
