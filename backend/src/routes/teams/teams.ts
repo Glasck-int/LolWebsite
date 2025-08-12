@@ -35,10 +35,13 @@ export default async function teamsRoutes(fastify: FastifyInstance) {
             const { name } = request.params
             const cacheKey = `team:name:${name}`
             customMetric.inc({ operation: 'get_team_by_name' })
-            const cached = await redis.get(cacheKey)
-            if (cached) {
-                return JSON.parse(cached)
-            }
+            
+            // Temporary: skip cache to force fresh data with latestLeague
+            console.log(`🗑️ [TEAM API] Skipping cache for team "${name}" to get fresh data with latestLeague`)
+            // const cached = await redis.get(cacheKey)
+            // if (cached) {
+            //     return JSON.parse(cached)
+            // }
             const team = await prisma.team.findUnique({
                 where: { overviewPage: name },
             })
@@ -47,13 +50,79 @@ export default async function teamsRoutes(fastify: FastifyInstance) {
                 return reply.status(404).send({ error: 'Team not found' })
             }
 
-            const cleanedTeam = {
-                ...team,
-                name: team.name
+            // Get the latest league for this team
+            let latestLeague = null
+            try {
+                console.log(`🔎 [TEAM API] Searching tournaments for team.overviewPage: "${team.overviewPage}"`)
+                
+                const latestTournament = await prisma.tournament.findFirst({
+                    where: {
+                        Standings: {
+                            some: {
+                                team: team.overviewPage,
+                            }
+                        },
+                        league: {
+                            not: null,
+                        }
+                    },
+                    include: {
+                        League: true,
+                    },
+                    orderBy: [
+                        { dateEnd: 'desc' },
+                        { dateStart: 'desc' },
+                        { id: 'desc' },
+                    ],
+                })
+
+                console.log(`🔎 [TEAM API] Query result for "${name}": ${latestTournament ? 'Tournament found' : 'No tournament found'}`)
+
+                if (latestTournament?.League) {
+                    latestLeague = {
+                        id: latestTournament.League.id,
+                        name: latestTournament.League.name,
+                        short: latestTournament.League.short,
+                        region: latestTournament.League.region,
+                        level: latestTournament.League.level,
+                        isOfficial: latestTournament.League.isOfficial,
+                        isMajor: latestTournament.League.isMajor,
+                    }
+                    
+                    console.log(`🔍 [TEAM API] Latest league found for team "${name}":`, {
+                        tournamentName: latestTournament.name,
+                        tournamentDate: latestTournament.dateEnd || latestTournament.dateStart,
+                        leagueId: latestTournament.League.id,
+                        leagueName: latestTournament.League.name,
+                        leagueShort: latestTournament.League.short,
+                        leagueRegion: latestTournament.League.region
+                    })
+                } else {
+                    console.log(`❌ [TEAM API] No league found for team "${name}" - latestTournament:`, latestTournament ? 'exists but no League' : 'not found')
+                }
+            } catch (error) {
+                console.error('Error fetching latest league for team:', error)
             }
 
-            // Cache for 1 week (604800 seconds)
-            await redis.setex(cacheKey, 604800, JSON.stringify(cleanedTeam))
+            const cleanedTeam = {
+                ...team,
+                name: team.name,
+                latestLeague
+            }
+
+            console.log(`📤 [TEAM API] Returning team data for "${name}":`, {
+                teamId: team.id,
+                teamName: team.name,
+                hasLatestLeague: !!latestLeague,
+                latestLeagueShort: latestLeague?.short || 'N/A',
+                latestLeagueName: latestLeague?.name || 'N/A'
+            })
+            
+            console.log(`🔧 [TEAM API] Full cleanedTeam object:`, JSON.stringify(cleanedTeam, null, 2))
+
+            // Temporary: skip cache completely to avoid any interference
+            console.log(`🚫 [TEAM API] Skipping cache write for team "${name}" - returning fresh data directly`)
+            // await redis.setex(cacheKey, 604800, JSON.stringify(cleanedTeam))
             return cleanedTeam
         }
     )

@@ -116,7 +116,7 @@ const PlayerTableEntityContent = ({
             <Card>
                 <CardContext>
                     <CardBody>
-                        <div className="hidden md:flex p-[15px] h-[130px] gap-3 w-[250px] items-center justify-center">
+                        <div className="hidden md:flex p-[15px] h-[130px] gap-3 w-full items-center justify-center">
                             {playerData ? (
                                 <div className="flex flex-col items-center gap-2">
                                     <h2 className="text-xl font-bold">{playerData.name}</h2>

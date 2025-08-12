@@ -107,17 +107,9 @@ export const TournamentContentFetch = ({
         )
     }
     
-    // Debug logging for playoff data
-    if (shouldFetchPlayoffData) {
-        console.log('Fetching playoff data for tournament:', tournamentId)
-        console.log('Playoff data received:', playoffData)
-        console.log('Playoff error:', playoffError)
-    }
-    
     // If we have playoff data, show the playoff bracket
     // The API returns an array directly, not an object with tournaments property
     if (playoffData && Array.isArray(playoffData) && playoffData.length > 0) {
-        console.log('Displaying playoff bracket with data:', playoffData)
         return (
             <PlayoffBracket
                 tournaments={playoffData}

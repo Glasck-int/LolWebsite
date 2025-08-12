@@ -95,7 +95,7 @@ const LeagueTableEntityContent = ({
             <Card>
                 <CardContext>
                     <CardBody>
-                    <div className="hidden md:flex p-[15px] h-[130px] gap-3 w-[250px] items-center justify-center">
+                    <div className="hidden md:flex p-[15px] h-[130px] gap-3 w-full items-center justify-left">
                         {league && (
                             <LeagueDescription
                                 league={league}

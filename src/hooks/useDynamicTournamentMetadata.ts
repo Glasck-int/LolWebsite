@@ -15,13 +15,18 @@ interface TournamentMetaData {
  * Hook to dynamically update page metadata based on URL tournament parameters
  * This updates the document title and meta description when tournament changes
  */
-export const useDynamicTournamentMetadata = (leagueName: string) => {
+export const useDynamicTournamentMetadata = (leagueName: string | null) => {
     const searchParams = useSearchParams()
     const tournamentParam = searchParams.get('tournament')
     const seasonParam = searchParams.get('season')
     const splitParam = searchParams.get('split')
 
     useEffect(() => {
+        // Don't do anything if no league name is provided
+        if (!leagueName) {
+            return
+        }
+        
         const updateMetadata = async () => {
             try {
                 let metaData: TournamentMetaData = {

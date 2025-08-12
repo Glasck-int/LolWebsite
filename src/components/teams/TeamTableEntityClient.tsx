@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useState, useCallback } from 'react'
+import Image from 'next/image'
 import { useTeamTableEntityData } from '@/hooks/useTeamTableEntityData'
 import { useTableEntityStore, SeasonData } from '@/store/tableEntityStore'
 import { useSimpleTabSync } from '@/hooks/useSimpleTabSync'
@@ -25,19 +26,31 @@ import { MatchesCalendar } from '@/components/leagues/Matches/MatchesCalendar'
 import { TournamentContentFetch } from '@/components/leagues/Standings/views/TournamentContentFetch'
 import { ButtonBar } from '@/components/ui/Button/ButtonBar'
 import { useTranslate } from '@/lib/hooks/useTranslate'
-import { getTeamByName } from '@/lib/api/teams'
-import { Team as TeamType } from '@/generated/prisma'
+import { Team as TeamType, League as LeagueType } from '@/generated/prisma'
+import { TeamWithLatestLeague } from '@/lib/types/team'
 
 interface TeamTableEntityClientProps {
     teamName: string
+    teamData?: TeamWithLatestLeague
+    teamImage?: string
+    leagueData?: LeagueType
+    leagueImage?: string
 }
 
 const TeamTableEntityContent = ({
     teamName,
     seasons,
+    teamData,
+    teamImage,
+    leagueData,
+    leagueImage,
 }: {
     teamName: string
     seasons: SeasonData[]
+    teamData?: TeamWithLatestLeague
+    teamImage?: string
+    leagueData?: LeagueType
+    leagueImage?: string
 }) => {
     const { activeId } = useTableEntityStore()
     const selectedTournamentId = activeId.length > 0 ? activeId[0] : null
@@ -55,69 +68,132 @@ const TeamTableEntityContent = ({
     const handleStatsViewChange = useCallback((option: string | null) => {
         setActiveStatsView(option)
     }, [])
+
+    // Use latestLeague from teamData if available, otherwise fall back to leagueData prop
+    const currentLeagueData = teamData?.latestLeague || leagueData
     
-    // Reset stats view to Players when selectedTournamentId changes
-    useEffect(() => {
-        if (selectedTournamentId) {
-            setActiveStatsView('Players')
-        }
-    }, [selectedTournamentId])
 
-    // Team data state
-    const [teamData, setTeamData] = useState<TeamType | null>(null)
-    const [loading, setLoading] = useState(true)
-
-    // Fetch team data
-    useEffect(() => {
-        const fetchTeamData = async () => {
-            try {
-                setLoading(true)
-                
-                const teamDataResult = await getTeamByName(teamName)
-                
-                if (teamDataResult.data) {
-                    setTeamData(teamDataResult.data)
-                }
-            } catch (error) {
-                console.error('Error fetching team data:', error)
-                setTeamData(null)
-            } finally {
-                setLoading(false)
-            }
-        }
-
-        if (teamName) {
-            fetchTeamData()
-        }
-    }, [teamName])
-
-    if (loading) {
-        return (
-            <div className="flex justify-center items-center h-32">
-                <div className="text-white">Loading team data...</div>
-            </div>
-        )
-    }
+    // Update league data based on selected tournament
 
     return (
         <>
             <Card>
                 <CardContext>
                     <CardBody>
-                        <div className="hidden md:flex p-[15px] h-[130px] gap-3 w-[250px] items-center justify-center">
+                        <div className="hidden md:flex p-[15px] h-[130px] gap-3 w-full items-center justify-center overflow-hidden">
                             {teamData ? (
-                                <div className="flex flex-col items-center gap-2">
-                                    <h2 className="text-xl font-bold">{teamData.name}</h2>
-                                    <div className="text-sm text-muted-foreground space-y-1">
-                                        {teamData.short && <div>Short: {teamData.short}</div>}
-                                        {teamData.region && <div>Region: {teamData.region}</div>}
-                                        {teamData.location && <div>Location: {teamData.location}</div>}
+                                <div className="flex flex-row gap-4 items-center w-full">
+                                    <div className="flex-shrink-0">
+                                        {teamImage ? (
+                                            <Image
+                                                src={teamImage}
+                                                alt={teamData.name || ''}
+                                                width={75}
+                                                height={75}
+                                                className="object-contain drop-shadow-lg"
+                                            />
+                                        ) : (
+                                            <div className="w-[75px] h-[75px] rounded-lg bg-gradient-to-br from-dark-grey to-clear-violet/30 flex items-center justify-center flex-shrink-0 ring-1 ring-white/10">
+                                                <svg
+                                                    width="40"
+                                                    height="40"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    className="text-white"
+                                                >
+                                                    <path
+                                                        d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                                                        fill="currentColor"
+                                                        opacity="0.9"
+                                                    />
+                                                </svg>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="flex flex-col justify-center items-start gap-0 min-w-0 flex-1">
+                                        <h1 className="font-medium m-0 leading-none truncate w-full">
+                                            {teamData.name}
+                                        </h1>
+                                        <div className="flex items-center gap-3">
+                                            {leagueImage ? (
+                                                <Image
+                                                    src={leagueImage}
+                                                    alt={currentLeagueData?.name || ''}
+                                                    width={34}
+                                                    height={34}
+                                                    className="object-contain"
+                                                />
+                                            ) : (
+                                                <div className="w-10 h-10 rounded bg-gradient-to-br from-dark-grey to-clear-violet/30 flex items-center justify-center flex-shrink-0">
+                                                    <svg
+                                                        width="12"
+                                                        height="12"
+                                                        viewBox="0 0 24 24"
+                                                        fill="none"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        className="text-white"
+                                                    >
+                                                        <path
+                                                            d="M5 5C5 4.44772 5.44772 4 6 4H18C18.5523 4 19 4.44772 19 5V8C19 11.3137 16.3137 14 13 14H11C7.68629 14 5 11.3137 5 8V5Z"
+                                                            fill="currentColor"
+                                                            opacity="0.9"
+                                                        />
+                                                    </svg>
+                                                </div>
+                                            )}
+                                            <p className="text-clear-grey font-semibold m-0 leading-none truncate">
+                                                {currentLeagueData ? 
+                                                    (() => {
+                                                        // Si le short existe et n'est pas le même que le nom, on l'utilise
+                                                        if (currentLeagueData.short && currentLeagueData.short !== currentLeagueData.name) {
+                                                            return currentLeagueData.short;
+                                                        }
+                                                        // Sinon on génère une abréviation
+                                                        if (currentLeagueData.name) {
+                                                            const words = currentLeagueData.name.split(' ');
+                                                            if (words.length >= 2) {
+                                                                // Prendre la première lettre de chaque mot
+                                                                return words.map(word => word[0]).join('').slice(0, 2).toUpperCase();
+                                                            } else {
+                                                                // Si un seul mot, prendre les 2 premières lettres
+                                                                return currentLeagueData.name.slice(0, 2).toUpperCase();
+                                                            }
+                                                        }
+                                                        return '';
+                                                    })()
+                                                    : 'League'
+                                                }
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             ) : (
-                                <div className="flex flex-col items-center gap-2">
-                                    <h2 className="text-xl font-bold">{teamName}</h2>
-                                    <div className="text-sm text-muted-foreground">Team Profile</div>
+                                <div className="flex flex-row gap-4 items-center">
+                                    <div className="w-[75px] h-[75px] rounded-lg bg-gradient-to-br from-dark-grey to-clear-violet/30 flex items-center justify-center flex-shrink-0 ring-1 ring-white/10">
+                                        <svg
+                                            width="40"
+                                            height="40"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="text-white"
+                                        >
+                                            <path
+                                                d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                                                fill="currentColor"
+                                                opacity="0.9"
+                                            />
+                                        </svg>
+                                    </div>
+                                    <div className="flex flex-col justify-center items-start gap-2">
+                                        <h1 className="font-medium text-xl m-0 leading-none">
+                                            {teamName}
+                                        </h1>
+                                        <p className="text-clear-grey font-semibold m-0 leading-none text-sm">
+                                            Team Profile
+                                        </p>
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -323,11 +399,19 @@ const TeamTableEntityContent = ({
 
 export const TeamTableEntityClient = ({
     teamName,
+    teamData,
+    teamImage,
+    leagueData,
+    leagueImage,
 }: TeamTableEntityClientProps) => {
     const { data: seasons, loading, error } = useTeamTableEntityData(teamName)
     
     // Hook pour mettre à jour les métadonnées dynamiquement selon le tournoi sélectionné
-    useDynamicTournamentMetadata(teamName)
+    // Use latestLeague from teamData if available, otherwise fall back to leagueData prop
+    const currentLeagueDataForComponent = (teamData as TeamWithLatestLeague)?.latestLeague || leagueData
+    // Pass league name if available and it's actually a league name, otherwise pass null to disable the hook
+    const leagueNameForMetadata = (currentLeagueDataForComponent?.name && currentLeagueDataForComponent.name !== teamName) ? currentLeagueDataForComponent.name : null
+    useDynamicTournamentMetadata(leagueNameForMetadata)
 
     if (loading) {
         return (
@@ -361,6 +445,10 @@ export const TeamTableEntityClient = ({
                 <TeamTableEntityContent
                     teamName={teamName}
                     seasons={seasons}
+                    teamData={teamData}
+                    teamImage={teamImage}
+                    leagueData={leagueData}
+                    leagueImage={leagueImage}
                 />
             </TableEntityLayout>
         </div>

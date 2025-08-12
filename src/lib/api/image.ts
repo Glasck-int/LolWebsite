@@ -40,10 +40,14 @@ async function getLeagueImage(
         const STATIC_BASE_URL = getStaticBaseUrl()
         const imageUrl = `${STATIC_BASE_URL}/static/leagues/${leagueName}.webp`
 
+        // Skip verification on server-side to avoid CORS issues and improve performance
+        if (typeof window === 'undefined') {
+            return { data: imageUrl }
+        }
+
         try {
             const response = await fetch(imageUrl, { method: 'HEAD' })
             if (response.ok) {
-
                 return { data: response.url }
             }
         } catch {
