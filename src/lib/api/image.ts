@@ -271,4 +271,51 @@ async function getPlayerImageFromBackend(
     }
 }
 
-export { getLeagueImage, getTeamImage, getPublicPlayerImage, getTeamImageByName, getPlayerImageByName, getPlayerImageByNameServerSafe, getRoleImage, getPlayerImageFromBackend }
+/**
+ * Batch get player images for multiple players (optimized for performance)
+ */
+async function getPlayerImagesBatch(
+    players: Array<{ playerName: string, tournament?: string }>
+): Promise<ApiResponse<Record<string, { fileName: string | null, url: string | null, cached: boolean }>>> {
+    if (!players.length) {
+        return { data: {} }
+    }
+    
+    const STATIC_BASE_URL = getStaticBaseUrl()
+    
+    // Skip on server-side
+    if (typeof window === 'undefined') {
+        const result: Record<string, { fileName: string | null, url: string | null, cached: boolean }> = {}
+        players.forEach(({ playerName, tournament }) => {
+            const key = `${playerName}:${tournament || 'default'}`
+            result[key] = {
+                fileName: null,
+                url: `${STATIC_BASE_URL}/api/players/name/${encodeURIComponent(playerName)}/image${tournament ? `?tournament=${encodeURIComponent(tournament)}` : ''}`,
+                cached: false
+            }
+        })
+        return { data: result }
+    }
+    
+    try {
+        const response = await fetch(`${STATIC_BASE_URL}/api/players/images/batch`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ players })
+        })
+        
+        if (response.ok) {
+            const data = await response.json()
+            return { data: data.images }
+        }
+        
+        return { error: 'Failed to fetch batch images' }
+    } catch (error) {
+        console.error('Batch image fetch error:', error)
+        return { error: 'Network error' }
+    }
+}
+
+export { getLeagueImage, getTeamImage, getPublicPlayerImage, getTeamImageByName, getPlayerImageByName, getPlayerImageByNameServerSafe, getRoleImage, getPlayerImageFromBackend, getPlayerImagesBatch }

@@ -11,6 +11,9 @@ import {
 import { PlayerNameSeasonsParamSchema } from '../../schemas/params'
 import { resolvePlayer, PlayerNotFoundError } from '../../utils/playerUtils'
 
+// Redis cache TTL for player images (5 minutes)
+const REDIS_CACHE_TTL = 300
+
 export default async function playersRoutes(fastify: FastifyInstance) {
     const redis = fastify.redis
     const customMetric = new fastify.metrics.client.Counter({
@@ -598,10 +601,10 @@ export default async function playersRoutes(fastify: FastifyInstance) {
         }
     })
 
-    // Serve player image file directly
+    // Serve player image file directly with optimized caching
     fastify.get('/players/name/:playerName/image', {
         schema: {
-            description: 'Serve player image file directly with fallback handling',
+            description: 'Serve player image file directly with fallback handling and caching',
             tags: ['players'],
             params: PlayerNameSeasonsParamSchema,
             querystring: {
@@ -625,54 +628,143 @@ export default async function playersRoutes(fastify: FastifyInstance) {
             const { tournament, fallback } = request.query as { tournament?: string, fallback?: string }
             customMetric.inc({ operation: 'serve_player_image' })
 
+            // Create cache key for Redis
+            const cacheKey = `player_image:${playerName}:${tournament || 'default'}`
+            
+            // Try Redis cache first
             let bestImage = null
-
-            // If tournament is provided, try to get tournament-specific image
-            if (tournament) {
-                try {
-                    const tournamentImageResponse = await fastify.inject({
-                        method: 'GET',
-                        url: `/api/players/name/${encodeURIComponent(playerName)}/tournament/${encodeURIComponent(tournament)}/image`
-                    })
-                    
-                    if (tournamentImageResponse.statusCode === 200) {
-                        bestImage = JSON.parse(tournamentImageResponse.payload)
-                    }
-                } catch (error) {
-                    fastify.log.warn(`Failed to get tournament-specific image for ${playerName} in ${tournament}:`, error)
+            try {
+                const cached = await redis.get(cacheKey)
+                if (cached) {
+                    fastify.log.info(`Cache HIT for key: ${cacheKey}`)
+                    bestImage = JSON.parse(cached)
+                    fastify.log.debug(`Redis cache hit for player image: ${playerName}`)
                 }
+            } catch (cacheError) {
+                fastify.log.warn('Redis cache error:', cacheError)
             }
 
-            // If no tournament-specific image found, try to get any image for the player
+            // If not in cache, perform the lookup
             if (!bestImage) {
-                try {
-                    const resolution = await resolvePlayer(playerName, {
-                        includeImages: true
-                    })
-
-                    if (resolution.images && resolution.images.length > 0) {
-                        // Sort images by priority (profile images first, then by recency)
-                        const sortedImages = resolution.images.sort((a, b) => {
-                            let scoreA = 0, scoreB = 0
-                            
-                            // Profile images get priority
-                            if (a.isProfileImage) scoreA += 100
-                            if (b.isProfileImage) scoreB += 100
-                            
-                            if (a.imageType === 'profile' || a.imageType === 'headshot') scoreA += 50
-                            if (b.imageType === 'profile' || b.imageType === 'headshot') scoreB += 50
-                            
-                            // Recent images get priority
-                            if (a.createdAt) scoreA += Math.max(0, 30 - Math.floor((Date.now() - a.createdAt.getTime()) / (1000 * 60 * 60 * 24)))
-                            if (b.createdAt) scoreB += Math.max(0, 30 - Math.floor((Date.now() - b.createdAt.getTime()) / (1000 * 60 * 60 * 24)))
-                            
-                            return scoreB - scoreA
+                fastify.log.info(`Cache MISS for key: ${cacheKey} - fetching from database`)
+                // If tournament is provided, try optimized tournament-specific lookup
+                if (tournament) {
+                    try {
+                        // Direct database query instead of internal API call for better performance
+                        const tournamentData = await prisma.tournament.findFirst({
+                            where: {
+                                OR: [
+                                    { overviewPage: tournament },
+                                    { id: isNaN(parseInt(tournament)) ? -1 : parseInt(tournament) }
+                                ]
+                            },
+                            select: { overviewPage: true, dateStart: true, dateEnd: true, name: true }
                         })
-                        
-                        bestImage = sortedImages[0]
+
+                        if (tournamentData) {
+                            // Optimized player resolution with focused image query
+                            const playerCheck = await prisma.playerRedirect.findFirst({
+                                where: { 
+                                    name: { equals: playerName, mode: 'insensitive' }
+                                },
+                                select: { overviewPage: true }
+                            })
+
+                            if (playerCheck) {
+                                // Get player images with tournament-specific optimization
+                                const playerImages = await prisma.playerImage.findMany({
+                                    where: {
+                                        PlayerRedirect: {
+                                            overviewPage: playerCheck.overviewPage
+                                        }
+                                    },
+                                    orderBy: [
+                                        { isProfileImage: 'desc' },
+                                        { createdAt: 'desc' }
+                                    ],
+                                    take: 20 // Limit to most relevant images for performance
+                                })
+
+                                if (playerImages.length > 0) {
+                                    // Fast tournament-specific scoring
+                                    const scoredImages = playerImages.map(image => {
+                                        let score = 0
+                                        
+                                        // Exact tournament match gets highest priority
+                                        if (image.tournament === tournament) {
+                                            score = 1000
+                                        }
+                                        // Profile images get high priority
+                                        else if (image.isProfileImage) {
+                                            score = 500
+                                        }
+                                        // Image type priority
+                                        else if (image.imageType === 'profile' || image.imageType === 'headshot') {
+                                            score = 300
+                                        }
+                                        // Recent images get some priority
+                                        else {
+                                            score = 100
+                                            if (image.createdAt) {
+                                                const ageInDays = (Date.now() - image.createdAt.getTime()) / (1000 * 60 * 60 * 24)
+                                                if (ageInDays < 365) {
+                                                    score += Math.max(0, 50 - Math.floor(ageInDays / 10))
+                                                }
+                                            }
+                                        }
+
+                                        return { ...image, score }
+                                    })
+
+                                    // Get best image
+                                    bestImage = scoredImages.sort((a, b) => b.score - a.score)[0]
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        fastify.log.warn(`Optimized tournament lookup failed for ${playerName} in ${tournament}:`, error)
                     }
-                } catch (error) {
-                    fastify.log.warn(`Failed to get player images for ${playerName}:`, error)
+                }
+
+                // If no tournament-specific image found, try simple fallback
+                if (!bestImage) {
+                    try {
+                        const playerCheck = await prisma.playerRedirect.findFirst({
+                            where: { 
+                                name: { equals: playerName, mode: 'insensitive' }
+                            },
+                            select: { overviewPage: true }
+                        })
+
+                        if (playerCheck) {
+                            const fallbackImage = await prisma.playerImage.findFirst({
+                                where: {
+                                    PlayerRedirect: {
+                                        overviewPage: playerCheck.overviewPage
+                                    }
+                                },
+                                orderBy: [
+                                    { isProfileImage: 'desc' },
+                                    { createdAt: 'desc' }
+                                ]
+                            })
+
+                            if (fallbackImage) {
+                                bestImage = fallbackImage
+                            }
+                        }
+                    } catch (error) {
+                        fastify.log.warn(`Fallback image lookup failed for ${playerName}:`, error)
+                    }
+                }
+
+                // Cache the result in Redis
+                try {
+                    await redis.setex(cacheKey, REDIS_CACHE_TTL, JSON.stringify(bestImage))
+                    fastify.log.info(`Cache SET for key: ${cacheKey} with TTL ${REDIS_CACHE_TTL}s`)
+                    fastify.log.debug(`Cached player image result in Redis: ${playerName}`)
+                } catch (cacheError) {
+                    fastify.log.warn('Failed to cache player image result:', cacheError)
                 }
             }
 
@@ -701,6 +793,7 @@ export default async function playersRoutes(fastify: FastifyInstance) {
                         return reply
                             .type(contentType)
                             .header('Cache-Control', 'public, max-age=86400') // Cache for 24 hours
+                            .header('ETag', `"${bestImage.fileName}"`) // Add ETag for better caching
                             .send(imageBuffer)
                     } catch (error) {
                         // File not found at this path, try next one
@@ -737,6 +830,118 @@ export default async function playersRoutes(fastify: FastifyInstance) {
                 return reply.status(404).send({ error: 'Player not found' })
             }
             fastify.log.error('Error serving player image:', error)
+            return reply.status(500).send({ error: 'Internal server error' })
+        }
+    })
+
+    // Batch endpoint for multiple player images - optimized for performance
+    fastify.post('/players/images/batch', {
+        schema: {
+            description: 'Get multiple player images in a single optimized request',
+            tags: ['players'],
+            body: {
+                type: 'object',
+                properties: {
+                    players: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                playerName: { type: 'string' },
+                                tournament: { type: 'string', nullable: true }
+                            },
+                            required: ['playerName']
+                        },
+                        maxItems: 50 // Limit batch size
+                    }
+                },
+                required: ['players']
+            },
+            response: {
+                200: {
+                    type: 'object',
+                    properties: {
+                        images: {
+                            type: 'object',
+                            additionalProperties: {
+                                type: 'object',
+                                properties: {
+                                    fileName: { type: 'string', nullable: true },
+                                    url: { type: 'string', nullable: true },
+                                    cached: { type: 'boolean' }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }, async (request, reply) => {
+        try {
+            const { players } = request.body as { 
+                players: Array<{ playerName: string, tournament?: string }> 
+            }
+            
+            customMetric.inc({ operation: 'batch_player_images' })
+            
+            const results: Record<string, { fileName: string | null, url: string | null, cached: boolean }> = {}
+            
+            // Try Redis in batch for all players
+            try {
+                const redisPipeline = redis.pipeline()
+                const playerKeys = players.map(({ playerName, tournament }) => ({
+                    playerName,
+                    tournament,
+                    key: `${playerName}:${tournament || 'default'}`,
+                    cacheKey: `player_image:${playerName}:${tournament || 'default'}`
+                }))
+                
+                // Build Redis pipeline
+                playerKeys.forEach(({ cacheKey }) => redisPipeline.get(cacheKey))
+                const redisResults = await redisPipeline.exec()
+                
+                // Process Redis results
+                for (let i = 0; i < playerKeys.length; i++) {
+                    const { playerName, tournament, key } = playerKeys[i]
+                    const redisResult = redisResults?.[i]?.[1] as string | null
+                    
+                    if (redisResult) {
+                        const image = JSON.parse(redisResult)
+                        results[key] = {
+                            fileName: image?.fileName || null,
+                            url: image?.fileName ? `/api/players/name/${encodeURIComponent(playerName)}/image${tournament ? `?tournament=${encodeURIComponent(tournament)}` : ''}` : null,
+                            cached: true
+                        }
+                    } else {
+                        // Mark as needing database lookup
+                        results[key] = {
+                            fileName: null,
+                            url: null,
+                            cached: false
+                        }
+                    }
+                }
+                
+            } catch (redisError) {
+                fastify.log.warn('Redis batch error:', redisError)
+                // Mark all as needing database lookup
+                players.forEach(({ playerName, tournament }) => {
+                    const key = `${playerName}:${tournament || 'default'}`
+                    results[key] = {
+                        fileName: null,
+                        url: null,
+                        cached: false
+                    }
+                })
+            }
+            
+            // For players still not found, we return the results with cache miss indicators
+            // The frontend can then make individual requests for the uncached ones if needed
+            
+            return { images: results }
+            
+        } catch (error) {
+            fastify.log.error('Error in batch player images:', error)
             return reply.status(500).send({ error: 'Internal server error' })
         }
     })

@@ -11,7 +11,11 @@ import registerRoutes from './routes'
  * @returns Configured Fastify instance
  */
 export async function createApp() {
-    const app = fastify()
+    const app = fastify({
+        logger: {
+            level: 'info'
+        }
+    })
 
     // Register plugins first
     await registerPlugins(app)

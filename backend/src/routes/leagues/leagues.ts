@@ -37,13 +37,16 @@ export default async function leaguesRoutes(fastify: FastifyInstance) {
             const cached = await redis.get(cacheKey)
 
             if (cached) {
+                fastify.log.info(`Cache HIT for key: ${cacheKey}`)
                 return JSON.parse(cached)
             }
 
+            fastify.log.info(`Cache MISS for key: ${cacheKey} - fetching from database`)
             const leagues = await prisma.league.findMany()
 
             // Cache for 1 day (86400 seconds)
             await redis.setex(cacheKey, 86400, JSON.stringify(leagues))
+            fastify.log.info(`Cache SET for key: ${cacheKey} with TTL 86400s`)
 
             return leagues
         }
@@ -67,15 +70,18 @@ export default async function leaguesRoutes(fastify: FastifyInstance) {
             const cached = await redis.get(cacheKey)
 
             if (cached) {
+                fastify.log.info(`Cache HIT for key: ${cacheKey}`)
                 return JSON.parse(cached)
             }
 
+            fastify.log.info(`Cache MISS for key: ${cacheKey} - fetching from database`)
             const leagues = await prisma.league.findMany({
                 where: { isMajor: true },
             })
 
             // Cache for 1 day (86400 seconds)
             await redis.setex(cacheKey, 86400, JSON.stringify(leagues))
+            fastify.log.info(`Cache SET for key: ${cacheKey} with TTL 86400s`)
 
             return leagues
         }
@@ -101,8 +107,11 @@ export default async function leaguesRoutes(fastify: FastifyInstance) {
             customMetric.inc({ operation: 'get_league_by_slug' })
             const cached = await redis.get(cacheKey)
             if (cached) {
+                fastify.log.info(`Cache HIT for key: ${cacheKey}`)
                 return JSON.parse(cached)
             }
+
+            fastify.log.info(`Cache MISS for key: ${cacheKey} - fetching from database`)
 
             const { slug } = request.params
             const league = await prisma.league.findFirst({
@@ -111,6 +120,7 @@ export default async function leaguesRoutes(fastify: FastifyInstance) {
 
             // Cache for 1 week (604800 seconds)
             await redis.setex(cacheKey, 604800, JSON.stringify(league))
+            fastify.log.info(`Cache SET for key: ${cacheKey} with TTL 604800s`)
 
             if (!league) {
                 return reply.status(404).send({ error: 'League not found' })
@@ -140,8 +150,11 @@ export default async function leaguesRoutes(fastify: FastifyInstance) {
                 customMetric.inc({ operation: 'get_league_by_name' })
                 const cached = await redis.get(cacheKey)
                 if (cached) {
+                    fastify.log.info(`Cache HIT for key: ${cacheKey}`)
                     return JSON.parse(cached)
                 }
+
+                fastify.log.info(`Cache MISS for key: ${cacheKey} - fetching from database`)
 
                 const { name } = request.params
                 const league = await prisma.league.findUnique({
@@ -150,6 +163,7 @@ export default async function leaguesRoutes(fastify: FastifyInstance) {
 
                 // Cache for 1 week (604800 seconds)
                 await redis.setex(cacheKey, 604800, JSON.stringify(league))
+                fastify.log.info(`Cache SET for key: ${cacheKey} with TTL 604800s`)
 
                 if (!league) {
                     return reply.status(404).send({ error: 'League not found' })
@@ -179,8 +193,11 @@ export default async function leaguesRoutes(fastify: FastifyInstance) {
             customMetric.inc({ operation: 'get_league_next_matches' })
             const cached = await redis.get(cacheKey)
             if (cached) {
+                fastify.log.info(`Cache HIT for key: ${cacheKey}`)
                 return JSON.parse(cached)
             }
+
+            fastify.log.info(`Cache MISS for key: ${cacheKey} - fetching from database`)
 
             const { id } = request.params
             const leagueId = Number(id)
@@ -235,6 +252,7 @@ export default async function leaguesRoutes(fastify: FastifyInstance) {
 
             // Cache for 1 hour (3600 seconds) since match schedules change frequently
             await redis.setex(cacheKey, 3600, JSON.stringify(nextMatches))
+            fastify.log.info(`Cache SET for key: ${cacheKey} with TTL 3600s`)
 
             return nextMatches
         }
@@ -259,8 +277,11 @@ export default async function leaguesRoutes(fastify: FastifyInstance) {
             customMetric.inc({ operation: 'get_league_by_id' })
             const cached = await redis.get(cacheKey)
             if (cached) {
+                fastify.log.info(`Cache HIT for key: ${cacheKey}`)
                 return JSON.parse(cached)
             }
+
+            fastify.log.info(`Cache MISS for key: ${cacheKey} - fetching from database`)
 
             const { id } = request.params
             const leagueId = Number(id)
@@ -275,6 +296,7 @@ export default async function leaguesRoutes(fastify: FastifyInstance) {
 
             // Cache for 1 week (604800 seconds)
             await redis.setex(cacheKey, 604800, JSON.stringify(league))
+            fastify.log.info(`Cache SET for key: ${cacheKey} with TTL 604800s`)
 
             if (!league) {
                 return reply.status(404).send({ error: 'League not found' })

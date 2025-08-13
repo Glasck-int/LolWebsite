@@ -122,8 +122,11 @@ export default async function seasonsRoutes(fastify: FastifyInstance) {
                 // Check cache first
                 const cached = await redis.get(cacheKey)
                 if (cached) {
+                    fastify.log.info(`Cache HIT for key: ${cacheKey}`)
                     return JSON.parse(cached)
                 }
+
+                fastify.log.info(`Cache MISS for key: ${cacheKey} - fetching from database`)
 
                 // Get league first, then tournaments by league name
                 const league = await prisma.league.findUnique({
@@ -332,6 +335,7 @@ export default async function seasonsRoutes(fastify: FastifyInstance) {
 
                 // Cache for 1 day (86400 seconds) - seasons don't change often
                 await redis.setex(cacheKey, 86400, JSON.stringify(result))
+                fastify.log.info(`Cache SET for key: ${cacheKey} with TTL 86400s`)
                 return result
 
             } catch (error) {
@@ -393,8 +397,11 @@ export default async function seasonsRoutes(fastify: FastifyInstance) {
                 // Check cache first
                 const cached = await redis.get(cacheKey)
                 if (cached) {
+                    fastify.log.info(`Cache HIT for key: ${cacheKey}`)
                     return JSON.parse(cached)
                 }
+
+                fastify.log.info(`Cache MISS for key: ${cacheKey} - fetching from database`)
 
                 // Resolve player to get all redirects/aliases
                 let playerResolution
@@ -629,6 +636,7 @@ export default async function seasonsRoutes(fastify: FastifyInstance) {
 
                 // Cache for 1 hour (3600 seconds) - player data might change more frequently than league data
                 await redis.setex(cacheKey, 3600, JSON.stringify(result))
+                fastify.log.info(`Cache SET for key: ${cacheKey} with TTL 3600s`)
                 return result
 
             } catch (error) {
@@ -690,8 +698,11 @@ export default async function seasonsRoutes(fastify: FastifyInstance) {
                 // Check cache first
                 const cached = await redis.get(cacheKey)
                 if (cached) {
+                    fastify.log.info(`Cache HIT for key: ${cacheKey}`)
                     return JSON.parse(cached)
                 }
+
+                fastify.log.info(`Cache MISS for key: ${cacheKey} - fetching from database`)
 
                 // Resolve team to get all redirects/aliases
                 let teamResolution

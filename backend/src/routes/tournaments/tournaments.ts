@@ -45,8 +45,10 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
                     operation: 'get_tournaments_by_league_name',
                 })
                 const cached = await redis.get(cacheKey)
-                if (cached) {
-                    return JSON.parse(cached)
+                fastify.log.info(`Cache HIT for key: ${cacheKey}`); if (cached) {
+                    return JSON.parse(cached); }
+
+                fastify.log.info(`Cache MISS for key: ${cacheKey} - fetching from database`); if (false) {
                 }
 
                 // console.log(leagueName)
@@ -96,8 +98,10 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
 
                 // Check cache first
                 const cached = await redis.get(cacheKey)
-                if (cached) {
-                    return JSON.parse(cached)
+                fastify.log.info(`Cache HIT for key: ${cacheKey}`); if (cached) {
+                    return JSON.parse(cached); }
+
+                fastify.log.info(`Cache MISS for key: ${cacheKey} - fetching from database`); if (false) {
                 }
 
                 // Get tournament first to get the overviewPage
@@ -187,8 +191,10 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
 
                 // Check cache first
                 const cached = await redis.get(cacheKey)
-                if (cached) {
-                    return JSON.parse(cached)
+                fastify.log.info(`Cache HIT for key: ${cacheKey}`); if (cached) {
+                    return JSON.parse(cached); }
+
+                fastify.log.info(`Cache MISS for key: ${cacheKey} - fetching from database`); if (false) {
                 }
 
                 // Get standings using the decoded overviewPage
@@ -272,8 +278,10 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
 
                 // Check cache first
                 const cached = await redis.get(cacheKey)
-                if (cached) {
-                    return JSON.parse(cached)
+                fastify.log.info(`Cache HIT for key: ${cacheKey}`); if (cached) {
+                    return JSON.parse(cached); }
+
+                fastify.log.info(`Cache MISS for key: ${cacheKey} - fetching from database`); if (false) {
                 }
 
                 // Single query with relations
@@ -346,8 +354,10 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
 
                 // Check cache first
                 const cached = await redis.get(cacheKey)
-                if (cached) {
-                    return JSON.parse(cached)
+                fastify.log.info(`Cache HIT for key: ${cacheKey}`); if (cached) {
+                    return JSON.parse(cached); }
+
+                fastify.log.info(`Cache MISS for key: ${cacheKey} - fetching from database`); if (false) {
                 }
 
                 // Get tournament end date for dynamic cache strategy
@@ -433,8 +443,10 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
 
                 // Check cache first
                 const cached = await redis.get(cacheKey)
-                if (cached) {
-                    return JSON.parse(cached)
+                fastify.log.info(`Cache HIT for key: ${cacheKey}`); if (cached) {
+                    return JSON.parse(cached); }
+
+                fastify.log.info(`Cache MISS for key: ${cacheKey} - fetching from database`); if (false) {
                 }
 
                 // Get tournament end date for cache strategy
@@ -593,8 +605,10 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
 
                 // Check cache first
                 const cached = await redis.get(cacheKey)
-                if (cached) {
-                    return JSON.parse(cached)
+                fastify.log.info(`Cache HIT for key: ${cacheKey}`); if (cached) {
+                    return JSON.parse(cached); }
+
+                fastify.log.info(`Cache MISS for key: ${cacheKey} - fetching from database`); if (false) {
                 }
 
                 // Single query with include to get tournament and player data
@@ -799,8 +813,10 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
 
                 // Check cache first
                 const cached = await redis.get(cacheKey)
-                if (cached) {
-                    return JSON.parse(cached)
+                fastify.log.info(`Cache HIT for key: ${cacheKey}`); if (cached) {
+                    return JSON.parse(cached); }
+
+                fastify.log.info(`Cache MISS for key: ${cacheKey} - fetching from database`); if (false) {
                 }
 
                 const today = new Date()
@@ -961,8 +977,10 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
 
                 // Check cache first
                 const cached = await redis.get(cacheKey)
-                if (cached) {
-                    return JSON.parse(cached)
+                fastify.log.info(`Cache HIT for key: ${cacheKey}`); if (cached) {
+                    return JSON.parse(cached); }
+
+                fastify.log.info(`Cache MISS for key: ${cacheKey} - fetching from database`); if (false) {
                 }
 
                 const today = new Date()
@@ -1095,8 +1113,10 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
 
                 // Check cache first
                 const cached = await redis.get(cacheKey)
-                if (cached) {
-                    return JSON.parse(cached)
+                fastify.log.info(`Cache HIT for key: ${cacheKey}`); if (cached) {
+                    return JSON.parse(cached); }
+
+                fastify.log.info(`Cache MISS for key: ${cacheKey} - fetching from database`); if (false) {
                 }
 
                 // Get all matches for the tournament
@@ -1268,8 +1288,10 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
 
                 // Check cache first
                 const cached = await redis.get(cacheKey)
-                if (cached) {
-                    return JSON.parse(cached)
+                fastify.log.info(`Cache HIT for key: ${cacheKey}`); if (cached) {
+                    return JSON.parse(cached); }
+
+                fastify.log.info(`Cache MISS for key: ${cacheKey} - fetching from database`); if (false) {
                 }
 
                 // Get total count for pagination
@@ -1360,8 +1382,10 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
 
                 // Check cache first
                 const cached = await redis.get(cacheKey)
-                if (cached) {
-                    return JSON.parse(cached)
+                fastify.log.info(`Cache HIT for key: ${cacheKey}`); if (cached) {
+                    return JSON.parse(cached); }
+
+                fastify.log.info(`Cache MISS for key: ${cacheKey} - fetching from database`); if (false) {
                 }
 
                 const tournament = await prisma.tournament.findUnique({
@@ -1409,8 +1433,10 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
 
                 // Check cache first
                 const cached = await redis.get(cacheKey)
-                if (cached) {
-                    return JSON.parse(cached)
+                fastify.log.info(`Cache HIT for key: ${cacheKey}`); if (cached) {
+                    return JSON.parse(cached); }
+
+                fastify.log.info(`Cache MISS for key: ${cacheKey} - fetching from database`); if (false) {
                 }
 
                 const tournament = await prisma.tournament.findUnique({
@@ -1711,8 +1737,10 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
 
                 // Check cache first
                 const cached = await redis.get(cacheKey)
-                if (cached) {
-                    return JSON.parse(cached)
+                fastify.log.info(`Cache HIT for key: ${cacheKey}`); if (cached) {
+                    return JSON.parse(cached); }
+
+                fastify.log.info(`Cache MISS for key: ${cacheKey} - fetching from database`); if (false) {
                 }
 
                 // Get tournament first to get the overviewPage
@@ -1910,8 +1938,10 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
 
                 // Check cache first
                 const cached = await redis.get(cacheKey)
-                if (cached) {
-                    return JSON.parse(cached)
+                fastify.log.info(`Cache HIT for key: ${cacheKey}`); if (cached) {
+                    return JSON.parse(cached); }
+
+                fastify.log.info(`Cache MISS for key: ${cacheKey} - fetching from database`); if (false) {
                 }
 
 

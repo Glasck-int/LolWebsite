@@ -38,8 +38,11 @@ export default async function teamsRoutes(fastify: FastifyInstance) {
             
             const cached = await redis.get(cacheKey)
             if (cached) {
+                fastify.log.info(`Cache HIT for key: ${cacheKey}`)
                 return JSON.parse(cached)
             }
+
+            fastify.log.info(`Cache MISS for key: ${cacheKey} - fetching from database`)
             const team = await prisma.team.findUnique({
                 where: { overviewPage: name },
             })
@@ -89,6 +92,7 @@ export default async function teamsRoutes(fastify: FastifyInstance) {
             }
 
             await redis.setex(cacheKey, 604800, JSON.stringify(cleanedTeam))
+            fastify.log.info(`Cache SET for key: ${cacheKey} with TTL 604800s`)
             return cleanedTeam
         }
     )
@@ -144,8 +148,11 @@ export default async function teamsRoutes(fastify: FastifyInstance) {
 
             const cached = await redis.get(cacheKey)
             if (cached) {
+                fastify.log.info(`Cache HIT for key: ${cacheKey}`)
                 return JSON.parse(cached)
             }
+
+            fastify.log.info(`Cache MISS for key: ${cacheKey} - fetching from database`)
 
             // Find matches where the team participated in the specific tournament
             const recentMatches = await prisma.matchSchedule.findMany({
@@ -220,6 +227,7 @@ export default async function teamsRoutes(fastify: FastifyInstance) {
             // console.log(result.matches[0].team1 + 'yes')
             // Cache for 1 hour (3600 seconds) since match results change frequently
             await redis.setex(cacheKey, 3600, JSON.stringify(result))
+            fastify.log.info(`Cache SET for key: ${cacheKey} with TTL 3600s`)
             return result
         }
     )
@@ -276,8 +284,11 @@ export default async function teamsRoutes(fastify: FastifyInstance) {
 
             const cached = await redis.get(cacheKey)
             if (cached) {
+                fastify.log.info(`Cache HIT for key: ${cacheKey}`)
                 return JSON.parse(cached)
             }
+
+            fastify.log.info(`Cache MISS for key: ${cacheKey} - fetching from database`)
 
             // Find games where the team participated in the specific tournament
             const recentGames = await prisma.matchScheduleGame.findMany({
@@ -364,6 +375,7 @@ export default async function teamsRoutes(fastify: FastifyInstance) {
 
             // Cache for 1 hour (3600 seconds) since game results change frequently
             await redis.setex(cacheKey, 3600, JSON.stringify(result))
+            fastify.log.info(`Cache SET for key: ${cacheKey} with TTL 3600s`)
             return result
         }
     )
@@ -391,8 +403,11 @@ export default async function teamsRoutes(fastify: FastifyInstance) {
                 // Check cache first
                 const cached = await redis.get(cacheKey)
                 if (cached) {
+                    fastify.log.info(`Cache HIT for key: ${cacheKey}`)
                     return JSON.parse(cached)
                 }
+
+                fastify.log.info(`Cache MISS for key: ${cacheKey} - fetching from database`)
 
                 // Single query with relations
                 const tournamentWithGames = await prisma.tournament.findUnique({
@@ -432,6 +447,7 @@ export default async function teamsRoutes(fastify: FastifyInstance) {
 
                 // Cache for 1 hour (3600 seconds)
                 await redis.setex(cacheKey, 3600, JSON.stringify(games))
+                fastify.log.info(`Cache SET for key: ${cacheKey} with TTL 3600s`)
                 return games
             } catch (error) {
                 console.error('Error in tournament games route:', error)
