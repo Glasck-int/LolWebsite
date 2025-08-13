@@ -4,7 +4,8 @@ import React, { useEffect, useState, useCallback } from 'react'
 import { useTableEntityData } from '@/hooks/useTableEntityData'
 import { useTableEntityStore, SeasonData } from '@/store/tableEntityStore'
 import { useSimpleTabSync } from '@/hooks/useSimpleTabSync'
-import { useTableUrlSync } from '@/hooks/useTableUrlSync'
+import { useSimpleEntityInit } from '@/hooks/useSimpleEntityInit'
+import { useUrlSync } from '@/hooks/useUrlSync'
 import { useDynamicTournamentMetadata } from '@/hooks/useDynamicTournamentMetadata'
 import {
     TableEntityLayout,
@@ -57,12 +58,18 @@ interface LeagueTableEntityClientProps {
         team2Image?: string | null
     }>
     imageData?: string
+    initialSeason?: string
+    initialSplit?: string
+    initialTournament?: string
 }
 
 const LeagueTableEntityContent = ({
     league,
     imageData,
     seasons,
+    initialSeason,
+    initialSplit,
+    initialTournament,
 }: Omit<LeagueTableEntityClientProps, 'leagueId'> & {
     seasons: SeasonData[]
 }) => {
@@ -73,8 +80,11 @@ const LeagueTableEntityContent = ({
     // Initialize simple tab URL synchronization
     useSimpleTabSync()
     
-    // Initialize season/split/tournament URL synchronization
-    useTableUrlSync(seasons)
+    // Initialize season/split/tournament from URL parameters (no navigation interference)
+    useSimpleEntityInit(seasons, initialSeason, initialSplit, initialTournament)
+    
+    // Sync URL when selections change (after initialization)
+    useUrlSync()
     
     // State for managing which statistics to show
     const [activeStatsView, setActiveStatsView] = useState<string | null>('Players')
@@ -240,6 +250,9 @@ export const LeagueTableEntityClient = ({
     leagueId,
     league,
     imageData,
+    initialSeason,
+    initialSplit,
+    initialTournament,
 }: LeagueTableEntityClientProps) => {
     const { data: seasons, loading, error } = useTableEntityData(leagueId)
     
@@ -279,6 +292,9 @@ export const LeagueTableEntityClient = ({
                     league={league}
                     imageData={imageData}
                     seasons={seasons}
+                    initialSeason={initialSeason}
+                    initialSplit={initialSplit}
+                    initialTournament={initialTournament}
                 />
             </TableEntityLayout>
         </div>

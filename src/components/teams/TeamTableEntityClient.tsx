@@ -6,7 +6,8 @@ import Image from 'next/image'
 import { useTeamTableEntityData } from '@/hooks/useTeamTableEntityData'
 import { useTableEntityStore, SeasonData } from '@/store/tableEntityStore'
 import { useSimpleTabSync } from '@/hooks/useSimpleTabSync'
-import { useTableUrlSync } from '@/hooks/useTableUrlSync'
+import { useSimpleEntityInit } from '@/hooks/useSimpleEntityInit'
+import { useUrlSync } from '@/hooks/useUrlSync'
 import { useDynamicTournamentMetadata } from '@/hooks/useDynamicTournamentMetadata'
 import {
     TableEntityLayout,
@@ -37,6 +38,9 @@ interface TeamTableEntityClientProps {
     teamData?: TeamWithLatestLeague
     teamImage?: string
     leagueData?: LeagueType
+    initialSeason?: string
+    initialSplit?: string
+    initialTournament?: string
 }
 
 const TeamTableEntityContent = ({
@@ -45,12 +49,18 @@ const TeamTableEntityContent = ({
     teamData,
     teamImage,
     leagueData,
+    initialSeason,
+    initialSplit,
+    initialTournament,
 }: {
     teamName: string
     seasons: SeasonData[]
     teamData?: TeamWithLatestLeague
     teamImage?: string
     leagueData?: LeagueType
+    initialSeason?: string
+    initialSplit?: string
+    initialTournament?: string
 }) => {
     const { activeId } = useTableEntityStore()
     const selectedTournamentId = activeId.length > 0 ? activeId[0] : null
@@ -59,8 +69,11 @@ const TeamTableEntityContent = ({
     // Initialize simple tab URL synchronization
     useSimpleTabSync()
     
-    // Initialize season/split/tournament URL synchronization
-    useTableUrlSync(seasons)
+    // Initialize season/split/tournament from URL parameters (no navigation interference)
+    useSimpleEntityInit(seasons, initialSeason, initialSplit, initialTournament)
+    
+    // Sync URL when selections change (after initialization)
+    useUrlSync()
     
     // State for managing which statistics to show
     const [activeStatsView, setActiveStatsView] = useState<string | null>('Players')
@@ -412,6 +425,9 @@ export const TeamTableEntityClient = ({
     teamData,
     teamImage,
     leagueData,
+    initialSeason,
+    initialSplit,
+    initialTournament,
 }: TeamTableEntityClientProps) => {
     const { data: seasons, loading, error } = useTeamTableEntityData(teamName)
     
@@ -457,6 +473,9 @@ export const TeamTableEntityClient = ({
                     teamData={teamData}
                     teamImage={teamImage}
                     leagueData={leagueData}
+                    initialSeason={initialSeason}
+                    initialSplit={initialSplit}
+                    initialTournament={initialTournament}
                 />
             </TableEntityLayout>
         </div>

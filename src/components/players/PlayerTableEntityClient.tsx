@@ -5,7 +5,8 @@ import Link from 'next/link'
 import { usePlayerTableEntityData } from '@/hooks/usePlayerTableEntityData'
 import { useTableEntityStore, SeasonData } from '@/store/tableEntityStore'
 import { useSimpleTabSync } from '@/hooks/useSimpleTabSync'
-import { useTableUrlSync } from '@/hooks/useTableUrlSync'
+import { useSimpleEntityInit } from '@/hooks/useSimpleEntityInit'
+import { useUrlSync } from '@/hooks/useUrlSync'
 import { useDynamicTournamentMetadata } from '@/hooks/useDynamicTournamentMetadata'
 import {
     TableEntityLayout,
@@ -39,6 +40,9 @@ interface PlayerTableEntityClientProps {
     playerName: string
     playerData?: PlayerWithRedirects
     playerImage?: string
+    initialSeason?: string
+    initialSplit?: string
+    initialTournament?: string
 }
 
 const PlayerTableEntityContent = ({
@@ -46,11 +50,17 @@ const PlayerTableEntityContent = ({
     seasons,
     playerData,
     playerImage,
+    initialSeason,
+    initialSplit,
+    initialTournament,
 }: {
     playerName: string
     seasons: SeasonData[]
     playerData?: PlayerWithRedirects
     playerImage?: string
+    initialSeason?: string
+    initialSplit?: string
+    initialTournament?: string
 }) => {
     const { activeId } = useTableEntityStore()
     const selectedTournamentId = activeId.length > 0 ? activeId[0] : null
@@ -59,8 +69,11 @@ const PlayerTableEntityContent = ({
     // Initialize simple tab URL synchronization
     useSimpleTabSync()
     
-    // Initialize season/split/tournament URL synchronization
-    useTableUrlSync(seasons)
+    // Initialize season/split/tournament from URL parameters (no navigation interference)
+    useSimpleEntityInit(seasons, initialSeason, initialSplit, initialTournament)
+    
+    // Sync URL when selections change (after initialization)
+    useUrlSync()
     
     // State for managing which statistics to show
     const [activeStatsView, setActiveStatsView] = useState<string | null>('Players')
@@ -249,7 +262,7 @@ const PlayerTableEntityContent = ({
                                         </h1>
                                         {currentTeamData?.name ? (
                                             <Link 
-                                                href={`/teams/${currentTeamData.name}`}
+                                                href={`/teams/${encodeURIComponent(currentTeamData.name.toLowerCase().replace(/\s+/g, '-'))}`}
                                                 className="flex items-center gap-3 hover:opacity-80 transition-opacity"
                                             >
                                                 {currentTeamImage ? (
@@ -574,6 +587,9 @@ export const PlayerTableEntityClient = ({
     playerName,
     playerData,
     playerImage,
+    initialSeason,
+    initialSplit,
+    initialTournament,
 }: PlayerTableEntityClientProps) => {
     const { data: seasons, loading, error } = usePlayerTableEntityData(playerName)
     
@@ -614,6 +630,9 @@ export const PlayerTableEntityClient = ({
                     seasons={seasons}
                     playerData={playerData}
                     playerImage={playerImage}
+                    initialSeason={initialSeason}
+                    initialSplit={initialSplit}
+                    initialTournament={initialTournament}
                 />
             </TableEntityLayout>
         </div>
