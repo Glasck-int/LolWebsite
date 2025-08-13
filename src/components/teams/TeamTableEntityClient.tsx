@@ -8,6 +8,7 @@ import { useTableEntityStore, SeasonData } from '@/store/tableEntityStore'
 import { useSimpleTabSync } from '@/hooks/useSimpleTabSync'
 import { useSimpleEntityInit } from '@/hooks/useSimpleEntityInit'
 import { useUrlSync } from '@/hooks/useUrlSync'
+import { useUrlStateValidator } from '@/hooks/useUrlStateValidator'
 import { useDynamicTournamentMetadata } from '@/hooks/useDynamicTournamentMetadata'
 import {
     TableEntityLayout,
@@ -70,10 +71,13 @@ const TeamTableEntityContent = ({
     useSimpleTabSync()
     
     // Initialize season/split/tournament from URL parameters (no navigation interference)
-    useSimpleEntityInit(seasons, initialSeason, initialSplit, initialTournament)
+    const { isInitializing } = useSimpleEntityInit(seasons, initialSeason, initialSplit, initialTournament)
     
     // Sync URL when selections change (after initialization)
-    useUrlSync()
+    useUrlSync(isInitializing)
+    
+    // Validate and correct URL state inconsistencies
+    useUrlStateValidator()
     
     // State for managing which statistics to show
     const [activeStatsView, setActiveStatsView] = useState<string | null>('Players')

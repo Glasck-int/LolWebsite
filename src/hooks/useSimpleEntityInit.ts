@@ -15,11 +15,13 @@ export const useSimpleEntityInit = (
 ) => {
     const store = useTableEntityStore()
     const hasInitializedRef = useRef(false)
+    const isInitializingRef = useRef(false)
     
     // Only initialize once from URL parameters, don't interfere with navigation
     useEffect(() => {
-        if (!hasInitializedRef.current && seasons.length > 0) {
+        if (!hasInitializedRef.current && seasons.length > 0 && !isInitializingRef.current) {
             hasInitializedRef.current = true
+            isInitializingRef.current = true
             
             // Handle "all seasons" case
             if (initialSeason === 'all') {
@@ -69,6 +71,7 @@ export const useSimpleEntityInit = (
                         split.tournaments?.map(t => t.id) || []
                     )
                     store.selectAllSplits(allId)
+                    isInitializingRef.current = false // Mark initialization complete
                 } else {
                     let targetSplit = inferredSplit
 
@@ -99,11 +102,21 @@ export const useSimpleEntityInit = (
                             if (tournament) {
                                 store.selectTournament(tournament)
                             }
+                            isInitializingRef.current = false // Mark initialization complete
                         }, 50)
+                    } else {
+                        isInitializingRef.current = false // Mark initialization complete
                     }
                 }
+            } else {
+                isInitializingRef.current = false // Mark initialization complete
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [seasons, initialSeason, initialSplit, initialTournament])
+    
+    // Return initialization state for other hooks to use
+    return {
+        isInitializing: isInitializingRef.current
+    }
 }

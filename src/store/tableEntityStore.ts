@@ -327,36 +327,66 @@ export const useTableEntityStore = create<TableEntityState>()(
                     })
                 },
 
-                selectSeason: (season, seasons) => {
+                selectSeason: (season, seasons, preserveSelection = true) => {
+                    const state = get()
                     const splits = getSplits(season, seasons)
                     const latestSplit =
                         splits.length > 0 ? splits[splits.length - 1] : ''
-                    const tournaments = getTournaments(
-                        season,
-                        latestSplit,
-                        seasons,
-                        false
-                    )
-                    const latestTournament =
-                        tournaments.length > 0
-                            ? tournaments[tournaments.length - 1].tournament
-                            : ''
-                    const tournamentId =
-                        tournaments.length > 0
-                            ? [tournaments[tournaments.length - 1].id]
-                            : []
+                    
+                    // Try to preserve current tournament selection if it exists in the new season
+                    let targetSplit = latestSplit
+                    let targetTournament = ''
+                    let targetTournamentId: number[] = []
+                    
+                    if (preserveSelection && state.activeTournament && state.activeSplit) {
+                        // Look for the same tournament in the new season
+                        const foundSplit = splits.find(split => {
+                            const tournaments = getTournaments(season, split, seasons, false)
+                            return tournaments.some(t => t.tournament === state.activeTournament)
+                        })
+                        
+                        if (foundSplit) {
+                            // Found the same tournament in the new season
+                            targetSplit = foundSplit
+                            const tournaments = getTournaments(season, foundSplit, seasons, false)
+                            const tournament = tournaments.find(t => t.tournament === state.activeTournament)
+                            if (tournament) {
+                                targetTournament = tournament.tournament
+                                targetTournamentId = [tournament.id]
+                            }
+                        }
+                    }
+                    
+                    // Fallback to latest tournament if preservation failed
+                    if (!targetTournament) {
+                        const tournaments = getTournaments(
+                            season,
+                            latestSplit,
+                            seasons,
+                            false
+                        )
+                        targetTournament =
+                            tournaments.length > 0
+                                ? tournaments[tournaments.length - 1].tournament
+                                : ''
+                        targetTournamentId =
+                            tournaments.length > 0
+                                ? [tournaments[tournaments.length - 1].id]
+                                : []
+                        targetSplit = latestSplit
+                    }
 
                     set({
                         activeHeaderSeason: season,
-                        activeSplit: latestSplit,
+                        activeSplit: targetSplit,
                         activeAllSeason: false,
                         activeAllSplit: false,
-                        activeTournament: latestTournament,
-                        activeId: tournamentId,
+                        activeTournament: targetTournament,
+                        activeId: targetTournamentId,
                     })
                 },
 
-                selectSplit: (split, seasons, isAllActive) => {
+                selectSplit: (split, seasons, isAllActive, preserveSelection = true) => {
                     const state = get()
                     const {
                         activeHeaderSeason,
@@ -364,6 +394,28 @@ export const useTableEntityStore = create<TableEntityState>()(
                         activeAllSplit,
                         activeTournament,
                     } = state
+
+                    // Try to preserve current tournament if it exists in the new split
+                    let targetTournament = activeTournament
+                    let targetTournamentId = state.activeId
+                    
+                    if (preserveSelection && activeTournament) {
+                        const tournaments = getTournaments(activeHeaderSeason, split, seasons, false)
+                        const foundTournament = tournaments.find(t => t.tournament === activeTournament)
+                        
+                        if (foundTournament) {
+                            // Tournament exists in new split, preserve it
+                            targetTournament = foundTournament.tournament
+                            targetTournamentId = [foundTournament.id]
+                        } else {
+                            // Tournament doesn't exist, fall back to latest in new split
+                            const latestTournament = tournaments[tournaments.length - 1]
+                            if (latestTournament) {
+                                targetTournament = latestTournament.tournament
+                                targetTournamentId = [latestTournament.id]
+                            }
+                        }
+                    }
 
                     if (
                         (activeAllSeason || activeAllSplit) &&
@@ -395,27 +447,30 @@ export const useTableEntityStore = create<TableEntityState>()(
 
                     set({
                         activeSplit: split,
+                        activeTournament: targetTournament,
+                        activeId: targetTournamentId,
                         activeAllSplit: false,
                         activeAllSeason: false,
                     })
                 },
 
                 selectTournament: (tournament) => {
+                    // Use a single set call to prevent multiple store updates
                     if (tournament.id === -1 && tournament.allId) {
                         set({
                             activeTournament: tournament.tournament,
                             activeId: tournament.allId,
+                            activeAllSeason: false,
+                            activeAllSplit: false,
                         })
                     } else {
                         set({
                             activeTournament: tournament.tournament,
                             activeId: [tournament.id],
+                            activeAllSeason: false,
+                            activeAllSplit: false,
                         })
                     }
-                    set({
-                        activeAllSeason: false,
-                        activeAllSplit: false,
-                    })
                 },
 
                 selectAllSeasons: (allId) => {

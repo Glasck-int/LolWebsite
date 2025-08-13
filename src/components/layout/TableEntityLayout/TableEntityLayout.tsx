@@ -10,6 +10,7 @@ import {
 } from '@/components/utils/select'
 import { SubTitle } from '@/components/ui/text/SubTitle'
 import { useTableEntityStore, SeasonData, Tournament } from '@/store/tableEntityStore'
+import { useForceUrlSync } from '@/hooks/useForceUrlSync'
 
 export interface MainProps {
     children: React.ReactNode
@@ -325,13 +326,19 @@ const TableEntityRawSelect = ({
         selectSeason,
         selectAllSeasons,
     } = useTableEntityStore()
+    
+    const { forceSync } = useForceUrlSync()
 
     const onClickAction = (value: string) => {
-        selectSeason(value, seasons, isAllActive)
+        selectSeason(value, seasons, true) // Enable preservation by default
+        // Force immediate URL sync for season changes
+        setTimeout(() => forceSync(), 100)
     }
 
     const onClickAll = () => {
         selectAllSeasons(allId)
+        // Force immediate URL sync for all seasons selection
+        setTimeout(() => forceSync(), 100)
     }
 
     return (
