@@ -34,7 +34,7 @@ import { useTeamImage } from '@/hooks/useTeamImage'
 import { getPlayerImage, getPlayerTournamentImage } from '@/lib/api/player'
 import { getTournamentPlayerStats } from '@/lib/api/players'
 import { getTeamByName } from '@/lib/api/teams'
-import { getTeamImage } from '@/lib/api/image'
+import { getTeamImage, getPlayerImageFromBackend } from '@/lib/api/image'
 import Image from 'next/image'
 
 interface PlayerTableEntityClientProps {
@@ -160,22 +160,32 @@ const PlayerTableEntityContent = ({
                 const response = await getTournamentPlayerStats(selectedTournamentId.toString())
                 
                 if (response.data && response.data.tournament) {
-                    // Use the new tournament-specific image API
+                    // Use the new backend endpoint for serving player images
                     console.log(`🔍 [PLAYER COMPONENT] Starting intelligent image search for ${playerName} in ${response.data.tournament}`)
-                    const imageResponse = await getPlayerTournamentImage(playerName, response.data.tournament)
+                    const imageResponse = await getPlayerImageFromBackend(playerName, {
+                        tournament: response.data.tournament,
+                        fallback: 'none'
+                    })
+                    
                     if (imageResponse.data) {
                         setDynamicPlayerImage(imageResponse.data)
-                        console.log(`🎯 [PLAYER COMPONENT] Successfully applied intelligent image for ${playerName}`)
+                        console.log(`🎯 [PLAYER COMPONENT] Successfully applied backend image for ${playerName}`)
                     } else {
-                        // Fallback to the old method if new API doesn't find anything
-                        console.log(`⚠️ [PLAYER COMPONENT] Intelligent search failed, trying legacy fallback for ${playerName}...`)
-                        const fallbackResponse = await getPlayerImage(playerName, response.data.tournament)
-                        if (fallbackResponse.data) {
-                            setDynamicPlayerImage(fallbackResponse.data)
-                            console.log(`✅ [PLAYER COMPONENT] Applied legacy fallback image for ${playerName}`)
+                        // Fallback to the old method if backend doesn't find anything
+                        console.log(`⚠️ [PLAYER COMPONENT] Backend search failed, trying legacy fallback for ${playerName}...`)
+                        const tournamentImageResponse = await getPlayerTournamentImage(playerName, response.data.tournament)
+                        if (tournamentImageResponse.data) {
+                            setDynamicPlayerImage(tournamentImageResponse.data)
+                            console.log(`✅ [PLAYER COMPONENT] Applied legacy tournament image for ${playerName}`)
                         } else {
-                            setDynamicPlayerImage(null)
-                            console.log(`❌ [PLAYER COMPONENT] No image found anywhere for ${playerName} in ${response.data.tournament}`)
+                            const fallbackResponse = await getPlayerImage(playerName, response.data.tournament)
+                            if (fallbackResponse.data) {
+                                setDynamicPlayerImage(fallbackResponse.data)
+                                console.log(`✅ [PLAYER COMPONENT] Applied legacy fallback image for ${playerName}`)
+                            } else {
+                                setDynamicPlayerImage(null)
+                                console.log(`❌ [PLAYER COMPONENT] No image found anywhere for ${playerName} in ${response.data.tournament}`)
+                            }
                         }
                     }
                 }
@@ -266,7 +276,7 @@ const PlayerTableEntityContent = ({
                                         </h1>
                                         {currentTeamData?.name ? (
                                             <Link 
-                                                href={`/teams/${encodeURIComponent(currentTeamData.name.toLowerCase().replace(/\s+/g, '-'))}`}
+                                                href={`/teams/${encodeURIComponent(currentTeamData.name)}`}
                                                 className="flex items-center gap-3 hover:opacity-80 transition-opacity"
                                             >
                                                 {currentTeamImage ? (

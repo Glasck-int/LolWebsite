@@ -8,6 +8,7 @@ import {
     PlayerRedirectListResponse,
     PlayerImageListResponse
 } from '../../schemas/players'
+import { PlayerNameSeasonsParamSchema } from '../../schemas/params'
 import { resolvePlayer, PlayerNotFoundError } from '../../utils/playerUtils'
 
 export default async function playersRoutes(fastify: FastifyInstance) {
@@ -593,6 +594,149 @@ export default async function playersRoutes(fastify: FastifyInstance) {
             return images
         } catch (error) {
             fastify.log.error(error)
+            return reply.status(500).send({ error: 'Internal server error' })
+        }
+    })
+
+    // Serve player image file directly
+    fastify.get('/players/name/:playerName/image', {
+        schema: {
+            description: 'Serve player image file directly with fallback handling',
+            tags: ['players'],
+            params: PlayerNameSeasonsParamSchema,
+            querystring: {
+                type: 'object',
+                properties: {
+                    tournament: {
+                        type: 'string',
+                        description: 'Tournament context for better image selection'
+                    },
+                    fallback: {
+                        type: 'string',
+                        enum: ['placeholder', 'none'],
+                        description: 'Fallback behavior when no image is found'
+                    }
+                }
+            }
+        },
+    }, async (request, reply) => {
+        try {
+            const { playerName } = request.params as { playerName: string }
+            const { tournament, fallback } = request.query as { tournament?: string, fallback?: string }
+            customMetric.inc({ operation: 'serve_player_image' })
+
+            let bestImage = null
+
+            // If tournament is provided, try to get tournament-specific image
+            if (tournament) {
+                try {
+                    const tournamentImageResponse = await fastify.inject({
+                        method: 'GET',
+                        url: `/api/players/name/${encodeURIComponent(playerName)}/tournament/${encodeURIComponent(tournament)}/image`
+                    })
+                    
+                    if (tournamentImageResponse.statusCode === 200) {
+                        bestImage = JSON.parse(tournamentImageResponse.payload)
+                    }
+                } catch (error) {
+                    fastify.log.warn(`Failed to get tournament-specific image for ${playerName} in ${tournament}:`, error)
+                }
+            }
+
+            // If no tournament-specific image found, try to get any image for the player
+            if (!bestImage) {
+                try {
+                    const resolution = await resolvePlayer(playerName, {
+                        includeImages: true
+                    })
+
+                    if (resolution.images && resolution.images.length > 0) {
+                        // Sort images by priority (profile images first, then by recency)
+                        const sortedImages = resolution.images.sort((a, b) => {
+                            let scoreA = 0, scoreB = 0
+                            
+                            // Profile images get priority
+                            if (a.isProfileImage) scoreA += 100
+                            if (b.isProfileImage) scoreB += 100
+                            
+                            if (a.imageType === 'profile' || a.imageType === 'headshot') scoreA += 50
+                            if (b.imageType === 'profile' || b.imageType === 'headshot') scoreB += 50
+                            
+                            // Recent images get priority
+                            if (a.createdAt) scoreA += Math.max(0, 30 - Math.floor((Date.now() - a.createdAt.getTime()) / (1000 * 60 * 60 * 24)))
+                            if (b.createdAt) scoreB += Math.max(0, 30 - Math.floor((Date.now() - b.createdAt.getTime()) / (1000 * 60 * 60 * 24)))
+                            
+                            return scoreB - scoreA
+                        })
+                        
+                        bestImage = sortedImages[0]
+                    }
+                } catch (error) {
+                    fastify.log.warn(`Failed to get player images for ${playerName}:`, error)
+                }
+            }
+
+            // If we have an image, try to serve it
+            if (bestImage && bestImage.fileName) {
+                const path = require('path')
+                const fs = require('fs').promises
+                
+                // Try different possible image paths
+                const possiblePaths = [
+                    path.join(process.cwd(), 'static', 'playerWebp', bestImage.fileName),
+                    path.join(process.cwd(), 'public', 'static', 'playerWebp', bestImage.fileName),
+                    path.join(process.cwd(), '..', 'public', 'static', 'playerWebp', bestImage.fileName)
+                ]
+
+                for (const imagePath of possiblePaths) {
+                    try {
+                        await fs.access(imagePath)
+                        const imageBuffer = await fs.readFile(imagePath)
+                        const ext = path.extname(bestImage.fileName).toLowerCase()
+                        
+                        let contentType = 'image/webp'
+                        if (ext === '.png') contentType = 'image/png'
+                        else if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg'
+                        
+                        return reply
+                            .type(contentType)
+                            .header('Cache-Control', 'public, max-age=86400') // Cache for 24 hours
+                            .send(imageBuffer)
+                    } catch (error) {
+                        // File not found at this path, try next one
+                    }
+                }
+                
+                fastify.log.warn(`Player image file not found: ${bestImage.fileName}`)
+            }
+
+            // No image found or file doesn't exist - handle fallback
+            if (fallback === 'placeholder') {
+                // Return a simple SVG placeholder
+                const placeholder = `
+                    <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="100" height="100" fill="#f0f0f0"/>
+                        <text x="50" y="50" font-family="Arial" font-size="12" text-anchor="middle" fill="#666">
+                            No Image
+                        </text>
+                    </svg>
+                `
+                return reply
+                    .type('image/svg+xml')
+                    .header('Cache-Control', 'public, max-age=3600')
+                    .send(placeholder)
+            } else if (fallback === 'none') {
+                return reply.status(404).send({ error: 'Player image not found' })
+            }
+
+            // Default: return 404
+            return reply.status(404).send({ error: 'Player image not found' })
+
+        } catch (error) {
+            if (error instanceof PlayerNotFoundError) {
+                return reply.status(404).send({ error: 'Player not found' })
+            }
+            fastify.log.error('Error serving player image:', error)
             return reply.status(500).send({ error: 'Internal server error' })
         }
     })

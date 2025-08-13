@@ -6,7 +6,7 @@ import useSWR from 'swr'
 import { SortableTable, TableColumn } from '@/components/ui/table/SortableTable'
 import { PlayerStats, getTournamentPlayerStats, TournamentPlayerStatsResponse } from '@/lib/api/players'
 import { getPlayerImage, getPlayerTournamentImage } from '@/lib/api/player'
-import { getRoleImage } from '@/lib/api/image'
+import { getRoleImage, getPlayerImageFromBackend } from '@/lib/api/image'
 import { CleanName } from '@/lib/utils/cleanName'
 import { MatchSkeleton } from '@/components/ui/skeleton/MatchSkeleton'
 import Link from 'next/link'
@@ -112,13 +112,21 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
                 const cacheKey = `${player.player}-${data.tournament}-${player.role || 'unknown'}`
                 
                 try {
-                    // Get player image using intelligent tournament-specific selection
-                    let playerImageResponse = await getPlayerTournamentImage(player.player, data.tournament)
+                    // Try the new backend endpoint first
+                    let playerImageResponse = await getPlayerImageFromBackend(player.player, {
+                        tournament: data.tournament,
+                        fallback: 'none'
+                    })
                     
-                    // Fallback to legacy method if intelligent search fails
+                    // Fallback to legacy methods if backend fails
                     if (!playerImageResponse.data) {
-                        console.log(`⚠️ [PLAYER STATS] Intelligent search failed for ${player.player}, trying legacy fallback...`)
-                        playerImageResponse = await getPlayerImage(player.player, data.tournament)
+                        console.log(`⚠️ [PLAYER STATS] Backend search failed for ${player.player}, trying legacy tournament method...`)
+                        playerImageResponse = await getPlayerTournamentImage(player.player, data.tournament)
+                        
+                        if (!playerImageResponse.data) {
+                            console.log(`⚠️ [PLAYER STATS] Tournament search failed for ${player.player}, trying legacy fallback...`)
+                            playerImageResponse = await getPlayerImage(player.player, data.tournament)
+                        }
                     }
                     
                     // Get team image using team name (we'll need to derive this from player data)

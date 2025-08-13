@@ -225,4 +225,50 @@ async function getPlayerImageByNameServerSafe(
     return getPlayerImageByName(playerName)
 }
 
-export { getLeagueImage, getTeamImage, getPublicPlayerImage, getTeamImageByName, getPlayerImageByName, getPlayerImageByNameServerSafe, getRoleImage }
+/**
+ * Get player image using backend endpoint (recommended)
+ * 
+ * This function uses the backend API to serve player images directly,
+ * avoiding 404 errors and providing better fallback handling.
+ */
+async function getPlayerImageFromBackend(
+    playerName: string,
+    options?: {
+        tournament?: string
+        fallback?: 'placeholder' | 'none'
+    }
+): Promise<ApiResponse<string | null>> {
+    if (!playerName || playerName.trim() === '') {
+        return { data: null }
+    }
+    
+    const STATIC_BASE_URL = getStaticBaseUrl()
+    const params = new URLSearchParams()
+    
+    if (options?.tournament) {
+        params.append('tournament', options.tournament)
+    }
+    if (options?.fallback) {
+        params.append('fallback', options.fallback)
+    }
+    
+    const queryString = params.toString()
+    const imageUrl = `${STATIC_BASE_URL}/api/players/name/${encodeURIComponent(playerName)}/image${queryString ? '?' + queryString : ''}`
+    
+    // Skip verification on server-side to avoid CORS issues
+    if (typeof window === 'undefined') {
+        return { data: imageUrl }
+    }
+    
+    try {
+        const response = await fetch(imageUrl, { method: 'HEAD' })
+        if (response.ok) {
+            return { data: imageUrl }
+        }
+        return { data: null }
+    } catch {
+        return { data: null }
+    }
+}
+
+export { getLeagueImage, getTeamImage, getPublicPlayerImage, getTeamImageByName, getPlayerImageByName, getPlayerImageByNameServerSafe, getRoleImage, getPlayerImageFromBackend }
