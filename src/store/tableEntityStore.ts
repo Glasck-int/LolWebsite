@@ -46,6 +46,9 @@ interface TableEntityState {
     activeAllSplit: boolean
     activeHeaderSeason: string
 
+    // Track if user has manually selected a tournament to prevent auto-overrides
+    userHasSelectedTournament: boolean
+
     // Tab configuration set by components
     tabConfigs: TabConfig[]
 
@@ -139,6 +142,9 @@ export const useTableEntityStore = create<TableEntityState>()(
                 activeAllSeason: false,
                 activeAllSplit: false,
                 activeHeaderSeason: '',
+
+                // Track user selections
+                userHasSelectedTournament: false,
 
                 // Tab configuration - empty by default, set by components
                 tabConfigs: [],
@@ -337,6 +343,7 @@ export const useTableEntityStore = create<TableEntityState>()(
                     let targetSplit = latestSplit
                     let targetTournament = ''
                     let targetTournamentId: number[] = []
+                    let shouldPreserveUserSelection = state.userHasSelectedTournament
                     
                     if (preserveSelection && state.activeTournament && state.activeSplit) {
                         // Look for the same tournament in the new season
@@ -354,6 +361,9 @@ export const useTableEntityStore = create<TableEntityState>()(
                                 targetTournament = tournament.tournament
                                 targetTournamentId = [tournament.id]
                             }
+                        } else {
+                            // Tournament not found in new season, reset user selection flag
+                            shouldPreserveUserSelection = false
                         }
                     }
                     
@@ -374,6 +384,7 @@ export const useTableEntityStore = create<TableEntityState>()(
                                 ? [tournaments[tournaments.length - 1].id]
                                 : []
                         targetSplit = latestSplit
+                        shouldPreserveUserSelection = false
                     }
 
                     set({
@@ -383,6 +394,7 @@ export const useTableEntityStore = create<TableEntityState>()(
                         activeAllSplit: false,
                         activeTournament: targetTournament,
                         activeId: targetTournamentId,
+                        userHasSelectedTournament: shouldPreserveUserSelection,
                     })
                 },
 
@@ -398,6 +410,7 @@ export const useTableEntityStore = create<TableEntityState>()(
                     // Try to preserve current tournament if it exists in the new split
                     let targetTournament = activeTournament
                     let targetTournamentId = state.activeId
+                    let shouldPreserveUserSelection = state.userHasSelectedTournament
                     
                     if (preserveSelection && activeTournament) {
                         const tournaments = getTournaments(activeHeaderSeason, split, seasons, false)
@@ -408,7 +421,9 @@ export const useTableEntityStore = create<TableEntityState>()(
                             targetTournament = foundTournament.tournament
                             targetTournamentId = [foundTournament.id]
                         } else {
-                            // Tournament doesn't exist, fall back to latest in new split
+                            // Tournament doesn't exist, reset user selection flag
+                            shouldPreserveUserSelection = false
+                            // Fall back to latest in new split
                             const latestTournament = tournaments[tournaments.length - 1]
                             if (latestTournament) {
                                 targetTournament = latestTournament.tournament
@@ -451,10 +466,12 @@ export const useTableEntityStore = create<TableEntityState>()(
                         activeId: targetTournamentId,
                         activeAllSplit: false,
                         activeAllSeason: false,
+                        userHasSelectedTournament: shouldPreserveUserSelection,
                     })
                 },
 
                 selectTournament: (tournament) => {
+                    // Mark that user has manually selected a tournament
                     // Use a single set call to prevent multiple store updates
                     if (tournament.id === -1 && tournament.allId) {
                         set({
@@ -462,6 +479,7 @@ export const useTableEntityStore = create<TableEntityState>()(
                             activeId: tournament.allId,
                             activeAllSeason: false,
                             activeAllSplit: false,
+                            userHasSelectedTournament: true,
                         })
                     } else {
                         set({
@@ -469,6 +487,7 @@ export const useTableEntityStore = create<TableEntityState>()(
                             activeId: [tournament.id],
                             activeAllSeason: false,
                             activeAllSplit: false,
+                            userHasSelectedTournament: true,
                         })
                     }
                 },
@@ -490,9 +509,14 @@ export const useTableEntityStore = create<TableEntityState>()(
                 },
 
                 updateTournamentBySplit: (seasons, isAllActive) => {
-                    const { activeHeaderSeason, activeSplit } = get()
+                    const { activeHeaderSeason, activeSplit, userHasSelectedTournament } = get()
 
                     if (!seasons || seasons.length === 0) return
+                    
+                    // Don't auto-update if user has manually selected a tournament
+                    if (userHasSelectedTournament) {
+                        return
+                    }
 
                     const tournaments = getTournaments(
                         activeHeaderSeason,
@@ -524,6 +548,7 @@ export const useTableEntityStore = create<TableEntityState>()(
                         activeAllSeason: false,
                         activeAllSplit: false,
                         activeHeaderSeason: '',
+                        userHasSelectedTournament: false,
                     }),
             }
         },
