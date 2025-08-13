@@ -85,9 +85,8 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
         }
 
         const fetchData = async () => {
-            console.log(`🚀 [PLAYER STATS] Starting optimized batch fetch for ${data.players.length} players`)
             
-            // Vérifier d'abord le cache et ne récupérer que les images manquantes
+            // Check cache first
             const cachedImages: Record<string, { playerImage: string; teamImage: string; roleImage: string }> = {}
             const playersNeedingImages: typeof data.players = []
             
@@ -102,132 +101,87 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
                 }
             })
             
-            // Si toutes les images sont en cache, les utiliser directement
+            // Use cached images immediately
+            setPlayerImages(cachedImages)
+            
+            // If all images are cached, we're done
             if (playersNeedingImages.length === 0) {
                 console.log(`✅ [PLAYER STATS] All images found in cache`)
-                setPlayerImages(cachedImages)
                 return
             }
             
-            console.log(`🔍 [PLAYER STATS] Need to fetch ${playersNeedingImages.length} player images`)
+            console.log(`🔍 [PLAYER STATS] Need to fetch ${playersNeedingImages.length} player images progressively`)
             
-            try {
-                // Use the new batch endpoint for player images
-                const batchPlayers = playersNeedingImages.map(player => ({
-                    playerName: player.player,
-                    tournament: data.tournament
-                }))
+            // Process images in batches to avoid overwhelming the server
+            const batchSize = 10 // Process 5 images at a time
+            
+            const processImageBatch = async (batch: typeof playersNeedingImages) => {
+                await Promise.all(batch.map(async (player) => {
+                const cacheKey = `${player.player}-${data.tournament}-${player.role || 'unknown'}`
                 
-                const batchResponse = await getPlayerImagesBatch(batchPlayers)
-                
-                if (batchResponse.data) {
-                    const newImagesMap: Record<string, { playerImage: string; teamImage: string; roleImage: string }> = {}
-                    
-                    // Process batch results and fetch role images
-                    const rolePromises = playersNeedingImages.map(async (player) => {
-                        const batchKey = `${player.player}:${data.tournament || 'default'}`
-                        const batchResult = batchResponse.data![batchKey]
-                        
-                        const roleImageResponse = await getRoleImage(player.role || '')
-                        
-                        const imageData = {
-                            playerImage: batchResult?.url || '',
-                            teamImage: '', // No team info in PlayerStats
-                            roleImage: roleImageResponse.data || '',
-                        }
-                        
-                        // Cache the result
-                        const cacheKey = `${player.player}-${data.tournament}-${player.role || 'unknown'}`
-                        imageCache.set(cacheKey, imageData)
-                        
-                        return {
-                            playerName: player.player,
-                            ...imageData
-                        }
+                try {
+                    // Fetch player image with fallback parameter
+                    let playerImageResponse = await getPlayerImageFromBackend(player.player, {
+                        tournament: data.tournament,
+                        fallback: 'placeholder'
                     })
                     
-                    const results = await Promise.all(rolePromises)
-                    results.forEach(({ playerName, playerImage, teamImage, roleImage }) => {
-                        newImagesMap[playerName] = { playerImage, teamImage, roleImage }
-                    })
-                    
-                    console.log(`✅ [PLAYER STATS] Batch fetch completed for ${results.length} players`)
-                    setPlayerImages({ ...cachedImages, ...newImagesMap })
-                } else {
-                    throw new Error('Batch request failed')
-                }
-            } catch (error) {
-                console.error('Batch fetch failed, falling back to individual requests:', error)
-                
-                // Fallback to individual requests if batch fails
-                const dataPromises = playersNeedingImages.map(async (player) => {
-                    const cacheKey = `${player.player}-${data.tournament}-${player.role || 'unknown'}`
-                    
-                    try {
-                        // Try the individual backend endpoint
-                        let playerImageResponse = await getPlayerImageFromBackend(player.player, {
-                            tournament: data.tournament,
-                            fallback: 'none'
-                        })
+                    // If backend didn't return an image URL, try legacy methods
+                    if (!playerImageResponse.data) {
+                        playerImageResponse = await getPlayerTournamentImage(player.player, data.tournament)
                         
-                        // Fallback to legacy methods if backend fails
                         if (!playerImageResponse.data) {
-                            console.log(`⚠️ [PLAYER STATS] Backend search failed for ${player.player}, trying legacy methods...`)
-                            playerImageResponse = await getPlayerTournamentImage(player.player, data.tournament)
-                            
-                            if (!playerImageResponse.data) {
-                                playerImageResponse = await getPlayerImage(player.player, data.tournament)
-                            }
-                        }
-                        
-                        // Get role image
-                        const roleImageResponse = await getRoleImage(player.role || '')
-                        
-                        const imageData = {
-                            playerImage: playerImageResponse.data || '',
-                            teamImage: '',
-                            roleImage: roleImageResponse.data || '',
-                        }
-                        
-                        // Cache the result
-                        imageCache.set(cacheKey, imageData)
-                        
-                        return {
-                            playerName: player.player,
-                            ...imageData
-                        }
-                    } catch (individualError) {
-                        console.error(`Failed to fetch data for player ${player.player}:`, individualError)
-                        const emptyImageData = {
-                            playerImage: '',
-                            teamImage: '',
-                            roleImage: '',
-                        }
-                        
-                        // Cache failures to avoid retries
-                        imageCache.set(cacheKey, emptyImageData)
-                        
-                        return {
-                            playerName: player.player,
-                            ...emptyImageData
+                            playerImageResponse = await getPlayerImage(player.player, data.tournament)
                         }
                     }
-                })
-
-                try {
-                    const results = await Promise.all(dataPromises)
-                    const newImagesMap = results.reduce(
-                        (acc, { playerName, playerImage, teamImage, roleImage }: { playerName: string; playerImage: string; teamImage: string; roleImage: string }) => {
-                            acc[playerName] = { playerImage, teamImage, roleImage }
-                            return acc
-                        },
-                        {} as Record<string, { playerImage: string; teamImage: string; roleImage: string }>
-                    )
                     
-                    setPlayerImages({ ...cachedImages, ...newImagesMap })
-                } catch (fallbackError) {
-                    console.error('Individual requests also failed:', fallbackError)
-                    setPlayerImages(cachedImages)
+                    // Get role image
+                    const roleImageResponse = await getRoleImage(player.role || '')
+                    
+                    const imageData = {
+                        playerImage: playerImageResponse.data || '',
+                        teamImage: '',
+                        roleImage: roleImageResponse.data || '',
+                    }
+                    
+                    // Cache the result
+                    imageCache.set(cacheKey, imageData)
+                    
+                    // Update state immediately for this player
+                    setPlayerImages(prevImages => ({
+                        ...prevImages,
+                        [player.player]: imageData
+                    }))
+                    
+                    console.log(`✅ Loaded image for ${player.player}`)
+                } catch (individualError) {
+                    console.error(`Failed to fetch data for player ${player.player}:`, individualError)
+                    const emptyImageData = {
+                        playerImage: '',
+                        teamImage: '',
+                        roleImage: '',
+                    }
+                    
+                    // Cache failures to avoid retries
+                    imageCache.set(cacheKey, emptyImageData)
+                    
+                    // Update state with empty data
+                    setPlayerImages(prevImages => ({
+                        ...prevImages,
+                        [player.player]: emptyImageData
+                    }))
+                }
+                }))
+            }
+            
+            // Process images in batches
+            for (let i = 0; i < playersNeedingImages.length; i += batchSize) {
+                const batch = playersNeedingImages.slice(i, i + batchSize)
+                await processImageBatch(batch)
+                
+                // Small delay between batches to avoid overwhelming the server
+                if (i + batchSize < playersNeedingImages.length) {
+                    await new Promise(resolve => setTimeout(resolve, 100))
                 }
             }
         }
