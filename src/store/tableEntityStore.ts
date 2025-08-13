@@ -93,7 +93,8 @@ interface TableEntityState {
     selectSplit: (
         split: string,
         seasons: SeasonData[],
-        isAllActive: boolean
+        isAllActive: boolean,
+        preserveSelection?: boolean
     ) => void
     selectTournament: (tournament: Tournament) => void
     selectAllSeasons: (allId: number[]) => void
@@ -297,6 +298,17 @@ export const useTableEntityStore = create<TableEntityState>()(
 
                 initializeWithSeasons: (seasons, isAllActive) => {
                     if (seasons.length === 0) return
+                    
+                    const currentState = get()
+                    console.log('🚀 [INITIALIZATION] Initializing with seasons, isAllActive:', isAllActive)
+                    console.log('🚀 [INITIALIZATION] Current user selection state:', currentState.userHasSelectedTournament)
+                    
+                    // DON'T reinitialize if user has made a manual selection
+                    if (currentState.userHasSelectedTournament) {
+                        console.log('🚫 [INITIALIZATION] User has made manual selection, skipping initialization')
+                        return
+                    }
+                    
                     if (!isAllActive){
                         set ({
                             activeAllSeason: false,
@@ -322,6 +334,12 @@ export const useTableEntityStore = create<TableEntityState>()(
                         tournaments.length > 0
                             ? [tournaments[tournaments.length - 1].id]
                             : []
+                            
+                    console.log('🚀 [INITIALIZATION] Setting initial values:', {
+                        season: latestSeason,
+                        split: latestSplit,
+                        tournament: latestTournament
+                    })
 
                     set({
                         activeHeaderSeason: latestSeason,
@@ -330,6 +348,7 @@ export const useTableEntityStore = create<TableEntityState>()(
                         activeId: tournamentId,
                         activeAllSeason: false,
                         activeAllSplit: false,
+                        userHasSelectedTournament: false, // Only reset when actually initializing
                     })
                 },
 
@@ -406,6 +425,19 @@ export const useTableEntityStore = create<TableEntityState>()(
                         activeAllSplit,
                         activeTournament,
                     } = state
+                    
+                    console.log('🔄 [SPLIT SELECTION] Split selection triggered:', split, 'from', state.activeSplit)
+                    console.log('🔄 [SPLIT SELECTION] Current state:', {
+                        tournament: activeTournament,
+                        userSelected: state.userHasSelectedTournament,
+                        preserveSelection
+                    })
+                    
+                    // If user has manually selected a tournament AND we're not changing splits, preserve it
+                    if (state.userHasSelectedTournament && split === state.activeSplit) {
+                        console.log('🚫 [SPLIT SELECTION] User has manual selection and same split, preserving existing selection')
+                        return // Don't change anything
+                    }
 
                     // Try to preserve current tournament if it exists in the new split
                     let targetTournament = activeTournament
@@ -414,20 +446,24 @@ export const useTableEntityStore = create<TableEntityState>()(
                     
                     if (preserveSelection && activeTournament) {
                         const tournaments = getTournaments(activeHeaderSeason, split, seasons, false)
+                        console.log('🔍 [SPLIT SELECTION] Available tournaments in new split:', tournaments.map(t => t.tournament))
                         const foundTournament = tournaments.find(t => t.tournament === activeTournament)
                         
                         if (foundTournament) {
                             // Tournament exists in new split, preserve it
                             targetTournament = foundTournament.tournament
                             targetTournamentId = [foundTournament.id]
+                            console.log('✅ [SPLIT SELECTION] Tournament preserved:', targetTournament)
                         } else {
                             // Tournament doesn't exist, reset user selection flag
                             shouldPreserveUserSelection = false
+                            console.log('⚠️ [SPLIT SELECTION] Tournament not found in new split, resetting user selection')
                             // Fall back to latest in new split
                             const latestTournament = tournaments[tournaments.length - 1]
                             if (latestTournament) {
                                 targetTournament = latestTournament.tournament
                                 targetTournamentId = [latestTournament.id]
+                                console.log('🔄 [SPLIT SELECTION] Falling back to latest tournament:', targetTournament)
                             }
                         }
                     }
@@ -436,6 +472,7 @@ export const useTableEntityStore = create<TableEntityState>()(
                         (activeAllSeason || activeAllSplit) &&
                         split === state.activeSplit
                     ) {
+                        console.log('🔄 [SPLIT SELECTION] Handling all seasons/splits case')
                         const id = getTournamentId(
                             seasons,
                             activeHeaderSeason,
@@ -468,9 +505,17 @@ export const useTableEntityStore = create<TableEntityState>()(
                         activeAllSeason: false,
                         userHasSelectedTournament: shouldPreserveUserSelection,
                     })
+                    
+                    console.log('✅ [SPLIT SELECTION] Split selection completed. Final tournament:', targetTournament, 'User selected flag:', shouldPreserveUserSelection)
                 },
 
                 selectTournament: (tournament) => {
+                    console.log('🎯 [TOURNAMENT SELECTION] User clicked tournament:', tournament.tournament, 'ID:', tournament.id)
+                    console.log('🎯 [TOURNAMENT SELECTION] Current state before selection:', {
+                        current: get().activeTournament,
+                        userSelected: get().userHasSelectedTournament
+                    })
+                    
                     // Mark that user has manually selected a tournament
                     // Use a single set call to prevent multiple store updates
                     if (tournament.id === -1 && tournament.allId) {
@@ -490,6 +535,8 @@ export const useTableEntityStore = create<TableEntityState>()(
                             userHasSelectedTournament: true,
                         })
                     }
+                    
+                    console.log('✅ [TOURNAMENT SELECTION] User selection completed:', tournament.tournament)
                 },
 
                 selectAllSeasons: (allId) => {
@@ -509,12 +556,24 @@ export const useTableEntityStore = create<TableEntityState>()(
                 },
 
                 updateTournamentBySplit: (seasons, isAllActive) => {
-                    const { activeHeaderSeason, activeSplit, userHasSelectedTournament } = get()
+                    const { activeHeaderSeason, activeSplit, userHasSelectedTournament, activeTournament } = get()
 
-                    if (!seasons || seasons.length === 0) return
+                    console.log('🔄 [UPDATE TOURNAMENT] Called with:', {
+                        season: activeHeaderSeason,
+                        split: activeSplit,
+                        userSelected: userHasSelectedTournament,
+                        currentTournament: activeTournament,
+                        isAllActive
+                    })
+
+                    if (!seasons || seasons.length === 0) {
+                        console.log('⏹️ [UPDATE TOURNAMENT] No seasons, skipping')
+                        return
+                    }
                     
                     // Don't auto-update if user has manually selected a tournament
                     if (userHasSelectedTournament) {
+                        console.log('🚫 [UPDATE TOURNAMENT] User has selected tournament, skipping auto-update')
                         return
                     }
 
@@ -524,16 +583,21 @@ export const useTableEntityStore = create<TableEntityState>()(
                         seasons,
                         isAllActive
                     )
+                    
+                    console.log('📋 [UPDATE TOURNAMENT] Available tournaments:', tournaments.map(t => t.tournament))
 
                     if (tournaments.length > 0) {
                         const index = isAllActive ? 2 : 1
                         const selected = tournaments[tournaments.length - index]
+                        
+                        console.log('🎯 [UPDATE TOURNAMENT] Auto-selecting tournament:', selected?.tournament, 'at index', tournaments.length - index)
 
                         if (selected) {
                             set({
                                 activeTournament: selected.tournament,
                                 activeId: [selected.id],
                             })
+                            console.log('✅ [UPDATE TOURNAMENT] Auto-selection completed:', selected.tournament)
                         }
                     }
                 },

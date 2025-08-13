@@ -19,7 +19,23 @@ export const useSimpleEntityInit = (
     
     // Only initialize once from URL parameters, don't interfere with navigation
     useEffect(() => {
+        console.log('🌐 [URL INIT] useSimpleEntityInit triggered:', {
+            hasInit: hasInitializedRef.current,
+            seasonsLength: seasons.length,
+            isInitializing: isInitializingRef.current,
+            initialParams: { initialSeason, initialSplit, initialTournament }
+        })
+        
         if (!hasInitializedRef.current && seasons.length > 0 && !isInitializingRef.current) {
+            // Check if user has already made a manual selection
+            if (store.userHasSelectedTournament) {
+                console.log('🚫 [URL INIT] User has made manual selection, skipping URL initialization')
+                hasInitializedRef.current = true
+                isInitializingRef.current = false
+                return
+            }
+            
+            console.log('🌐 [URL INIT] Starting URL initialization')
             hasInitializedRef.current = true
             isInitializingRef.current = true
             

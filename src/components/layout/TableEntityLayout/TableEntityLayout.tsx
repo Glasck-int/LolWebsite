@@ -261,12 +261,20 @@ export const TableEntityHeader = ({
     const splitIds = getIdsBySeason(activeHeaderSeason, seasons)
 
     useEffect(() => {
+        console.log('🚀 [LAYOUT EFFECT] initializeWithSeasons triggered, seasons length:', seasons.length)
         if (seasons.length > 0) {
             initializeWithSeasons(seasons, isAllActive)
         }
     }, [seasons, initializeWithSeasons, isAllActive])
 
     useEffect(() => {
+        console.log('🔄 [LAYOUT EFFECT] updateTournamentBySplit triggered by:', {
+            activeSplit,
+            seasonsLength: seasons.length,
+            isAllActive
+        })
+        
+        // Now protected against user selections
         updateTournamentBySplit(seasons, isAllActive)
     }, [activeSplit, seasons, isAllActive, updateTournamentBySplit])
 
@@ -330,12 +338,14 @@ const TableEntityRawSelect = ({
     const { forceSync } = useForceUrlSync()
 
     const onClickAction = (value: string) => {
+        console.log('📦 [SEASON CLICK] User clicked season:', value)
         selectSeason(value, seasons, true) // Enable preservation by default
         // Force immediate URL sync for season changes
         setTimeout(() => forceSync(), 100)
     }
 
     const onClickAll = () => {
+        console.log('📦 [SEASON CLICK] User clicked All seasons')
         selectAllSeasons(allId)
         // Force immediate URL sync for all seasons selection
         setTimeout(() => forceSync(), 100)
@@ -419,11 +429,13 @@ const TableEntityRawSplit = ({
     } = useTableEntityStore()
 
     const onClickAll = () => {
+        console.log('📦 [SPLIT CLICK] User clicked All splits')
         selectAllSplits(allId)
     }
 
     const onClickSplit = (value: string) => {
-        selectSplit(value, seasons, isAllActive)
+        console.log('📦 [SPLIT CLICK] User clicked split:', value)
+        selectSplit(value, seasons, isAllActive) // Back to original 3 params
     }
 
     return (
