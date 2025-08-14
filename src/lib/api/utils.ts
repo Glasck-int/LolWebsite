@@ -16,11 +16,22 @@ const CACHE_STRATEGIES: Record<string, CacheStrategy> = {
     '/api/leagues': { type: 'static', revalidate: 24 * 60 * 60 },
     '/api/leagues/major': { type: 'static', revalidate: 24 * 60 * 60 },
     '/api/teams': { type: 'static', revalidate: 12 * 60 * 60 },
+    '/api/seasons': { type: 'static', revalidate: 12 * 60 * 60 },
+    '/api/tournaments': { type: 'static', revalidate: 6 * 60 * 60 },
+
+    // Données semi-statiques (cache moyen)
+    '/api/players/search': { type: 'dynamic', revalidate: 2 * 60 * 60 },
+    '/api/players/images': { type: 'static', revalidate: 24 * 60 * 60 },
+    '/api/champions/stats': { type: 'dynamic', revalidate: 30 * 60 },
 
     // Données dynamiques (cache court)
     '/api/standings': { type: 'dynamic', revalidate: 5 * 60 },
     '/api/player-stats': { type: 'dynamic', revalidate: 10 * 60 },
     '/api/tournaments/matches': { type: 'dynamic', revalidate: 10 * 60 },
+    '/api/teams/recent-matches': { type: 'dynamic', revalidate: 15 * 60 },
+    '/api/teams/recent-games': { type: 'dynamic', revalidate: 15 * 60 },
+    '/api/tournaments/standings': { type: 'dynamic', revalidate: 5 * 60 },
+    '/api/tournaments/games': { type: 'dynamic', revalidate: 10 * 60 },
 
     // Données temps réel (pas de cache)
     '/api/live-matches': { type: 'live' },
@@ -28,14 +39,33 @@ const CACHE_STRATEGIES: Record<string, CacheStrategy> = {
 }
 
 function getCacheConfig(endpoint: string): RequestInit {
-    // Check for tournament patterns first
+    // Check for specific patterns first
     if (endpoint.includes('/tournaments/') && (endpoint.includes('/next-matches') || endpoint.includes('/last-matches') || endpoint.includes('/matches'))) {
         return { next: { revalidate: 10 * 60 } } // 10 minutes
     }
     
-    // Check for team images
     if (endpoint.includes('/teams/') && endpoint.includes('/image')) {
         return { next: { revalidate: 24 * 60 * 60 } } // 24 hours
+    }
+
+    if (endpoint.includes('/teams/') && endpoint.includes('/recent-')) {
+        return { next: { revalidate: 15 * 60 } } // 15 minutes
+    }
+
+    if (endpoint.includes('/players/') && endpoint.includes('/search')) {
+        return { next: { revalidate: 2 * 60 * 60 } } // 2 hours
+    }
+
+    if (endpoint.includes('/players/') && endpoint.includes('/images')) {
+        return { next: { revalidate: 24 * 60 * 60 } } // 24 hours
+    }
+
+    if (endpoint.includes('/champions/') && endpoint.includes('/stats')) {
+        return { next: { revalidate: 30 * 60 } } // 30 minutes
+    }
+
+    if (endpoint.includes('/seasons/')) {
+        return { next: { revalidate: 12 * 60 * 60 } } // 12 hours
     }
     
     const strategy = CACHE_STRATEGIES[endpoint] || {

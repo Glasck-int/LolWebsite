@@ -36,6 +36,9 @@ function parseLeagueSlug(slug: string[], searchParams?: { tournament?: string; s
     }
 }
 
+// ISR Configuration - Balanced cache strategy for league pages
+export const revalidate = 1800 // 30 minutes base revalidation
+
 export async function generateMetadata({ params, searchParams }: LeaguePageProps): Promise<Metadata> {
     const { slug } = await params
     const searchParamsResolved = await searchParams

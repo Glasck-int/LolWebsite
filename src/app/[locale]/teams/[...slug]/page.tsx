@@ -35,6 +35,9 @@ function parseTeamSlug(slug: string[], searchParams?: { tournament?: string; sea
     }
 }
 
+// ISR Configuration - Mixed cache strategy for team pages
+export const revalidate = 300 // 5 minutes base revalidation
+
 export async function generateMetadata({ params, searchParams }: TeamPageProps): Promise<Metadata> {
     const { slug } = await params
     const searchParamsResolved = await searchParams

@@ -33,6 +33,9 @@ function parsePlayerSlug(slug: string[], searchParams?: { tournament?: string; s
     }
 }
 
+// ISR Configuration - Mixed cache strategy for player pages  
+export const revalidate = 600 // 10 minutes base revalidation
+
 export default async function PlayerPage({ params, searchParams }: PlayerPageProps) {
     const { slug } = await params
     const searchParamsResolved = await searchParams
