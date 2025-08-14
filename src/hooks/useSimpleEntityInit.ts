@@ -109,20 +109,16 @@ export const useSimpleEntityInit = (
                         }
                     }
 
-                    // Handle tournament selection with a small delay
+                    // Handle tournament selection
                     if (initialTournament && initialTournament !== 'all') {
-                        setTimeout(() => {
-                            const currentSplit = targetSplit || store.activeSplit
-                            const tournaments = getTournaments(season.season, currentSplit, seasons, false)
-                            const tournament = tournaments.find(t => t.tournament === initialTournament)
-                            if (tournament) {
-                                store.selectTournament(tournament)
-                            }
-                            isInitializingRef.current = false // Mark initialization complete
-                        }, 50)
-                    } else {
-                        isInitializingRef.current = false // Mark initialization complete
+                        const currentSplit = targetSplit || store.activeSplit
+                        const tournaments = getTournaments(season.season, currentSplit, seasons, false)
+                        const tournament = tournaments.find(t => t.tournament === initialTournament)
+                        if (tournament) {
+                            store.selectTournament(tournament)
+                        }
                     }
+                    isInitializingRef.current = false // Mark initialization complete
                 }
             } else {
                 isInitializingRef.current = false // Mark initialization complete

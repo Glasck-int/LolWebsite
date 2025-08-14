@@ -93,14 +93,12 @@ export const useTableEntityInit = (
 
                     // Handle tournament
                     if (initialTournament && initialTournament !== 'all') {
-                        setTimeout(() => {
-                            const currentSplit = targetSplit || store.activeSplit
-                            const tournaments = getTournaments(season.season, currentSplit, seasons, false)
-                            const tournament = tournaments.find(t => t.tournament === initialTournament)
-                            if (tournament) {
-                                store.selectTournament(tournament)
-                            }
-                        }, 50)
+                        const currentSplit = targetSplit || store.activeSplit
+                        const tournaments = getTournaments(season.season, currentSplit, seasons, false)
+                        const tournament = tournaments.find(t => t.tournament === initialTournament)
+                        if (tournament) {
+                            store.selectTournament(tournament)
+                        }
                     }
                 }
             }

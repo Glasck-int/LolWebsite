@@ -243,7 +243,7 @@ const PlayerTableEntityContent = ({
                                     </div>
                                     <div className="flex flex-col justify-center items-start gap-0 min-w-0 flex-1">
                                         <h1 className="font-medium m-0 leading-none truncate w-full">
-                                            {playerData.name}
+                                            {playerData.overviewPage}
                                         </h1>
                                         {currentTeamData?.name ? (
                                             <Link 
