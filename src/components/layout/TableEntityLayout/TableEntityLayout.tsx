@@ -261,19 +261,12 @@ export const TableEntityHeader = ({
     const splitIds = getIdsBySeason(activeHeaderSeason, seasons)
 
     useEffect(() => {
-        console.log('🚀 [LAYOUT EFFECT] initializeWithSeasons triggered, seasons length:', seasons.length)
         if (seasons.length > 0) {
             initializeWithSeasons(seasons, isAllActive)
         }
     }, [seasons, initializeWithSeasons, isAllActive])
 
-    useEffect(() => {
-        console.log('🔄 [LAYOUT EFFECT] updateTournamentBySplit triggered by:', {
-            activeSplit,
-            seasonsLength: seasons.length,
-            isAllActive
-        })
-        
+    useEffect(() => {     
         // Now protected against user selections
         updateTournamentBySplit(seasons, isAllActive)
     }, [activeSplit, seasons, isAllActive, updateTournamentBySplit])

@@ -31,6 +31,20 @@ const nextConfig: NextConfig = {
     // Tell Next.js to not treat paths with dots as static files
     skipTrailingSlashRedirect: true,
     skipMiddlewareUrlNormalize: true,
+    // Force ISR cache headers for better performance
+    async headers() {
+        return [
+            {
+                source: '/(.*)',
+                headers: [
+                    {
+                        key: 'Cache-Control',
+                        value: 's-maxage=300, stale-while-revalidate=86400',
+                    },
+                ],
+            },
+        ]
+    },
 }
 
 const withNextIntl = createNextIntlPlugin()
