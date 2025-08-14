@@ -62,8 +62,8 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
             console.error('League error:', league.error)
             return <div>Error loading league: {league.error}</div>
         }
+        
         const leagueImage = await getLeagueImage(league.data?.name || '')
-
 
         return (
             <div className="">
@@ -72,7 +72,7 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
                 </div>
 
                 {league.data && (
-                    <justje  
+                    <LeagueTableEntityClient  
                         leagueId={league.data.id}
                         league={league.data}
                         imageData={leagueImage.data || ''}
