@@ -37,7 +37,6 @@ export async function resolveTeam(teamName: string): Promise<TeamResolution> {
         where: { 
             name: {
                 equals: teamName,
-                mode: 'insensitive'
             }
         }
     })

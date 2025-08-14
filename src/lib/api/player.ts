@@ -3,6 +3,20 @@ import { PlayerImageType, PlayerWithRedirects, PlayerSearchResult } from '@glasc
 import { getPublicPlayerImage } from './image'
 
 /**
+ * Get a player by exact name match
+ * @param name - The exact name of the player to get
+ * @returns The player with the exact name match
+ */
+async function getPlayerByExactName(
+    name: string
+): Promise<ApiResponse<PlayerWithRedirects>> {
+    const encodedName = encodeURIComponent(name)
+    return apiRequest<PlayerWithRedirects>(
+        `/api/players/name/${encodedName}`
+    )
+}
+
+/**
  * Get a player by their link
  * @warning This is A Fuzzy Search, so it will return all players that contain the link in their name
  * @param link - The link of the player to get
@@ -166,6 +180,7 @@ async function getPlayerByOverviewPage(
 }
 
 export { 
+    getPlayerByExactName,
     getPlayerByLink, 
     getPlayerImages, 
     getPlayerImage, 

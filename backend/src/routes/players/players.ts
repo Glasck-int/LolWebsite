@@ -231,12 +231,11 @@ export default async function playersRoutes(fastify: FastifyInstance) {
             const { searchTerm } = request.params as { searchTerm: string }
             customMetric.inc({ operation: 'search_players' })
 
-            // Search in player redirects for partial matches
+            // Search in player redirects for partial matches (case-sensitive)
             const redirects = await prisma.playerRedirect.findMany({
                 where: {
                     name: {
-                        contains: searchTerm,
-                        mode: 'insensitive'
+                        contains: searchTerm
                     }
                 },
                 take: 10 // Limit results
@@ -360,13 +359,10 @@ export default async function playersRoutes(fastify: FastifyInstance) {
             let playerOverviewPage: string
             
             if (!playerCheck) {                
-                // Try to find in Player table directly by overviewPage (case insensitive)
+                // Try to find in Player table directly by overviewPage (case sensitive)
                 let playerDirect = await prisma.player.findFirst({
                     where: { 
-                        overviewPage: { 
-                            equals: playerName,
-                            mode: 'insensitive' 
-                        }
+                        overviewPage: playerName
                     }
                 })
                 
@@ -568,7 +564,6 @@ export default async function playersRoutes(fastify: FastifyInstance) {
                     reason: img.reason,
                     daysDifference: img.daysDifference
                 }))
-                fastify.log.info(`🏆 [TOP CANDIDATES] ${JSON.stringify(topCandidates, null, 2)}`)
             }
             
             return bestImage
@@ -665,7 +660,7 @@ export default async function playersRoutes(fastify: FastifyInstance) {
                             // Optimized player resolution with focused image query
                             const playerCheck = await prisma.playerRedirect.findFirst({
                                 where: { 
-                                    name: { equals: playerName, mode: 'insensitive' }
+                                    name: { equals: playerName }
                                 },
                                 select: { overviewPage: true }
                             })
@@ -731,7 +726,7 @@ export default async function playersRoutes(fastify: FastifyInstance) {
                     try {
                         const playerCheck = await prisma.playerRedirect.findFirst({
                             where: { 
-                                name: { equals: playerName, mode: 'insensitive' }
+                                name: { equals: playerName }
                             },
                             select: { overviewPage: true }
                         })

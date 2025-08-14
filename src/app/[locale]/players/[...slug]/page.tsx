@@ -1,5 +1,5 @@
 import { PlayerTableEntityClient } from "@/components/players/PlayerTableEntityClient"
-import { getPlayerByLink, getPlayerByOverviewPage } from '@/lib/api/player'
+import { getPlayerByExactName, getPlayerByLink, getPlayerByOverviewPage } from '@/lib/api/player'
 import { PlayerWithRedirects } from '@glasck-int/glasck-types'
 
 interface PlayerPageProps {
@@ -46,21 +46,25 @@ export default async function PlayerPage({ params, searchParams }: PlayerPagePro
     const playerImage = null // Images handled client-side like other components
     
     try {
-        // First, search for the player to get the overviewPage
-        const searchResult = await getPlayerByLink(playerName)
+        // First, try exact name match
+        const exactMatchResult = await getPlayerByExactName(playerName)
         
-        if (searchResult.data && searchResult.data.length > 0) {
-            // Get the overviewPage from the first result
-            const overviewPage = searchResult.data[0].overviewPage
+        if (exactMatchResult.data) {
+            playerData = exactMatchResult.data
+        } else {
+            // Fallback to fuzzy search if exact match fails
+            const searchResult = await getPlayerByLink(playerName)
             
-            // Now get the complete player data
-            const playerDataResult = await getPlayerByOverviewPage(overviewPage)
-            
-            if (playerDataResult.data) {
-                playerData = playerDataResult.data
+            if (searchResult.data && searchResult.data.length > 0) {
+                // Get the overviewPage from the first result
+                const overviewPage = searchResult.data[0].overviewPage
                 
-                // Player images will be handled client-side like other components
-                // This allows access to selectedTournamentId for tournament-specific images
+                // Now get the complete player data
+                const playerDataResult = await getPlayerByOverviewPage(overviewPage)
+                
+                if (playerDataResult.data) {
+                    playerData = playerDataResult.data
+                }
             }
         }
     } catch (error) {

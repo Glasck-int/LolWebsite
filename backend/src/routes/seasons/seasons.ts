@@ -425,8 +425,8 @@ export default async function seasonsRoutes(fastify: FastifyInstance) {
                     prisma.scoreboardPlayers.findMany({
                         where: {
                             OR: redirectNames.flatMap(name => [
-                                { name: { equals: name, mode: 'insensitive' } },
-                                { link: { equals: name, mode: 'insensitive' } }
+                                { name: name },
+                                { link: name }
                             ])
                         },
                         select: {
@@ -438,8 +438,8 @@ export default async function seasonsRoutes(fastify: FastifyInstance) {
                     prisma.tournamentPlayer.findMany({
                         where: {
                             OR: redirectNames.flatMap(name => [
-                                { player: { equals: name, mode: 'insensitive' } },
-                                { link: { equals: name, mode: 'insensitive' } }
+                                { player: name },
+                                { link: name }
                             ])
                         },
                         select: {
@@ -726,7 +726,7 @@ export default async function seasonsRoutes(fastify: FastifyInstance) {
                     prisma.scoreboardTeam.findMany({
                         where: {
                             OR: redirectNames.map(name => ({
-                                team: { equals: name, mode: 'insensitive' }
+                                team: { equals: name }
                             }))
                         },
                         select: {
@@ -738,7 +738,7 @@ export default async function seasonsRoutes(fastify: FastifyInstance) {
                     prisma.tournamentRosters.findMany({
                         where: {
                             OR: redirectNames.flatMap(name => [
-                                { teamName: { equals: name, mode: 'insensitive' } },
+                                { teamName: { equals: name} },
                                 { rosterLinks: { hasSome: [name] } } // hasSome is already case-sensitive but we keep one entry per name
                             ])
                         },

@@ -106,13 +106,10 @@ export async function resolvePlayer(
     let overviewPage: string
 
     if (!playerRedirect) {
-        // Try to find in Player table directly by overviewPage (case insensitive)
+        // Try to find in Player table directly by overviewPage (case sensitive)
         const playerDirect = await prisma.player.findFirst({
             where: { 
-                overviewPage: { 
-                    equals: playerName,
-                    mode: 'insensitive' 
-                }
+                overviewPage: playerName
             }
         })
         
