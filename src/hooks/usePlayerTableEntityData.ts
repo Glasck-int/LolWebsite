@@ -37,6 +37,11 @@ export const usePlayerTableEntityData = (playerName: string) => {
     const cacheKey = -(playerName.split('').reduce((hash, char) => hash + char.charCodeAt(0), 0))
 
     useEffect(() => {
+        // Only run on client side to avoid CORS issues during build
+        if (typeof window === 'undefined') {
+            return
+        }
+        
         const fetchData = async () => {
             if (!playerName) {
                 setSeasonsError(cacheKey, 'Player name is required')

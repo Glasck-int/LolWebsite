@@ -31,7 +31,6 @@ import { useTranslate } from '@/lib/hooks/useTranslate'
 import { PlayerWithRedirects } from '@glasck-int/glasck-types'
 import { useTournamentPlayerTeam } from '@/hooks/useTournamentPlayerTeam'
 import { useTeamImage } from '@/hooks/useTeamImage'
-import { getPlayerImage, getPlayerTournamentImage } from '@/lib/api/player'
 import { getTournamentPlayerStats } from '@/lib/api/players'
 import { getTeamByName } from '@/lib/api/teams'
 import { getTeamImage, getPlayerImageFromBackend } from '@/lib/api/image'
@@ -139,14 +138,13 @@ const PlayerTableEntityContent = ({
     // Use team image URL from direct fetch or dynamic fetch from overviewPage
     const currentTeamImage = teamImageUrl || dynamicTeamImage
 
-    // State for player image loaded dynamically with tournament context
+    // State for player image - direct fetch without batching
     const [dynamicPlayerImage, setDynamicPlayerImage] = useState<string | null>(null)
-    const [, setPlayerImageLoading] = useState(false)
 
-    // Use dynamic player image from client-side fetch or server-side prop fallback
+    // Use dynamic player image from direct fetch or server-side prop fallback
     const currentPlayerImage = dynamicPlayerImage || playerImage
 
-    // Fetch player image when tournament or player changes
+    // Fetch player image directly when tournament or player changes - no batching
     useEffect(() => {
         if (!selectedTournamentId || !playerName) {
             setDynamicPlayerImage(null)
@@ -154,14 +152,12 @@ const PlayerTableEntityContent = ({
         }
 
         const fetchPlayerImage = async () => {
-            setPlayerImageLoading(true)
             try {
                 // First get tournament data to get tournament name
                 const response = await getTournamentPlayerStats(selectedTournamentId.toString())
                 
                 if (response.data && response.data.tournament) {
-                    // Use the new backend endpoint for serving player images
-                    console.log(`🔍 [PLAYER COMPONENT] Starting intelligent image search for ${playerName} in ${response.data.tournament}`)
+                    // Use the backend endpoint directly - no batching
                     const imageResponse = await getPlayerImageFromBackend(playerName, {
                         tournament: response.data.tournament,
                         fallback: 'none'
@@ -169,31 +165,13 @@ const PlayerTableEntityContent = ({
                     
                     if (imageResponse.data) {
                         setDynamicPlayerImage(imageResponse.data)
-                        console.log(`🎯 [PLAYER COMPONENT] Successfully applied backend image for ${playerName}`)
                     } else {
-                        // Fallback to the old method if backend doesn't find anything
-                        console.log(`⚠️ [PLAYER COMPONENT] Backend search failed, trying legacy fallback for ${playerName}...`)
-                        const tournamentImageResponse = await getPlayerTournamentImage(playerName, response.data.tournament)
-                        if (tournamentImageResponse.data) {
-                            setDynamicPlayerImage(tournamentImageResponse.data)
-                            console.log(`✅ [PLAYER COMPONENT] Applied legacy tournament image for ${playerName}`)
-                        } else {
-                            const fallbackResponse = await getPlayerImage(playerName, response.data.tournament)
-                            if (fallbackResponse.data) {
-                                setDynamicPlayerImage(fallbackResponse.data)
-                                console.log(`✅ [PLAYER COMPONENT] Applied legacy fallback image for ${playerName}`)
-                            } else {
-                                setDynamicPlayerImage(null)
-                                console.log(`❌ [PLAYER COMPONENT] No image found anywhere for ${playerName} in ${response.data.tournament}`)
-                            }
-                        }
+                        setDynamicPlayerImage(null)
                     }
                 }
             } catch (error) {
                 console.error('Failed to fetch player image:', error)
                 setDynamicPlayerImage(null)
-            } finally {
-                setPlayerImageLoading(false)
             }
         }
 

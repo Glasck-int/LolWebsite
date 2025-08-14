@@ -6,7 +6,7 @@ import useSWR from 'swr'
 import { SortableTable, TableColumn } from '@/components/ui/table/SortableTable'
 import { PlayerStats, getTournamentPlayerStats, TournamentPlayerStatsResponse } from '@/lib/api/players'
 import { getPlayerImage, getPlayerTournamentImage } from '@/lib/api/player'
-import { getRoleImage, getPlayerImageFromBackend, getPlayerImagesBatch } from '@/lib/api/image'
+import { getRoleImage, getPlayerImageFromBackend } from '@/lib/api/image'
 import { CleanName } from '@/lib/utils/cleanName'
 import { MatchSkeleton } from '@/components/ui/skeleton/MatchSkeleton'
 import Link from 'next/link'
@@ -55,8 +55,6 @@ function PlayerTabContent({ data, tabColumns }: {
  * Client Component for Player Statistics with SWR caching
  * Works with dynamic tournamentId changes
  */
-// Cache persistant des images par joueur
-const imageCache = new Map<string, { playerImage: string; teamImage: string; roleImage: string }>()
 
 export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStatisticsClientProps) {
     const [playerImages, setPlayerImages] = useState<Record<string, { playerImage: string; teamImage: string; roleImage: string }>>({})
@@ -86,39 +84,8 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
 
         const fetchData = async () => {
             
-            // Check cache first
-            const cachedImages: Record<string, { playerImage: string; teamImage: string; roleImage: string }> = {}
-            const playersNeedingImages: typeof data.players = []
-            
-            data.players.forEach(player => {
-                const cacheKey = `${player.player}-${data.tournament}-${player.role || 'unknown'}`
-                const cached = imageCache.get(cacheKey)
-                
-                if (cached) {
-                    cachedImages[player.player] = cached
-                } else {
-                    playersNeedingImages.push(player)
-                }
-            })
-            
-            // Use cached images immediately
-            setPlayerImages(cachedImages)
-            
-            // If all images are cached, we're done
-            if (playersNeedingImages.length === 0) {
-                console.log(`✅ [PLAYER STATS] All images found in cache`)
-                return
-            }
-            
-            console.log(`🔍 [PLAYER STATS] Need to fetch ${playersNeedingImages.length} player images progressively`)
-            
-            // Process images in batches to avoid overwhelming the server
-            const batchSize = 10 // Process 5 images at a time
-            
-            const processImageBatch = async (batch: typeof playersNeedingImages) => {
-                await Promise.all(batch.map(async (player) => {
-                const cacheKey = `${player.player}-${data.tournament}-${player.role || 'unknown'}`
-                
+            // Fetch all images simultaneously 
+            await Promise.all(data.players.map(async (player) => {
                 try {
                     // Fetch player image with fallback parameter
                     let playerImageResponse = await getPlayerImageFromBackend(player.player, {
@@ -144,9 +111,6 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
                         roleImage: roleImageResponse.data || '',
                     }
                     
-                    // Cache the result
-                    imageCache.set(cacheKey, imageData)
-                    
                     // Update state immediately for this player
                     setPlayerImages(prevImages => ({
                         ...prevImages,
@@ -162,28 +126,13 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
                         roleImage: '',
                     }
                     
-                    // Cache failures to avoid retries
-                    imageCache.set(cacheKey, emptyImageData)
-                    
                     // Update state with empty data
                     setPlayerImages(prevImages => ({
                         ...prevImages,
                         [player.player]: emptyImageData
                     }))
                 }
-                }))
-            }
-            
-            // Process images in batches
-            for (let i = 0; i < playersNeedingImages.length; i += batchSize) {
-                const batch = playersNeedingImages.slice(i, i + batchSize)
-                await processImageBatch(batch)
-                
-                // Small delay between batches to avoid overwhelming the server
-                if (i + batchSize < playersNeedingImages.length) {
-                    await new Promise(resolve => setTimeout(resolve, 100))
-                }
-            }
+            }))
         }
 
         fetchData()
