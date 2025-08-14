@@ -1,12 +1,11 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import Image from 'next/image'
 import useSWR from 'swr'
 import { SortableTable, TableColumn } from '@/components/ui/table/SortableTable'
 import { PlayerStats, getTournamentPlayerStats, TournamentPlayerStatsResponse } from '@/lib/api/players'
-import { getPlayerImage, getPlayerTournamentImage } from '@/lib/api/player'
-import { getRoleImage, getPlayerImageFromBackend } from '@/lib/api/image'
+import { useBatchPlayerImages } from '@/lib/hooks/usePlayerImageCache'
 import { CleanName } from '@/lib/utils/cleanName'
 import { MatchSkeleton } from '@/components/ui/skeleton/MatchSkeleton'
 import Link from 'next/link'
@@ -57,8 +56,6 @@ function PlayerTabContent({ data, tabColumns }: {
  */
 
 export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStatisticsClientProps) {
-    const [playerImages, setPlayerImages] = useState<Record<string, { playerImage: string; teamImage: string; roleImage: string }>>({})
-
     const { data, error, isLoading } = useSWR(
         tournamentId ? `player-stats-${tournamentId}` : null,
         async () => {
@@ -69,74 +66,25 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
         {
             fallbackData: initialData || undefined,
             revalidateOnFocus: false,
-            revalidateOnMount: !initialData, // Don't revalidate if we have initial data
-            dedupingInterval: 60000, // 1 minute
-            errorRetryCount: 1
+            revalidateOnMount: true, // Always fetch on mount to ensure fresh data
+            revalidateOnReconnect: false, // Don't refetch on reconnection
+            dedupingInterval: 300000, // 5 minutes deduplication
+            errorRetryCount: 1,
+            refreshInterval: 0 // Disable automatic refresh
         }
     )
 
-    // Fetch player and team images when data changes
-    useEffect(() => {
-        if (!data?.players || data.players.length === 0) {
-            setPlayerImages({})
-            return
-        }
+    // Prepare players list for batch image loading
+    const playersForImages = data?.players?.map(player => ({
+        player: player.player,
+        role: player.role
+    })) || []
 
-        const fetchData = async () => {
-            
-            // Fetch all images simultaneously 
-            await Promise.all(data.players.map(async (player) => {
-                try {
-                    // Fetch player image with fallback parameter
-                    let playerImageResponse = await getPlayerImageFromBackend(player.player, {
-                        tournament: data.tournament,
-                        fallback: 'placeholder'
-                    })
-                    
-                    // If backend didn't return an image URL, try legacy methods
-                    if (!playerImageResponse.data) {
-                        playerImageResponse = await getPlayerTournamentImage(player.player, data.tournament)
-                        
-                        if (!playerImageResponse.data) {
-                            playerImageResponse = await getPlayerImage(player.player, data.tournament)
-                        }
-                    }
-                    
-                    // Get role image
-                    const roleImageResponse = await getRoleImage(player.role || '')
-                    
-                    const imageData = {
-                        playerImage: playerImageResponse.data || '',
-                        teamImage: '',
-                        roleImage: roleImageResponse.data || '',
-                    }
-                    
-                    // Update state immediately for this player
-                    setPlayerImages(prevImages => ({
-                        ...prevImages,
-                        [player.player]: imageData
-                    }))
-                    
-                    console.log(`✅ Loaded image for ${player.player}`)
-                } catch (individualError) {
-                    console.error(`Failed to fetch data for player ${player.player}:`, individualError)
-                    const emptyImageData = {
-                        playerImage: '',
-                        teamImage: '',
-                        roleImage: '',
-                    }
-                    
-                    // Update state with empty data
-                    setPlayerImages(prevImages => ({
-                        ...prevImages,
-                        [player.player]: emptyImageData
-                    }))
-                }
-            }))
-        }
-
-        fetchData()
-    }, [data])
+    // Use the cached batch image hook - this will persist across page navigations
+    // Pass undefined as tournament if not available yet, hook will use default cache key
+    const { 
+        batchImageData: playerImages
+    } = useBatchPlayerImages(playersForImages, data?.tournament || undefined)
 
     if (isLoading) {
         return (
@@ -174,7 +122,7 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
         cellClassName: 'font-semibold text-sm w-40',
         accessor: (item) => item.player,
         cell: (item) => {
-            const playerImageData = playerImages[item.player]
+            const playerImageData = playerImages?.[item.player]
             const hasPlayerImage = playerImageData?.playerImage
             const hasRoleImage = playerImageData?.roleImage
             
@@ -184,7 +132,7 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
                     {hasPlayerImage ? (
                         <div className="relative flex-shrink-0">
                             <Image
-                                src={playerImageData.playerImage}
+                                src={playerImageData?.playerImage || ''}
                                 alt={`${item.player} avatar`}
                                 width={32}
                                 height={32}
@@ -223,7 +171,7 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
                     {hasRoleImage && (
                         <div className="relative flex-shrink-0">
                             <Image
-                                src={playerImageData.roleImage}
+                                src={playerImageData?.roleImage || ''}
                                 alt={`${item.role || 'Unknown'} role`}
                                 width={20}
                                 height={20}

@@ -33,7 +33,8 @@ import { useTournamentPlayerTeam } from '@/hooks/useTournamentPlayerTeam'
 import { useTeamImage } from '@/hooks/useTeamImage'
 import { getTournamentPlayerStats } from '@/lib/api/players'
 import { getTeamByName } from '@/lib/api/teams'
-import { getTeamImage, getPlayerImageFromBackend } from '@/lib/api/image'
+import { getTeamImage } from '@/lib/api/image'
+import { usePlayerImageCache } from '@/lib/hooks/usePlayerImageCache'
 import Image from 'next/image'
 
 interface PlayerTableEntityClientProps {
@@ -138,45 +139,37 @@ const PlayerTableEntityContent = ({
     // Use team image URL from direct fetch or dynamic fetch from overviewPage
     const currentTeamImage = teamImageUrl || dynamicTeamImage
 
-    // State for player image - direct fetch without batching
-    const [dynamicPlayerImage, setDynamicPlayerImage] = useState<string | null>(null)
-
-    // Use dynamic player image from direct fetch or server-side prop fallback
-    const currentPlayerImage = dynamicPlayerImage || playerImage
-
-    // Fetch player image directly when tournament or player changes - no batching
+    // Get tournament name for image cache
+    const [tournamentName, setTournamentName] = useState<string | null>(null)
+    
+    // Fetch tournament name when selectedTournamentId changes
     useEffect(() => {
-        if (!selectedTournamentId || !playerName) {
-            setDynamicPlayerImage(null)
+        if (!selectedTournamentId) {
+            setTournamentName(null)
             return
         }
 
-        const fetchPlayerImage = async () => {
+        const fetchTournamentName = async () => {
             try {
-                // First get tournament data to get tournament name
                 const response = await getTournamentPlayerStats(selectedTournamentId.toString())
-                
-                if (response.data && response.data.tournament) {
-                    // Use the backend endpoint directly - no batching
-                    const imageResponse = await getPlayerImageFromBackend(playerName, {
-                        tournament: response.data.tournament,
-                        fallback: 'none'
-                    })
-                    
-                    if (imageResponse.data) {
-                        setDynamicPlayerImage(imageResponse.data)
-                    } else {
-                        setDynamicPlayerImage(null)
-                    }
-                }
+                setTournamentName(response.data?.tournament || null)
             } catch (error) {
-                console.error('Failed to fetch player image:', error)
-                setDynamicPlayerImage(null)
+                console.error('Failed to fetch tournament name:', error)
+                setTournamentName(null)
             }
         }
 
-        fetchPlayerImage()
-    }, [selectedTournamentId, playerName])
+        fetchTournamentName()
+    }, [selectedTournamentId])
+
+    // Use cached player image - works with or without tournament
+    const { imageData } = usePlayerImageCache(playerName, {
+        tournament: tournamentName || undefined,
+        fallback: 'placeholder'
+    })
+
+    // Use cached player image or server-side prop fallback
+    const currentPlayerImage = imageData?.playerImage || playerImage
 
     // Fetch complete team data when we only have team name but no overviewPage
     useEffect(() => {
