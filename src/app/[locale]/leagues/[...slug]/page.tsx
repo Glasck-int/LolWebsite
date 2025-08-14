@@ -72,7 +72,7 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
                 </div>
 
                 {league.data && (
-                    <LeagueTableEntityClient 
+                    <justje  
                         leagueId={league.data.id}
                         league={league.data}
                         imageData={leagueImage.data || ''}

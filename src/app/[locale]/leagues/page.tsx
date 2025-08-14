@@ -1,5 +1,4 @@
 import React from 'react'
-import Footer from '@/components/layout/Footer/Footer'
 import { getAllLeagues, getMajorLeagues } from '../../../lib/api/league'
 import { LeaguesClient } from './LeaguesClient'
 import { getLeagueImage } from '@/lib/api/image'
@@ -90,7 +89,6 @@ export const revalidate = 86400 // 24 hours
              <div className="container mx-auto px-4 py-8">
                  <h1 className="text-2xl mb-4">Error loading leagues</h1>
                  {/* <p className="text-red-600">{error.message}</p> */}
-                 <Footer />
              </div>
          )
      }

@@ -96,7 +96,7 @@ const LeagueTableEntityContent = ({
     const handleStatsViewChange = useCallback((option: string | null) => {
         setActiveStatsView(option)
     }, [])
-    
+    , 
     // Reset stats view to Players when selectedTournamentId changes
     useEffect(() => {
         if (selectedTournamentId) {

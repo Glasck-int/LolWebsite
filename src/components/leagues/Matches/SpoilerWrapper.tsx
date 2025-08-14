@@ -46,8 +46,13 @@ interface SpoilerWrapperProps {
  * @since 1.0.0
  */
 const SpoilerWrapper = ({ children }: SpoilerWrapperProps) => {
-    const { isSpoilerVisible } = useSpoiler()
+    const { isSpoilerVisible, isHydrated } = useSpoiler()
     const [isLocallyVisible, setIsLocallyVisible] = useState(false)
+
+    // Prevent hydration mismatch by showing children during hydration
+    if (!isHydrated) {
+        return <>{children}</>
+    }
 
     // if the spoiler is visible, show the content
     if (isSpoilerVisible || isLocallyVisible) {

@@ -38,22 +38,24 @@ export const HeaderActions = ({
 	isMenuOpen,
 	onMenuToggle,
 }: HeaderActionsProps) => {
-	const { isSpoilerVisible, toggleSpoiler } = useSpoiler();
+	const { isSpoilerVisible, toggleSpoiler, isHydrated } = useSpoiler();
 
 	return (
 		<div className="flex flex-row gap-6 items-center" data-header-actions>
 			<SearchBar />
 
-			{isSpoilerVisible ? (
-				<EyeOff
-					className="w-6 h-6 text-white transition-all duration-200 cursor-pointer hover:text-gray-300"
-					onClick={toggleSpoiler}
-				/>
-			) : (
-				<Eye
-					className="w-6 h-6 text-white transition-all duration-200 cursor-pointer hover:text-gray-300"
-					onClick={toggleSpoiler}
-				/>
+			{isHydrated && (
+				isSpoilerVisible ? (
+					<EyeOff
+						className="w-6 h-6 text-white transition-all duration-200 cursor-pointer hover:text-gray-300"
+						onClick={toggleSpoiler}
+					/>
+				) : (
+					<Eye
+						className="w-6 h-6 text-white transition-all duration-200 cursor-pointer hover:text-gray-300"
+						onClick={toggleSpoiler}
+					/>
+				)
 			)}
 			<LocaleSwitcher className="hidden md:block" />
 

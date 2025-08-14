@@ -8,6 +8,7 @@ import { Inter } from "next/font/google";
 import { Header } from "@/components/layout/Header/Header";
 import { SpoilerProvider } from "@/contexts/SpoilerContext";
 import { SWRProvider } from "@/lib/swr/SWRProvider";
+import Footer from "@/components/layout/Footer/Footer";
 
 const inter = Inter({
 	subsets: ["latin"],
@@ -85,6 +86,7 @@ export default async function LocaleLayout({
 							<div className="pt-24 px-2 body-container">
 								{children}
 							</div>
+							<Footer />
 						</SWRProvider>
 					</SpoilerProvider>
 				</NextIntlClientProvider>

@@ -5,6 +5,7 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from "
 interface SpoilerContextType {
   isSpoilerVisible: boolean;
   toggleSpoiler: () => void;
+  isHydrated: boolean;
 }
 
 const SpoilerContext = createContext<SpoilerContextType | undefined>(undefined);
@@ -15,6 +16,7 @@ interface SpoilerProviderProps {
 
 export const SpoilerProvider = ({ children }: SpoilerProviderProps) => {
   const [isSpoilerVisible, setIsSpoilerVisible] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   // Load the state from localStorage on mount
   useEffect(() => {
@@ -22,6 +24,7 @@ export const SpoilerProvider = ({ children }: SpoilerProviderProps) => {
     if (savedSpoilerState !== null) {
       setIsSpoilerVisible(JSON.parse(savedSpoilerState));
     }
+    setIsHydrated(true);
   }, []);
 
   const toggleSpoiler = () => {
@@ -32,7 +35,7 @@ export const SpoilerProvider = ({ children }: SpoilerProviderProps) => {
   };
 
   return (
-    <SpoilerContext.Provider value={{ isSpoilerVisible, toggleSpoiler }}>
+    <SpoilerContext.Provider value={{ isSpoilerVisible, toggleSpoiler, isHydrated }}>
       {children}
     </SpoilerContext.Provider>
   );
