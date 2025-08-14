@@ -433,14 +433,7 @@ const PlayerTableEntityContent = ({
                                     )}
                                 </div>
                             </>
-                        ) : (
-                            <div className="p-4 bg-gray-700 rounded-lg">
-                                <h3 className="text-lg font-semibold mb-2">
-                                    Statistics
-                                </h3>
-                                <p>Select a tournament to view player and champion statistics</p>
-                            </div>
-                        )}
+                        ) : null}
                     </div>
                 </TableEntityContent>
                 <TableEntityContent>
@@ -452,14 +445,7 @@ const PlayerTableEntityContent = ({
                                 tournamentId={selectedTournamentId}
                                 maxRows={null}
                             />
-                        ) : (
-                            <div className="p-4 bg-gray-700 rounded-lg">
-                                <h3 className="text-lg font-semibold mb-2">
-                                    Tournament Details
-                                </h3>
-                                <p>Select a tournament to view detailed standings or playoff bracket</p>
-                            </div>
-                        )}
+                        ) : null}
                     </div>
                 </TableEntityContent>
                 <TableEntityContent>
