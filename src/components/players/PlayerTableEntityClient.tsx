@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useEffect, useCallback, useState } from 'react'
-import Link from 'next/link'
 import { usePlayerTableEntityData } from '@/hooks/usePlayerTableEntityData'
 import { useTableEntityStore, SeasonData } from '@/store/tableEntityStore'
 import { useSimpleTabSync } from '@/hooks/useSimpleTabSync'
@@ -34,7 +33,6 @@ import { getTournamentPlayerStats } from '@/lib/api/players'
 import { getTeamByName } from '@/lib/api/teams'
 import { getTeamImage } from '@/lib/api/image'
 import { usePlayerImageCache } from '@/lib/hooks/usePlayerImageCache'
-import Image from 'next/image'
 import { PlayerDescription } from './PlayerDescription'
 
 interface PlayerTableEntityClientProps {

@@ -393,6 +393,7 @@ export default async function seasonsRoutes(fastify: FastifyInstance) {
             try {
                 const { playerName } = request.params
                 const cacheKey = `seasons:player:${playerName}`
+                console.log(`Fetching player seasons for: ${playerName}`)
 
                 // Check cache first
                 const cached = await redis.get(cacheKey)
