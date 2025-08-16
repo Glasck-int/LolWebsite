@@ -20,13 +20,13 @@ export const PlayerDescriptionClient = ({
 }: PlayerDescriptionClientProps) => {
     return (
         <>
-            <div className="flex-shrink-0">
+            <div className="w-[125px] h-[125px] flex items-center justify-center flex-shrink-0">
                 <Image
                     src={playerImage!}
                     alt={playerData.name || ''}
                     width={125}
                     height={125}
-                    className="object-contain drop-shadow-lg rounded-lg"
+                    className="object-contain drop-shadow-lg rounded-lg max-w-[125px] max-h-[125px]"
                 />
             </div>
             <div className="flex flex-col justify-center items-start gap-0 min-w-0 flex-1">
@@ -44,7 +44,7 @@ export const PlayerDescriptionClient = ({
                                 alt={teamName}
                                 width={30}
                                 height={30}
-                                className="object-contain"
+                                className="object-contain max-w-[30px] max-h-[30px]"
                             />
                         )}
                         <p className="text-clear-grey font-semibold m-0 leading-none truncate">

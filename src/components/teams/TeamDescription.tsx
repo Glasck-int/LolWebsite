@@ -23,13 +23,13 @@ export const TeamDescription = ({
         <div className="flex flex-row gap-2 items-center justify-start">
             {teamImage ? (
                 <>
-                    <div className="w-[75px] h-[75px] flex items-center justify-center flex-shrink-0">
+                    <div className="w-[100px] h-[100px] flex items-center justify-center flex-shrink-0">
                         <Image
                             src={teamImage}
                             alt={teamData.name || ''}
-                            width={75}
-                            height={75}
-                            className="object-contain drop-shadow-lg"
+                            width={100}
+                            height={100}
+                            className="object-contain drop-shadow-lg max-w-[100px] max-h-[100px]"
                         />
                     </div>
                     <div className="flex flex-col justify-center items-start gap-0 min-w-0 flex-1">
@@ -47,7 +47,7 @@ export const TeamDescription = ({
                                         alt={currentLeagueData.name}
                                         width={30}
                                         height={30}
-                                        className="object-contain"
+                                        className="object-contain max-w-[30px] max-h-[30px]"
                                     />
                                 )}
                                 <p className="text-clear-grey font-semibold m-0 leading-none truncate">
@@ -94,7 +94,7 @@ export const TeamDescription = ({
                                         alt={currentLeagueData.name}
                                         width={20}
                                         height={20}
-                                        className="object-contain"
+                                        className="object-contain max-w-[20px] max-h-[20px]"
                                     />
                                 )}
                                 <p className="text-clear-grey font-semibold m-0 leading-none truncate">
