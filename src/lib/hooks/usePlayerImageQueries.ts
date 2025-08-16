@@ -1,4 +1,5 @@
-import { useQuery, useQueries } from '@tanstack/react-query'
+import React from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { getPlayerImageFromBackend, getRoleImage } from '@/lib/api/image'
 import { getPlayerTournamentImage, getPlayerImage } from '@/lib/api/player'
 
@@ -122,64 +123,85 @@ export function useRoleImageCache(role: string) {
   }
 }
 
+
 /**
- * Hook optimisé pour le chargement en batch avec cache unifié
+ * Fetch individuel pour tous les joueurs (méthode simplifiée sans batch)
+ */
+async function fetchAllPlayerImagesIndividual(
+  players: Array<{ player: string; role?: string }>,
+  tournament?: string
+): Promise<Record<string, PlayerImageData>> {
+  const results: Record<string, PlayerImageData> = {}
+  
+  const playerPromises = players.map(async ({ player, role }) => {
+    try {
+      const data = await fetchPlayerImageData(player, tournament, role, 'placeholder')
+      return { player, data }
+    } catch (error) {
+      console.error(`Failed to fetch data for player ${player}:`, error)
+      return { 
+        player, 
+        data: { playerImage: '', teamImage: '', roleImage: '' } as PlayerImageData 
+      }
+    }
+  })
+  
+  const playerResults = await Promise.allSettled(playerPromises)
+  
+  playerResults.forEach((result) => {
+    if (result.status === 'fulfilled' && result.value) {
+      results[result.value.player] = result.value.data
+    }
+  })
+  
+  return results
+}
+
+/**
+ * Hook pour le chargement individuel de toutes les images de joueurs
  */
 export function useBatchPlayerImages(
   players: Array<{ player: string; role?: string }>,
   tournament?: string
 ) {
-  // Pré-charger les rôles une seule fois
-  const uniqueRoles = [...new Set(players.map(p => p.role).filter(Boolean))]
+  // Créer une clé de cache unique pour ce groupe de joueurs
+  const playersKey = players
+    .map(p => `${p.player}-${p.role || 'no-role'}`)
+    .sort() // Trier pour avoir une clé stable
+    .join(',')
   
-  const roleQueries = useQueries({
-    queries: uniqueRoles.map(role => ({
-      queryKey: ['role-image-global', role],
-      queryFn: async () => {
-        const response = await getRoleImage(role!)
-        return response.data || ''
-      },
-      staleTime: Infinity,
-      gcTime: 24 * 60 * 60 * 1000,
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-    }))
+  const { data, error, isLoading } = useQuery({
+    queryKey: ['individual-player-images', tournament || 'default', playersKey],
+    queryFn: async () => {
+      console.log('🎯 Fetching individual images for players:', players.length)
+      const result = await fetchAllPlayerImagesIndividual(players, tournament)
+      console.log('✅ Individual result:', Object.keys(result).length, 'players loaded')
+      return result
+    },
+    enabled: players.length > 0,
+    
+    // Cache agressif 
+    staleTime: 24 * 60 * 60 * 1000, // 24h
+    gcTime: 24 * 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false, // Ne pas refetch si on a déjà les données
+    retry: 1,
   })
 
-  // Charger les images de joueurs avec cache unifié
-  const playerQueries = useQueries({
-    queries: players.map(({ player, role }) => ({
-      queryKey: createPlayerImageQueryKey(player, tournament, role),
-      queryFn: () => fetchPlayerImageData(player, tournament, role, 'placeholder'),
-      enabled: !!player,
-      
-      // Cache optimisé pour batch loading
-      staleTime: 24 * 60 * 60 * 1000, // 24h
-      gcTime: 24 * 60 * 60 * 1000,
-      refetchOnWindowFocus: false,
-      refetchOnMount: false, // Clé: ne pas refetch si on a déjà les données
-      retry: 1,
-    }))
-  })
-
-  // Combiner les résultats de manière optimisée
-  const batchImageData = players.reduce((acc, { player }, index) => {
-    const playerQuery = playerQueries[index]
-    if (playerQuery.data) {
-      acc[player] = playerQuery.data
+  // Debug dans le hook
+  React.useEffect(() => {
+    if (data) {
+      console.log('🔍 Individual data received:', Object.keys(data).length, 'players')
+      console.log('🔍 Sample data:', Object.entries(data).slice(0, 2))
     }
-    return acc
-  }, {} as Record<string, PlayerImageData>)
-
-  const isLoading = playerQueries.some(query => query.isLoading) || 
-                   roleQueries.some(query => query.isLoading)
-  
-  const hasError = playerQueries.some(query => query.error) || 
-                   roleQueries.some(query => query.error)
+    if (error) {
+      console.error('❌ Individual error:', error)
+    }
+  }, [data, error])
 
   return {
-    batchImageData,
+    batchImageData: data || {},
     isLoading,
-    error: hasError ? 'One or more images failed to load' : null
+    error: error?.message || null
   }
 }

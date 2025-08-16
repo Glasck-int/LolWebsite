@@ -99,9 +99,13 @@ async function apiRequest<T>(
     try {
         const API_BASE_URL = getApiBaseUrl()
 
-        const cacheConfig = getCacheConfig(endpoint)
+        // Ne pas utiliser le cache pour les requêtes POST/PUT/DELETE
+        const isGetRequest = !options.method || options.method.toUpperCase() === 'GET'
+        const cacheConfig = isGetRequest ? getCacheConfig(endpoint) : { cache: 'no-store' as const }
 
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        const fullUrl = `${API_BASE_URL}${endpoint}`
+        
+        const response = await fetch(fullUrl, {
             headers: {
                 'Content-Type': 'application/json',
                 ...options.headers,
