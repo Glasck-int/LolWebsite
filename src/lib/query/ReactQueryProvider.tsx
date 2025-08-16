@@ -11,28 +11,33 @@ function createQueryClient() {
     return new QueryClient({
         defaultOptions: {
             queries: {
-                // Aggressive caching settings for instant access (equivalent to SWR config)
+                // Cache ultra-agressif pour éliminer les délais
                 staleTime: 300000, // 5 minutes - data stays fresh
-                gcTime: 600000, // 10 minutes - garbage collection time (was cacheTime in v4)
+                gcTime: 1800000, // 30 minutes - garde en cache plus longtemps
                 
-                // Revalidation settings - prioritize cache over freshness for instant UX
-                refetchOnWindowFocus: false, // Never revalidate on focus to prevent lag
-                refetchOnReconnect: false, // Don't refetch on reconnect to avoid interruptions
-                refetchOnMount: false, // Don't refetch on mount if data exists
-                refetchInterval: false, // Never auto-refresh
+                // Optimisations pour navigation instantanée
+                refetchOnWindowFocus: false,
+                refetchOnReconnect: false,
+                refetchOnMount: false, // CRUCIAL: ne pas refetch si on a des données
+                refetchInterval: false,
                 
-                // Error handling - be more tolerant to avoid loading states
-                retry: 1, // Reduce retries to fail fast
-                retryDelay: 10000, // Longer interval between retries (10 seconds)
+                // Retry minimal pour éviter les délais
+                retry: (failureCount, error: unknown) => {
+                    // Ne retry que les erreurs réseau, pas les 404/400
+                    const statusError = error as { status?: number }
+                    if (statusError?.status && statusError.status >= 400 && statusError.status < 500) return false
+                    return failureCount < 1
+                },
+                retryDelay: 5000, // Délai plus court
                 
-                // Only retry on network errors, not client errors
-                retryOnMount: true,
-                
-                // Performance optimizations for instant access
+                // Performance optimizations
                 networkMode: 'online',
                 
-                // Keep previous data to prevent flicker
+                // Garde les données précédentes pour éviter les flickers
                 placeholderData: (previousData: unknown) => previousData,
+                
+                // Optimisation cruciale: structure sharing pour éviter les re-renders
+                structuralSharing: true,
             },
             
             mutations: {
