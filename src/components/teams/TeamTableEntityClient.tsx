@@ -1,8 +1,6 @@
 'use client'
 
 import React, { useState, useCallback } from 'react'
-import Link from 'next/link'
-import Image from 'next/image'
 import { useTeamTableEntityData } from '@/hooks/useTeamTableEntityData'
 import { useTableEntityStore, SeasonData } from '@/store/tableEntityStore'
 import { useSimpleTabSync } from '@/hooks/useSimpleTabSync'
@@ -33,6 +31,7 @@ import { League as LeagueType } from '@/generated/prisma'
 import { TeamWithLatestLeague } from '@/lib/types/team'
 import { useTournamentLeague } from '@/hooks/useTournamentLeague'
 import { useLeagueImage } from '@/hooks/useLeagueImage'
+import { TeamDescription } from './TeamDescription'
 
 interface TeamTableEntityClientProps {
     teamName: string
@@ -101,100 +100,30 @@ const TeamTableEntityContent = ({
 
     return (
         <>
+            {/* Mobile header - visible only on mobile */}
+            <div className="block md:hidden  ">
+                {teamData && (
+                    <TeamDescription
+                        teamData={teamData}
+                        teamImage={teamImage}
+                        leagueImage={currentLeagueImage || undefined}
+                        leagueData={currentLeagueData}
+                    />
+                )}
+            </div>
+
             <Card>
                 <CardContext>
                     <CardBody>
-                        <div className="hidden md:flex p-[15px] h-[130px] gap-3 w-full items-center justify-center overflow-hidden">
+                        <div className="hidden md:flex p-[15px] h-[130px] gap-3 w-full items-center justify-start overflow-hidden">
+                            
                             {teamData ? (
-                                <div className="flex flex-row gap-4 items-center w-full">
-                                    <div className="flex-shrink-0">
-                                        {teamImage ? (
-                                            <Image
-                                                src={teamImage}
-                                                alt={teamData.name || ''}
-                                                width={75}
-                                                height={75}
-                                                className="object-contain drop-shadow-lg"
-                                            />
-                                        ) : (
-                                            <div className="w-[75px] h-[75px] rounded-lg bg-gradient-to-br from-dark-grey to-clear-violet/30 flex items-center justify-center flex-shrink-0 ring-1 ring-white/10">
-                                                <svg
-                                                    width="40"
-                                                    height="40"
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    className="text-white"
-                                                >
-                                                    <path
-                                                        d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
-                                                        fill="currentColor"
-                                                        opacity="0.9"
-                                                    />
-                                                </svg>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="flex flex-col justify-center items-start gap-0 min-w-0 flex-1">
-                                        <h1 className="font-medium m-0 leading-none truncate w-full">
-                                            {teamData.name}
-                                        </h1>
-                                        <Link 
-                                            href={`/leagues/${currentLeagueData?.name || ''}`} 
-                                            className="flex items-center gap-3 hover:opacity-80 transition-opacity"
-                                        >
-                                            {currentLeagueImage ? (
-                                                <Image
-                                                    src={currentLeagueImage}
-                                                    alt={currentLeagueData?.name || ''}
-                                                    width={34}
-                                                    height={34}
-                                                    className="object-contain"
-                                                />
-                                            ) : (
-                                                <div className="w-10 h-10 rounded bg-gradient-to-br from-dark-grey to-clear-violet/30 flex items-center justify-center flex-shrink-0">
-                                                    <svg
-                                                        width="12"
-                                                        height="12"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        className="text-white"
-                                                    >
-                                                        <path
-                                                            d="M5 5C5 4.44772 5.44772 4 6 4H18C18.5523 4 19 4.44772 19 5V8C19 11.3137 16.3137 14 13 14H11C7.68629 14 5 11.3137 5 8V5Z"
-                                                            fill="currentColor"
-                                                            opacity="0.9"
-                                                        />
-                                                    </svg>
-                                                </div>
-                                            )}
-                                            <p className="text-clear-grey font-semibold m-0 leading-none truncate">
-                                                {currentLeagueData ? 
-                                                    (() => {
-                                                        // Si le short existe et n'est pas le même que le nom, on l'utilise
-                                                        if (currentLeagueData.short && currentLeagueData.short !== currentLeagueData.name) {
-                                                            return currentLeagueData.short;
-                                                        }
-                                                        // Sinon on génère une abréviation
-                                                        if (currentLeagueData.name) {
-                                                            const words = currentLeagueData.name.split(' ');
-                                                            if (words.length >= 2) {
-                                                                // Prendre la première lettre de chaque mot
-                                                                return words.map(word => word[0]).join('').slice(0, 2).toUpperCase();
-                                                            } else {
-                                                                // Si un seul mot, prendre les 2 premières lettres
-                                                                return currentLeagueData.name.slice(0, 2).toUpperCase();
-                                                            }
-                                                        }
-                                                        return '';
-                                                    })()
-                                                    : 'League'
-                                                }
-                                            </p>
-                                        </Link>
-                                    </div>
-                                </div>
+                                <TeamDescription
+                                    teamData={teamData}
+                                    teamImage={teamImage}
+                                    leagueImage={currentLeagueImage || undefined}
+                                    leagueData={currentLeagueData}
+                                />
                             ) : (
                                 <div className="flex flex-row gap-4 items-center">
                                     <div className="w-[75px] h-[75px] rounded-lg bg-gradient-to-br from-dark-grey to-clear-violet/30 flex items-center justify-center flex-shrink-0 ring-1 ring-white/10">

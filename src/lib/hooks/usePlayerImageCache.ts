@@ -180,7 +180,7 @@ export function useBatchPlayerImages(
       refreshInterval: 0,
       errorRetryCount: 1,
       shouldRetryOnError: false,
-      revalidateOnMount: true // Crucial: ne pas refetch au montage
+      revalidateOnMount: true // pas refetch au montage
     }
   )
 

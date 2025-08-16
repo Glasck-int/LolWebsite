@@ -24,8 +24,8 @@ export const PlayerDescriptionClient = ({
                 <Image
                     src={playerImage!}
                     alt={playerData.name || ''}
-                    width={100}
-                    height={100}
+                    width={125}
+                    height={125}
                     className="object-contain drop-shadow-lg rounded-lg"
                 />
             </div>
@@ -42,8 +42,8 @@ export const PlayerDescriptionClient = ({
                             <Image
                                 src={teamImage}
                                 alt={teamName}
-                                width={75}
-                                height={75}
+                                width={30}
+                                height={30}
                                 className="object-contain"
                             />
                         )}
