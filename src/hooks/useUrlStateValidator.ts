@@ -13,6 +13,17 @@ export const useUrlStateValidator = () => {
     const pathname = usePathname()
     const store = useTableEntityStore()
     const validationTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+    const pageLoadTimeRef = useRef<number>(Date.now())
+    const lastPathnameRef = useRef<string>(pathname)
+    
+    // Reset page load time when pathname changes (new navigation)
+    useEffect(() => {
+        if (lastPathnameRef.current !== pathname) {
+            pageLoadTimeRef.current = Date.now()
+            lastPathnameRef.current = pathname
+            console.log('🔄 [URL VALIDATOR] New page navigation detected, resetting timer')
+        }
+    }, [pathname])
     
     // Extract entity info from current pathname
     const getEntityInfo = () => {
@@ -66,10 +77,21 @@ export const useUrlStateValidator = () => {
     const validateUrlState = () => {
         const expectedUrl = buildExpectedUrl()
         
+        // Check if we're on a base entity page (like /players/HARPOON/) without tournament info
+        const segments = pathname.split('/').filter(Boolean)
+        const hasLocale = segments.length >= 2 && segments[0].length === 2
+        const startIndex = hasLocale ? 1 : 0
+        const isBaseEntityPage = segments.length === startIndex + 2 // Just /locale/entityType/entityName
+        
         if (expectedUrl !== pathname) {
+            // Check how much time has passed since page load
+            const timeSincePageLoad = Date.now() - pageLoadTimeRef.current
+            
             console.warn('🔧 [URL VALIDATOR] URL state mismatch detected:', {
                 current: pathname,
                 expected: expectedUrl,
+                isBaseEntityPage,
+                timeSincePageLoad,
                 store: {
                     season: store.activeHeaderSeason,
                     split: store.activeSplit,
@@ -78,6 +100,13 @@ export const useUrlStateValidator = () => {
                     allSplit: store.activeAllSplit
                 }
             })
+            
+            // Skip validation on base entity pages if not enough time has passed
+            // This prevents automatic validation on page load but allows manual selections after 2 seconds
+            if (isBaseEntityPage && timeSincePageLoad < 2000) {
+                console.log('🚫 [URL VALIDATOR] Skipping URL validation for base entity page (too soon after page load)')
+                return
+            }
             
             // Fix the URL
             router.replace(expectedUrl, { scroll: false })

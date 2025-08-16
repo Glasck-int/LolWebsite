@@ -14,6 +14,17 @@ export const useUrlSync = (isInitializing = false) => {
     const lastNavigatedUrl = useRef<string>('')
     const isInitializingRef = useRef(true)
     const lastStoreStateRef = useRef<string>('')
+    const pageLoadTimeRef = useRef<number>(Date.now())
+    const lastPathnameRef = useRef<string>(pathname)
+    
+    // Reset page load time when pathname changes (new navigation)
+    useEffect(() => {
+        if (lastPathnameRef.current !== pathname) {
+            pageLoadTimeRef.current = Date.now()
+            lastPathnameRef.current = pathname
+            console.log('🔄 [URL SYNC] New page navigation detected, resetting timer')
+        }
+    }, [pathname])
     
     // Shorter wait time for better UX, and better initialization tracking
     useEffect(() => {
@@ -102,9 +113,37 @@ export const useUrlSync = (isInitializing = false) => {
         // Create a hash of the current store state to detect actual changes
         const currentStoreState = `${store.activeHeaderSeason}-${store.activeSplit}-${store.activeTournament}-${store.activeAllSeason}-${store.activeAllSplit}`
         
+        // Check if we're on a base entity page (like /players/HARPOON/) without tournament info
+        const segments = pathname.split('/').filter(Boolean)
+        const hasLocale = segments.length >= 2 && segments[0].length === 2
+        const startIndex = hasLocale ? 1 : 0
+        const isBaseEntityPage = segments.length === startIndex + 2 // Just /locale/entityType/entityName
+        
         // Only update if store state actually changed
         if (currentStoreState !== lastStoreStateRef.current) {
             lastStoreStateRef.current = currentStoreState
+            
+            // Check how much time has passed since page load
+            const timeSincePageLoad = Date.now() - pageLoadTimeRef.current
+            
+            console.log('🔍 [URL SYNC] Debug info:', {
+                isBaseEntityPage,
+                pathname,
+                newUrl,
+                userHasSelectedTournament: store.userHasSelectedTournament,
+                timeSincePageLoad,
+                segments,
+                segmentsLength: segments.length,
+                startIndex,
+                expectedLength: startIndex + 2
+            })
+            
+            // Skip URL sync if we just landed on a base entity page and not enough time has passed
+            // This prevents automatic sync on page load but allows manual selections after 2 seconds
+            if (isBaseEntityPage && newUrl !== pathname && timeSincePageLoad < 2000) {
+                console.log('🚫 [URL SYNC] Skipping automatic URL sync for base entity page (too soon after page load)')
+                return
+            }
             
             // Use immediate update for critical navigation changes
             const isSeasonChange = store.activeHeaderSeason !== pathname.split('/')[3]

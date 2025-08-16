@@ -1,6 +1,4 @@
 import React from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
 import { PlayerWithRedirects } from '@glasck-int/glasck-types'
 import { PlayerDescriptionClient } from './PlayerDescriptionClient'
 
