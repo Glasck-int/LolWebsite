@@ -1,11 +1,11 @@
 'use client'
 
 import React from 'react'
-import { useStandingsWithTabsDataSWR } from '@/hooks/useStandingsDataSWR'
+import { useStandingsWithTabsDataQuery } from '@/hooks/useStandingsDataQuery'
 import { NewStandingsWithTabsClient } from '../clients/NewStandingsWithTabsClient'
 import { MatchSkeleton } from '@/components/ui/skeleton/MatchSkeleton'
 import { PlayoffBracket } from '../playOff/PlayoffBracket'
-import useSWR from 'swr'
+import { useQuery } from '@tanstack/react-query'
 import { getTournamentPlayoffBracket } from '@/lib/api/tournaments'
 
 /**
@@ -63,7 +63,7 @@ export const TournamentContentFetch = ({
     trackTeamName,
 }: TournamentContentFetchProps) => {
     // First, try to fetch standings data
-    const { processedData, loading: standingsLoading, error: standingsError } = useStandingsWithTabsDataSWR(tournamentId)
+    const { processedData, loading: standingsLoading, error: standingsError } = useStandingsWithTabsDataQuery(tournamentId)
     
     // Determine if we should fetch playoff data
     // We fetch playoff data when:
@@ -75,22 +75,22 @@ export const TournamentContentFetch = ({
         standingsError
     )
     
-    const { data: playoffData, error: playoffError, isLoading: playoffLoading } = useSWR(
-        shouldFetchPlayoffData ? `playoff-bracket-${tournamentId}` : null,
-        async () => {
+    const { data: playoffData, error: playoffError, isLoading: playoffLoading } = useQuery({
+        queryKey: ['playoff-bracket', tournamentId],
+        queryFn: async () => {
             const result = await getTournamentPlayoffBracket(tournamentId.toString())
             if (result.error) {
                 throw new Error(result.error)
             }
             return result.data
         },
-        {
-            revalidateOnFocus: false,
-            revalidateOnMount: true,
-            dedupingInterval: 60000,
-            errorRetryCount: 1
-        }
-    )
+        enabled: !!shouldFetchPlayoffData,
+        staleTime: 60000, // 1 minute
+        gcTime: 120000, // 2 minutes garbage collection
+        refetchOnWindowFocus: false,
+        refetchOnMount: true,
+        retry: 1,
+    })
     
     // Show loading state while either request is in progress
     if (standingsLoading || (shouldFetchPlayoffData && playoffLoading)) {

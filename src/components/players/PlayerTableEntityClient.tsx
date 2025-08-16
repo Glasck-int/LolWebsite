@@ -32,7 +32,7 @@ import { useTeamImage } from '@/hooks/useTeamImage'
 import { getTournamentPlayerStats } from '@/lib/api/players'
 import { getTeamByName } from '@/lib/api/teams'
 import { getTeamImage } from '@/lib/api/image'
-import { usePlayerImageCache } from '@/lib/hooks/usePlayerImageCache'
+import { usePlayerImageCache } from '@/lib/hooks/usePlayerImageQueries'
 import { PlayerDescription } from './PlayerDescription'
 
 interface PlayerTableEntityClientProps {

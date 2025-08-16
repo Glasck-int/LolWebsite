@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { useStandingsOverviewSWR } from '@/hooks/useStandingsOverviewSWR'
+import { useStandingsOverviewQuery } from '@/hooks/useStandingsOverviewQuery'
 import { StandingsOverviewClient } from '../clients/StandingsOverviewClient'
 import { MatchSkeleton } from '@/components/ui/skeleton/MatchSkeleton'
 
@@ -12,10 +12,10 @@ interface StandingsOverviewFetchProps {
 }
 
 /**
- * Standings overview fetch component with SWR caching system
+ * Standings overview fetch component with React Query caching system
  * 
  * @description
- * This component fetches tournament standings data using SWR for caching,
+ * This component fetches tournament standings data using React Query for caching,
  * enriches it with team data, recent matches, and images, then passes it to the client component.
  * 
  * Features:
@@ -29,7 +29,7 @@ export const StandingsOverviewFetch = ({
     highlightedTeam,
     maxRows = 3,
 }: StandingsOverviewFetchProps) => {
-    const { data, loading, error } = useStandingsOverviewSWR(tournamentId)
+    const { data, loading, error } = useStandingsOverviewQuery(tournamentId)
 
     if (loading) {
         return (

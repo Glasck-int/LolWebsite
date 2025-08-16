@@ -2,10 +2,10 @@
 
 import React from 'react'
 import Image from 'next/image'
-import useSWR from 'swr'
+import { useQuery } from '@tanstack/react-query'
 import { SortableTable, TableColumn } from '@/components/ui/table/SortableTable'
 import { PlayerStats, getTournamentPlayerStats, TournamentPlayerStatsResponse } from '@/lib/api/players'
-import { useBatchPlayerImages } from '@/lib/hooks/usePlayerImageCache'
+import { useBatchPlayerImages } from '@/lib/hooks/usePlayerImageQueries'
 import { CleanName } from '@/lib/utils/cleanName'
 import { MatchSkeleton } from '@/components/ui/skeleton/MatchSkeleton'
 import Link from 'next/link'
@@ -51,28 +51,28 @@ function PlayerTabContent({ data, tabColumns }: {
 }
 
 /**
- * Client Component for Player Statistics with SWR caching
+ * Client Component for Player Statistics with React Query caching
  * Works with dynamic tournamentId changes
  */
 
 export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStatisticsClientProps) {
-    const { data, error, isLoading } = useSWR(
-        tournamentId ? `player-stats-${tournamentId}` : null,
-        async () => {
+    const { data, error, isLoading } = useQuery({
+        queryKey: ['player-stats', tournamentId],
+        queryFn: async () => {
             const response = await getTournamentPlayerStats(tournamentId)
             if (response.error) throw new Error(response.error)
             return response.data
         },
-        {
-            fallbackData: initialData || undefined,
-            revalidateOnFocus: false,
-            revalidateOnMount: true, // Always fetch on mount to ensure fresh data
-            revalidateOnReconnect: false, // Don't refetch on reconnection
-            dedupingInterval: 300000, // 5 minutes deduplication
-            errorRetryCount: 1,
-            refreshInterval: 0 // Disable automatic refresh
-        }
-    )
+        enabled: !!tournamentId,
+        placeholderData: initialData || undefined,
+        staleTime: 300000, // 5 minutes - data stays fresh
+        gcTime: 600000, // 10 minutes garbage collection
+        refetchOnWindowFocus: false,
+        refetchOnMount: true, // Always fetch on mount to ensure fresh data
+        refetchOnReconnect: false, // Don't refetch on reconnection
+        retry: 1,
+        refetchInterval: false, // Disable automatic refresh
+    })
 
     // Prepare players list for batch image loading
     const playersForImages = data?.players?.map(player => ({

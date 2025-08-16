@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { useStandingsWithTabsDataSWR } from '@/hooks/useStandingsDataSWR'
+import { useStandingsWithTabsDataQuery } from '@/hooks/useStandingsDataQuery'
 import { NewStandingsWithTabsClient } from '../clients/NewStandingsWithTabsClient'
 import { MatchSkeleton } from '@/components/ui/skeleton/MatchSkeleton'
 
@@ -17,10 +17,10 @@ interface NewStandingsWithTabsFetchProps {
 }
 
 /**
- * Standings fetch component with SWR caching system
+ * Standings fetch component with React Query caching system
  * 
  * @description
- * This component fetches tournament standings data using SWR for caching,
+ * This component fetches tournament standings data using React Query for caching,
  * enriches it with detailed statistics, and passes it to the client component for display.
  * 
  * Features:
@@ -48,14 +48,14 @@ interface NewStandingsWithTabsFetchProps {
  * <NewStandingsWithTabsFetch tournamentId={123} maxRows={10} />
  * ```
  * 
- * @see {@link useStandingsWithTabsDataSWR} - Hook used for data fetching
+ * @see {@link useStandingsWithTabsDataQuery} - Hook used for data fetching
  * @see {@link NewStandingsWithTabsClient} - Client component for data display
  */
 export const NewStandingsWithTabsFetch = ({
     tournamentId,
     maxRows = null,
 }: NewStandingsWithTabsFetchProps) => {
-    const { processedData, loading, error } = useStandingsWithTabsDataSWR(tournamentId)
+    const { processedData, loading, error } = useStandingsWithTabsDataQuery(tournamentId)
 
     if (loading) {
         return (

@@ -1,6 +1,6 @@
 'use client'
 
-import useSWR from 'swr'
+import { useQuery } from '@tanstack/react-query'
 import { DDragon } from '@/lib/api/ddragon'
 
 /**
@@ -22,47 +22,40 @@ async function fetchDDragonVersions(): Promise<string[]> {
 }
 
 /**
- * Optimized SWR hook for DDragon versions
+ * Optimized React Query hook for DDragon versions
  * Configured with longer cache times since versions don't change frequently
+ * Equivalent to the previous useDDragonVersions SWR hook
  */
 export function useDDragonVersions() {
     const {
         data,
         error,
         isLoading,
-        isValidating,
-        mutate
-    } = useSWR(
-        DDRAGON_VERSIONS_KEY,
-        fetchDDragonVersions,
-        {
-            // Very aggressive caching for DDragon versions
-            revalidateOnFocus: false,
-            revalidateOnMount: false,
-            revalidateIfStale: false,
-            revalidateOnReconnect: false,
-            dedupingInterval: Infinity, // Never duplicate
-            
-            // Never auto-refresh DDragon versions
-            refreshInterval: 0,
-            
-            // Keep previous data
-            keepPreviousData: true,
-            
-            // Don't retry - fail fast to use fallback
-            shouldRetryOnError: false,
-            errorRetryCount: 0,
-            
-            // Extended timeout
-            loadingTimeout: 30000, // 30 seconds
-            
-            // Fallback to a known stable version
-            fallbackData: ['14.24.1'],
-            
-            // Don't suspend
-            suspense: false
-        }
-    )
+        isFetching,
+        refetch
+    } = useQuery({
+        queryKey: [DDRAGON_VERSIONS_KEY],
+        queryFn: fetchDDragonVersions,
+        
+        // Very aggressive caching for DDragon versions
+        staleTime: Infinity, // Never consider stale
+        gcTime: Infinity, // Never garbage collect
+        
+        // Never auto-refetch DDragon versions
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+        refetchOnReconnect: false,
+        refetchInterval: false,
+        
+        // Don't retry - fail fast to use fallback
+        retry: false,
+        
+        // Fallback to a known stable version
+        placeholderData: ['14.24.1'],
+        
+        // Extended timeout
+        networkMode: 'online',
+    })
 
     // Get the latest version with fallback
     const latestVersion = data?.[0] || '14.24.1'
@@ -72,11 +65,11 @@ export function useDDragonVersions() {
         latestVersion,
         error: error?.message || null,
         isLoading: !data && !error && isLoading,
-        isValidating,
-        mutate,
+        isValidating: isFetching,
+        mutate: refetch,
         
         // Helper methods
-        refetch: () => mutate(),
+        refetch: () => refetch(),
         
         // Additional info
         hasData: !!data,

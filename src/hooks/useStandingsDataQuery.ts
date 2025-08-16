@@ -1,13 +1,13 @@
 'use client'
 
-import useSWR from 'swr'
+import { useQuery } from '@tanstack/react-query'
 import { Standings } from '@/generated/prisma'
 import { getTournamentStandingsByTournamentId } from '@/lib/api/tournaments'
 import { fetchEnrichedStandingsData } from '@/lib/api/standings'
 import { ProcessedStanding } from '@/components/leagues/Standings/utils/StandingsDataProcessor'
 
 /**
- * Result returned by the useStandingsWithTabsDataSWR hook
+ * Result returned by the useStandingsWithTabsDataQuery hook
  * @interface UseStandingsWithTabsDataResult
  * @property {Standings[] | null} standings - Raw standings data fetched from the API
  * @property {ProcessedStanding[] | null} processedData - Enriched standings data with team statistics
@@ -22,11 +22,12 @@ interface UseStandingsWithTabsDataResult {
 }
 
 /**
- * Custom hook using SWR for fetching and caching tournament standings data
+ * Custom hook using React Query for fetching and caching tournament standings data
+ * Equivalent to the previous useStandingsWithTabsDataSWR hook
  * 
  * @description
  * This hook provides automatic caching, request deduplication, and optimized error handling
- * using SWR. Data is automatically cached for 1 minute and is not revalidated on window focus
+ * using React Query. Data is automatically cached for 1 minute and is not revalidated on window focus
  * to prevent unnecessary requests.
  * 
  * @param {number | null} tournamentId - The tournament ID to fetch standings for
@@ -39,7 +40,7 @@ interface UseStandingsWithTabsDataResult {
  * 
  * @example
  * ```tsx
- * const { processedData, loading, error } = useStandingsWithTabsDataSWR(tournamentId)
+ * const { processedData, loading, error } = useStandingsWithTabsDataQuery(tournamentId)
  * 
  * if (loading) return <Skeleton />
  * if (error) return <Error message={error} />
@@ -49,17 +50,19 @@ interface UseStandingsWithTabsDataResult {
  * ```
  * 
  * @remarks
- * - Data is cached with key `standings-tabs-${tournamentId}`
+ * - Data is cached with key `['standings-tabs', tournamentId]`
  * - Request deduplication is active for 60 seconds
  * - Focus revalidation is disabled for better performance
  * - Errors are retried once before displaying error state
  * - Returns null for standings and processedData properties when tournamentId is null
  */
-export const useStandingsWithTabsDataSWR = (tournamentId: number | null): UseStandingsWithTabsDataResult => {
-    const { data, error, isLoading } = useSWR(
-        tournamentId ? `standings-tabs-${tournamentId}` : null,
-        async () => {
-            if (!tournamentId) return null
+export const useStandingsWithTabsDataQuery = (tournamentId: number | null): UseStandingsWithTabsDataResult => {
+    const { data, error, isLoading } = useQuery({
+        queryKey: ['standings-tabs', tournamentId],
+        queryFn: async () => {
+            if (!tournamentId) {
+                throw new Error('Tournament ID is required')
+            }
             
             // Fetch standings data from API
             const standingsResponse = await getTournamentStandingsByTournamentId(tournamentId.toString())
@@ -96,13 +99,15 @@ export const useStandingsWithTabsDataSWR = (tournamentId: number | null): UseSta
                 tournamentName
             }
         },
-        {
-            revalidateOnFocus: false,      // Disabled to prevent unnecessary requests on focus
-            revalidateOnMount: true,        // Enabled to load data when component mounts
-            dedupingInterval: 60000,        // Request deduplication for 1 minute (60000ms)
-            errorRetryCount: 1              // Single retry attempt on error
-        }
-    )
+        enabled: !!tournamentId,
+        
+        // Cache configuration equivalent to SWR settings
+        staleTime: 60000, // 1 minute - data stays fresh
+        gcTime: 120000, // 2 minutes garbage collection  
+        refetchOnWindowFocus: false, // Disabled to prevent unnecessary requests on focus
+        refetchOnMount: true, // Enabled to load data when component mounts
+        retry: 1, // Single retry attempt on error
+    })
 
     return {
         standings: data?.standings || null,

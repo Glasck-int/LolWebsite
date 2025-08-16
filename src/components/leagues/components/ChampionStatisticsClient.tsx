@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import useSWR from 'swr'
+import { useQuery } from '@tanstack/react-query'
 import { SortableTable, TableColumn } from '@/components/ui/table/SortableTable'
 import { ChampionStats, getTournamentChampionStats, TournamentChampionStatsResponse } from '@/lib/api/champions'
 import {
@@ -18,7 +18,7 @@ import {
 import { MatchSkeleton } from '@/components/ui/skeleton/MatchSkeleton'
 import Image from 'next/image'
 import { DDragon } from '@/lib/api/ddragon'
-import { useDDragonVersions } from '@/lib/swr/useDDragonVersions'
+import { useDDragonVersions } from '@/lib/query/useDDragonVersions'
 
 interface ChampionStatisticsClientProps {
     tournamentId: string
@@ -57,21 +57,21 @@ function ChampionTabContent({ data, tabColumns }: {
 export function ChampionStatisticsClient({ tournamentId, initialData }: ChampionStatisticsClientProps) {
     const { latestVersion: ddragonVersion } = useDDragonVersions()
     
-    const { data, error, isLoading } = useSWR(
-        tournamentId ? `champion-stats-${tournamentId}` : null,
-        async () => {
+    const { data, error, isLoading } = useQuery({
+        queryKey: ['champion-stats', tournamentId],
+        queryFn: async () => {
             const response = await getTournamentChampionStats(tournamentId)
             if (response.error) throw new Error(response.error)
             return response.data
         },
-        {
-            fallbackData: initialData || undefined,
-            revalidateOnFocus: false,
-            revalidateOnMount: !initialData, // Don't revalidate if we have initial data
-            dedupingInterval: 60000, // 1 minute
-            errorRetryCount: 1
-        }
-    )
+        enabled: !!tournamentId,
+        placeholderData: initialData || undefined,
+        staleTime: 60000, // 1 minute
+        gcTime: 120000, // 2 minutes garbage collection
+        refetchOnWindowFocus: false,
+        refetchOnMount: !initialData, // Don't revalidate if we have initial data
+        retry: 1,
+    })
 
 
     if (isLoading) {

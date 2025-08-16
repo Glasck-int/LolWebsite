@@ -1,4 +1,4 @@
-import useSWR from 'swr'
+import { useQuery } from '@tanstack/react-query'
 import { getTournamentStandingsByTournamentId } from '@/lib/api/tournaments'
 import { getTeamsByNames, getTeamsRecentGames, getTeamsRecentMatches } from '@/lib/api/teams'
 import { getTeamImage, getTeamImageByName } from '@/lib/api/image'
@@ -11,16 +11,19 @@ export interface StandingsOverviewData {
 }
 
 /**
- * SWR hook for fetching and caching standings overview data
+ * React Query hook for fetching and caching standings overview data
+ * Equivalent to the previous useStandingsOverviewSWR hook
  * 
  * @param tournamentId - Tournament ID to fetch standings for
  * @returns Object with processedData, loading state, and error
  */
-export const useStandingsOverviewSWR = (tournamentId: number | undefined) => {
-    const { data, error, isLoading } = useSWR(
-        tournamentId ? `standings-overview-${tournamentId}` : null,
-        async () => {
-            if (!tournamentId) return null
+export const useStandingsOverviewQuery = (tournamentId: number | undefined) => {
+    const { data, error, isLoading } = useQuery({
+        queryKey: ['standings-overview', tournamentId],
+        queryFn: async (): Promise<StandingsOverviewData> => {
+            if (!tournamentId) {
+                throw new Error('Tournament ID is required')
+            }
 
             // Get standings
             const standingsResponse = await getTournamentStandingsByTournamentId(tournamentId.toString())
@@ -103,13 +106,15 @@ export const useStandingsOverviewSWR = (tournamentId: number | undefined) => {
                 tournamentName
             }
         },
-        {
-            revalidateOnFocus: false,
-            revalidateOnMount: true,
-            dedupingInterval: 300000, // 5 minutes
-            errorRetryCount: 1
-        }
-    )
+        enabled: !!tournamentId,
+        
+        // Cache configuration equivalent to SWR settings
+        staleTime: 300000, // 5 minutes
+        gcTime: 600000, // 10 minutes garbage collection
+        refetchOnWindowFocus: false,
+        refetchOnMount: true,
+        retry: 1,
+    })
 
     return {
         data: data || null,

@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { useNextMatchesSWR } from '@/hooks/useNextMatchesSWR'
+import { useNextMatchesQuery } from '@/hooks/useNextMatchesQuery'
 import { NextMatchesClient } from './NextMatchesClient'
 import { MatchSkeleton } from '@/components/ui/skeleton/MatchSkeleton'
 import {
@@ -20,10 +20,10 @@ interface NextMatchesFetchProps {
 }
 
 /**
- * Next matches fetch component with SWR caching system
+ * Next matches fetch component with React Query caching system
  * 
  * @description
- * This component fetches tournament matches data using SWR for caching,
+ * This component fetches tournament matches data using React Query for caching,
  * enriches it with team data and images, then passes it to the client component.
  * 
  * Features:
@@ -43,7 +43,7 @@ export const NextMatchesFetch = ({
     tournamentId,
     showSingleMatchOnDesktop = false
 }: NextMatchesFetchProps) => {
-    const { data, loading, error } = useNextMatchesSWR(tournamentId)
+    const { data, loading, error } = useNextMatchesQuery(tournamentId)
 
     if (loading) {
         return (

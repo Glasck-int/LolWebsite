@@ -1,4 +1,4 @@
-import useSWR from 'swr'
+import { useQuery } from '@tanstack/react-query'
 import { getMatchesForTournament } from '@/lib/api/tournaments'
 import { getTeamsByNames } from '@/lib/api/teams'
 import { getTeamImage } from '@/lib/api/image'
@@ -19,16 +19,19 @@ export interface NextMatchesData {
 }
 
 /**
- * SWR hook for fetching and caching next matches data
+ * React Query hook for fetching and caching next matches data
+ * Equivalent to the previous useNextMatchesSWR hook
  * 
  * @param tournamentId - Tournament ID to fetch matches for
  * @returns Object with matches data, loading state, and error
  */
-export const useNextMatchesSWR = (tournamentId: number | undefined) => {
-    const { data, error, isLoading } = useSWR(
-        tournamentId ? `next-matches-${tournamentId}` : null,
-        async () => {
-            if (!tournamentId) return null
+export const useNextMatchesQuery = (tournamentId: number | undefined) => {
+    const { data, error, isLoading } = useQuery({
+        queryKey: ['next-matches', tournamentId],
+        queryFn: async (): Promise<NextMatchesData> => {
+            if (!tournamentId) {
+                throw new Error('Tournament ID is required')
+            }
 
             // Get matches using the corrected API endpoint
             const matchesResponse = await getMatchesForTournament(tournamentId.toString())
@@ -83,13 +86,15 @@ export const useNextMatchesSWR = (tournamentId: number | undefined) => {
                 lastMatches: isLastMatches
             }
         },
-        {
-            revalidateOnFocus: false,
-            revalidateOnMount: true,
-            dedupingInterval: 180000, // 3 minutes for matches (more frequent than standings)
-            errorRetryCount: 1
-        }
-    )
+        enabled: !!tournamentId,
+        
+        // Cache configuration equivalent to SWR settings
+        staleTime: 180000, // 3 minutes for matches (more frequent than standings)
+        gcTime: 300000, // 5 minutes garbage collection
+        refetchOnWindowFocus: false,
+        refetchOnMount: true,
+        retry: 1,
+    })
 
     return {
         data: data || null,

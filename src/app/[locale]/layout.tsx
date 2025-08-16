@@ -7,7 +7,7 @@ import { routing } from "@/i18n/routing";
 import { Inter } from "next/font/google";
 import { Header } from "@/components/layout/Header/Header";
 import { SpoilerProvider } from "@/contexts/SpoilerContext";
-import { SWRProvider } from "@/lib/swr/SWRProvider";
+import { ReactQueryProvider } from "@/lib/query/ReactQueryProvider";
 import Footer from "@/components/layout/Footer/Footer";
 
 const inter = Inter({
@@ -81,13 +81,13 @@ export default async function LocaleLayout({
 			<body className={inter.className}>
 				<NextIntlClientProvider locale={locale} messages={messages}>
 					<SpoilerProvider>
-						<SWRProvider>
+						<ReactQueryProvider>
 							<Header />
 							<div className="pt-24 px-2 body-container">
 								{children}
 							</div>
 							<Footer />
-						</SWRProvider>
+						</ReactQueryProvider>
 					</SpoilerProvider>
 				</NextIntlClientProvider>
 			</body>
