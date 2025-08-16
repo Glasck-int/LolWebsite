@@ -455,7 +455,7 @@ export default async function tournamentsRoutes(fastify: FastifyInstance) {
                     select: { dateEnd: true }
                 })
 
-                // Récupérer SEULEMENT les champs nécessaires (plus rapide)
+               
                 const players = await prisma.scoreboardPlayers.findMany({
                     where: { overviewPage: tournamentOverviewPage },
                     select: {

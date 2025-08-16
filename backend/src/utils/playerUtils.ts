@@ -98,7 +98,7 @@ export async function resolvePlayer(
 ): Promise<PlayerResolution> {
     const { includePlayer = false, includeRedirects = false, includeImages = false } = options
 
-    // First, try to find the player redirect entry for the given name
+    // First, try to find the player redirect entry for the given name (case sensitive)
     let playerRedirect = await prisma.playerRedirect.findUnique({
         where: { name: playerName }
     })
@@ -114,16 +114,35 @@ export async function resolvePlayer(
         })
         
         if (!playerDirect) {
-            throw new PlayerNotFoundError(playerName)
-        }
-        
-        overviewPage = playerDirect.overviewPage
-        
-        // Create a virtual redirect for consistency with the rest of the function
-        playerRedirect = {
-            id: -1, // Virtual ID
-            name: playerName,
-            overviewPage: playerDirect.overviewPage
+            // Try with first letter capitalized
+            const capitalizedName = playerName.charAt(0).toUpperCase() + playerName.slice(1)
+            const playerDirectCapitalized = await prisma.player.findFirst({
+                where: { 
+                    overviewPage: capitalizedName
+                }
+            })
+            
+            if (!playerDirectCapitalized) {
+                throw new PlayerNotFoundError(playerName)
+            }
+            
+            overviewPage = playerDirectCapitalized.overviewPage
+            
+            // Create a virtual redirect for consistency with the rest of the function
+            playerRedirect = {
+                id: -1, // Virtual ID
+                name: playerName,
+                overviewPage: playerDirectCapitalized.overviewPage
+            }
+        } else {
+            overviewPage = playerDirect.overviewPage
+            
+            // Create a virtual redirect for consistency with the rest of the function
+            playerRedirect = {
+                id: -1, // Virtual ID
+                name: playerName,
+                overviewPage: playerDirect.overviewPage
+            }
         }
     } else {
         overviewPage = playerRedirect.overviewPage

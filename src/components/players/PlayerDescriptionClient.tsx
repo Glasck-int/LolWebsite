@@ -42,8 +42,8 @@ export const PlayerDescriptionClient = ({
                             <Image
                                 src={teamImage}
                                 alt={teamName}
-                                width={20}
-                                height={20}
+                                width={75}
+                                height={75}
                                 className="object-contain"
                             />
                         )}

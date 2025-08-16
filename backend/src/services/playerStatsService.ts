@@ -22,7 +22,7 @@ export class PlayerStatsService {
     /**
      * Calculate player statistics from scoreboard data
      */
-    static calculatePlayerStats(games: any[], playerRoles: Map<string, string> = new Map()) {
+    static calculatePlayerStats(games: any[], playerRoles: Map<string, string> = new Map(), playerNames: Map<string, string> = new Map()) {
         const playersMap = new Map()
         const gameLengthsByPlayer = new Map() // Track game lengths for per-minute calculations
         const championsByPlayer = new Map() // Track unique champions per player
@@ -33,7 +33,8 @@ export class PlayerStatsService {
 
             if (!playersMap.has(player)) {
                 playersMap.set(player, {
-                    player: player,
+                    player: player, // This is the link/identifier
+                    name: playerNames.get(player) || player, // Display name (fallback to player if name is empty)
                     role: playerRoles.get(player) || null,
                     gamesPlayed: 0,
                     wins: 0,
@@ -230,7 +231,8 @@ export class PlayerStatsService {
         const scoreboardData = await prisma.scoreboardPlayers.findMany({
             where: whereClause,
             select: {
-                link: true, // Player name
+                link: true, // Player identifier (for URLs)
+                name: true, // Player display name
                 kills: true,
                 deaths: true,
                 assists: true,
@@ -252,11 +254,16 @@ export class PlayerStatsService {
 
         // Create a map of player names to their roles using the data we already have
         const playerRoles = new Map<string, string>()
+        const playerNames = new Map<string, string>()
         
-        // Use roles directly from scoreboardData (most efficient)
+        // Use roles and names directly from scoreboardData (most efficient)
         scoreboardData.forEach(game => {
             if (game.link && game.role && !playerRoles.has(game.link)) {
                 playerRoles.set(game.link, game.role)
+            }
+            // Only use game.name if it exists and is not empty, otherwise use game.link as fallback
+            if (game.link && !playerNames.has(game.link)) {
+                playerNames.set(game.link, game.name && game.name.trim() !== '' ? game.name : game.link)
             }
         })
 
@@ -289,7 +296,7 @@ export class PlayerStatsService {
         }))
 
         // Calculate player statistics
-        const playerStats = this.calculatePlayerStats(enrichedScoreboardData, playerRoles)
+        const playerStats = this.calculatePlayerStats(enrichedScoreboardData, playerRoles, playerNames)
         const uniquePlayers = playerStats.length
 
         // For single player queries, return just the player's stats

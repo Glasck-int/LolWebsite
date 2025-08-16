@@ -4,7 +4,8 @@ import { apiRequest, ApiResponse } from './utils'
  * Player performance statistics interface
  */
 export interface PlayerStats {
-    player: string
+    player: string // Player identifier (for URLs)
+    name: string // Player display name
     gamesPlayed: number
     wins: number
     losses: number

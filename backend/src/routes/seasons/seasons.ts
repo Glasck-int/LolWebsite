@@ -426,7 +426,7 @@ export default async function seasonsRoutes(fastify: FastifyInstance) {
                     prisma.scoreboardPlayers.findMany({
                         where: {
                             OR: redirectNames.flatMap(name => [
-                                { name: name },
+                                // { name: name },
                                 { link: name }
                             ])
                         },

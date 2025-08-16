@@ -1,5 +1,6 @@
 // store/tableEntityStore.ts
 import { create } from 'zustand'
+import { devtools } from 'zustand/middleware'
 import {
     getSplits,
     getTournaments,
@@ -127,7 +128,9 @@ const getTournamentId = (
     return tournament?.id
 }
 
-export const useTableEntityStore = create<TableEntityState>()((set, get) => {
+export const useTableEntityStore = create<TableEntityState>()(
+    devtools(
+        (set, get) => {
             const CACHE_TIMEOUT = 5 * 60 * 1000 // 5 minutes
             const seasonsHelpers = createCacheHelpers<CachedSeasonData>(CACHE_TIMEOUT, () => [])
             
@@ -612,4 +615,9 @@ export const useTableEntityStore = create<TableEntityState>()((set, get) => {
                         userHasSelectedTournament: false,
                     }),
             }
-        })
+        },
+        {
+            name: 'table-entity-store',
+        }
+    )
+)

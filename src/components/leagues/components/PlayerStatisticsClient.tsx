@@ -120,7 +120,7 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
         sortable: true,
         headerClassName: 'text-left justify-start font-semibold w-40',
         cellClassName: 'font-semibold text-sm w-40',
-        accessor: (item) => item.player,
+        accessor: (item) => item.name || item.player,
         cell: (item) => {
             const playerImageData = playerImages?.[item.player]
             const hasPlayerImage = playerImageData?.playerImage
@@ -133,7 +133,7 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
                         <div className="relative flex-shrink-0">
                             <Image
                                 src={playerImageData?.playerImage || ''}
-                                alt={`${item.player} avatar`}
+                                alt={`${item.name || item.player} avatar`}
                                 width={32}
                                 height={32}
                                 className="rounded-full object-cover aspect-square"
@@ -186,7 +186,7 @@ export function PlayerStatisticsClient({ tournamentId, initialData }: PlayerStat
                     
                     <Link href={`/players/${encodeURIComponent(item.player)}`} className="truncate hover:text-clear-violet transition-colors">
                     {/* Player Name */}
-                        {CleanName(item.player)}
+                        {CleanName(item.name || item.player)}
                     </Link>
                 </div>
             )
